@@ -1,0 +1,10 @@
+.Makefile.d
+html/
+.coq-native
+*.aux
+*.glob
+*.vo
+*.vok
+*.vos
+\#*
+
