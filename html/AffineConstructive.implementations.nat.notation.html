@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.implementations.nat.notation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.implementations.nat.notation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.abstract_algebra.html#"><span class="id" title="library">abstract_algebra</span></a> <a class="idref" href="AffineConstructive.implementations.nat.nno.html#"><span class="id" title="library">nat.nno</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Require</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Nat.html#"><span class="id" title="library">Nat</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#"><span class="id" title="library">Datatypes</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Number.html#"><span class="id" title="library">Number</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Unset</span> <span class="id" title="var">Universe</span> <span class="id" title="var">Polymorphism</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a id="to_stdlib_nat" class="idref" href="#to_stdlib_nat"><span class="id" title="definition">to_stdlib_nat</span></a> (<a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a>:<a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">Datatypes.nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#x:1"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat_0"><span class="id" title="constructor">nat_0</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">Datatypes.O</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat_S"><span class="id" title="constructor">nat_S</span></a> <span class="id" title="var">y</span> ⇒ <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">Datatypes.S</span></a> (<a class="idref" href="AffineConstructive.implementations.nat.notation.html#to_stdlib_nat:2"><span class="id" title="definition">to_stdlib_nat</span></a> <span class="id" title="var">y</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a id="of_stdlib_nat" class="idref" href="#of_stdlib_nat"><span class="id" title="definition">of_stdlib_nat</span></a> (<a id="x:4" class="idref" href="#x:4"><span class="id" title="binder">x</span></a>:<a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">Datatypes.nat</span></a>) : <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#x:4"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">Datatypes.O</span></a> ⇒ <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat_0"><span class="id" title="constructor">nat_0</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">Datatypes.S</span></a> <span class="id" title="var">y</span> ⇒ <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat_S"><span class="id" title="constructor">nat_S</span></a> (<a class="idref" href="AffineConstructive.implementations.nat.notation.html#of_stdlib_nat:5"><span class="id" title="definition">of_stdlib_nat</span></a> <span class="id" title="var">y</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="of_num_uint" class="idref" href="#of_num_uint"><span class="id" title="definition">of_num_uint</span></a> (<a id="x:7" class="idref" href="#x:7"><span class="id" title="binder">x</span></a>:<a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Number.html#uint"><span class="id" title="inductive">Number.uint</span></a>) : <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat"><span class="id" title="inductive">nat</span></a> := <a class="idref" href="AffineConstructive.implementations.nat.notation.html#of_stdlib_nat"><span class="id" title="definition">of_stdlib_nat</span></a> (<a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Nat.html#of_num_uint"><span class="id" title="definition">Nat.of_num_uint</span></a> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#x:7"><span class="id" title="variable">x</span></a>).<br/>
+<span class="id" title="keyword">Definition</span> <a id="to_num_uint" class="idref" href="#to_num_uint"><span class="id" title="definition">to_num_uint</span></a> (<a id="x:8" class="idref" href="#x:8"><span class="id" title="binder">x</span></a>:<a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Number.html#uint"><span class="id" title="inductive">Number.uint</span></a> := <a class="idref" href="http://coq.inria.fr/distrib/V8.17.0/stdlib//Coq.Init.Nat.html#to_num_uint"><span class="id" title="definition">Nat.to_num_uint</span></a> (<a class="idref" href="AffineConstructive.implementations.nat.notation.html#to_stdlib_nat"><span class="id" title="definition">to_stdlib_nat</span></a> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#x:8"><span class="id" title="variable">x</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Number Notation</span> <a class="idref" href="AffineConstructive.implementations.nat.nno.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#of_num_uint"><span class="id" title="definition">of_num_uint</span></a> <a class="idref" href="AffineConstructive.implementations.nat.notation.html#to_num_uint"><span class="id" title="definition">to_num_uint</span></a> : <span class="id" title="var">nat_scope</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

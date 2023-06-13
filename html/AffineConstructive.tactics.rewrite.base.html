@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.tactics.rewrite.base</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.tactics.rewrite.base</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#"><span class="id" title="library">interfaces.notation</span></a> <a class="idref" href="AffineConstructive.tactics.rewrite.proper.html#"><span class="id" title="library">rewrite.proper</span></a> <a class="idref" href="AffineConstructive.interfaces.prop_eq.html#"><span class="id" title="library">prop_eq</span></a> <a class="idref" href="AffineConstructive.interfaces.sprop.html#"><span class="id" title="library">sprop</span></a> <a class="idref" href="AffineConstructive.tactics.misc.html#"><span class="id" title="library">tactics.misc</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Tagging via rewriting a tag equation 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Create HintDb</span> <span class="id" title="var">rewrite_swap_tag</span> <span class="id" title="var">discriminated</span>.<br/>
+<span class="id" title="keyword">Inductive</span> <a id="RewriteSwapTag" class="idref" href="#RewriteSwapTag"><span class="id" title="inductive">RewriteSwapTag</span></a> {<a id="A:1" class="idref" href="#A:1"><span class="id" title="binder">A</span></a>} (<a id="term:2" class="idref" href="#term:2"><span class="id" title="binder">term</span></a> : <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#A:1"><span class="id" title="variable">A</span></a>) := <a id="DeclareRewriteSwapTag" class="idref" href="#DeclareRewriteSwapTag"><span class="id" title="constructor">DeclareRewriteSwapTag</span></a> : <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#A:1"><span class="id" title="variable">A</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#RewriteSwapTag:3"><span class="id" title="inductive">RewriteSwapTag</span></a> <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#term:2"><span class="id" title="variable">term</span></a>.<br/>
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#DeclareRewriteSwapTag"><span class="id" title="constructor">DeclareRewriteSwapTag</span></a> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">swap_rewrite_tag</span> <span class="id" title="var">t</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">s</span> := <span class="id" title="keyword">constr</span>:( <span class="id" title="keyword">ltac</span>:(<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">solve</span> [ <span class="id" title="var">typeclasses</span> <span class="id" title="tactic">eauto</span> <span class="id" title="keyword">with</span> <span class="id" title="var">rewrite_swap_tag</span> <span class="id" title="var">nocore</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="tactic">idtac</span> "No instance to swap tag of" <span class="id" title="var">t</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">fail</span> 1 "No instance to swap tag of" <span class="id" title="var">t</span> ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;) : <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#RewriteSwapTag"><span class="id" title="inductive">RewriteSwapTag</span></a> <span class="id" title="var">t</span> ) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="var">s</span> <span class="id" title="keyword">with</span> <a class="idref" href="AffineConstructive.tactics.rewrite.base.html#DeclareRewriteSwapTag"><span class="id" title="constructor">DeclareRewriteSwapTag</span></a> ?<span class="id" title="var">t'</span> ⇒ <span class="id" title="keyword">constr</span>:(<span class="id" title="var">t'</span>) <span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Assumes the goal is <span class="inlinecode"></span> <span class="inlinecode">|-</span> <span class="inlinecode"><a class="idref" href="AffineConstructive.interfaces.sprop.html#False"><span class="id" title="inductive">False</span></a></span> <span class="inlinecode">→</span> <span class="inlinecode"><a class="idref" href="AffineConstructive.implementations.grothendieck_group.html#G"><span class="id" title="abbreviation">G</span></a></span> <span class="inlinecode"></span>.
+   Runs the given <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">tactic_to_run_on_goal</span></span> <span class="inlinecode"></span> when the goal is <span class="inlinecode"></span> <span class="inlinecode"><a class="idref" href="AffineConstructive.implementations.grothendieck_group.html#G"><span class="id" title="abbreviation">G</span></a></span> <span class="inlinecode"></span>
+   (after an intro). Captures the new goal <span class="inlinecode"></span> <span class="inlinecode">?<span class="id" title="var">H</span></span> <span class="inlinecode"></span>, by finishing
+   the proof (via an exfalso) as a term <span class="inlinecode"><span class="id" title="keyword">let</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode">:=</span> <span class="inlinecode">?<span class="id" title="var">H</span></span> <span class="inlinecode"><span class="id" title="tactic">in</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"></span>.
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">run_tactic_on_term_inner</span> <span class="id" title="var">tactic_to_run_on_goal</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">altered_goal_term</span> := <span class="id" title="tactic">fresh</span> "altered_goal_term" <span class="id" title="tactic">in</span> <span class="id" title="var">notypeclasses</span> <span class="id" title="tactic">refine</span> (<span class="id" title="keyword">let</span> <a id="altered_goal_term:5" class="idref" href="#altered_goal_term:5"><span class="id" title="binder">altered_goal_term</span></a> := <span class="id" title="var">_</span> <span class="id" title="tactic">in</span> <span class="id" title="var">_</span>);<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">altered_goal_term_evar</span> := <span class="id" title="tactic">eval</span> <span class="id" title="tactic">red</span> <span class="id" title="tactic">in</span> <span class="id" title="var">altered_goal_term</span> <span class="id" title="tactic">in</span> <span class="id" title="tactic">clear</span> <span class="id" title="var">altered_goal_term</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">false_dummy_var</span> := <span class="id" title="tactic">fresh</span> "false_dummy_var" <span class="id" title="tactic">in</span> <span class="id" title="tactic">intro</span> <span class="id" title="var">false_dummy_var</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="var">tactic_to_run_on_goal</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">g</span> := <span class="id" title="var">get_goal</span> <span class="id" title="tactic">in</span> <span class="id" title="var">unify</span> <span class="id" title="var">g</span> <span class="id" title="var">altered_goal_term_evar</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">false_dummy_var</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Runs <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">tactic_to_run_on_term</span></span> <span class="inlinecode"></span> in a context where the goal is
+   <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">term_to_run_tactic_on</span></span> <span class="inlinecode"></span> (which must be a type). Returns a term
+   <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="keyword">let</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode">:=</span> <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode"><span class="id" title="tactic">in</span></span> <span class="inlinecode"><span class="id" title="var">λ</span></span> <span class="inlinecode"><span class="id" title="var">f</span>:<a class="idref" href="AffineConstructive.interfaces.sprop.html#False"><span class="id" title="inductive">False</span></a>,</span> <span class="inlinecode"><a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#signed_naturals.t"><span class="id" title="inductive">t</span></a></span> <span class="inlinecode"></span> where <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode"></span> is the new goal after the tactic
+   is run, and <span class="inlinecode"></span> <span class="inlinecode"><a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#signed_naturals.t"><span class="id" title="inductive">t</span></a></span> <span class="inlinecode"></span> is the proof term generated by the tactic,
+   with the final hole of type <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode"></span> filled in by destructing <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">f</span></span> <span class="inlinecode"></span>. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">run_tactic_on_term_full</span> <span class="id" title="var">term_to_run_tactic_on</span> <span class="id" title="var">tactic_to_run_on_term</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">constr_from_tac</span> <span class="id" title="var">uconstr</span>:(<span class="id" title="keyword">∀</span> <span class="id" title="var">_</span> : <a class="idref" href="AffineConstructive.interfaces.sprop.html#False"><span class="id" title="inductive">False</span></a>, <span class="id" title="var">term_to_run_tactic_on</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="var">run_tactic_on_term_inner</span> <span class="id" title="var">tactic_to_run_on_term</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+As above, but just returns the new goal, without the proof term. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">run_tactic_on_term</span> <span class="id" title="var">term_to_run_tactic_on</span> <span class="id" title="var">tactic_to_run_on_term</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">t</span> := <span class="id" title="var">run_tactic_on_term_full</span> <span class="id" title="var">term_to_run_tactic_on</span> <span class="id" title="var">tactic_to_run_on_term</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">let</span> <span class="id" title="var">_</span> := ?<span class="id" title="var">G</span> <span class="id" title="tactic">in</span> <span class="id" title="var">_</span> ⇒ <span class="id" title="keyword">constr</span>:(<span class="id" title="var">G</span>) <span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Rewrites an <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">equation_to_rewrite</span></span> <span class="inlinecode"></span> <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">E</span></span> <span class="inlinecode">:</span> <span class="inlinecode">?<span class="id" title="var">x</span></span> <span class="inlinecode">≡</span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"></span> in <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">term_to_rewrite_in</span></span> <span class="inlinecode"></span>,
+   which must be a type, and calls <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">continuation_tac</span></span> <span class="inlinecode"></span>, passing the
+   resolved <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode"></span> and rewritten term. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">rewrite_in_term_gen</span> <span class="id" title="var">equation_to_rewrite</span> <span class="id" title="var">continuation_tactic</span> <span class="id" title="var">term_to_rewrite_in</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">t</span> := <span class="id" title="var">run_tactic_on_term_full</span> <span class="id" title="var">term_to_rewrite_in</span> <span class="id" title="keyword">ltac</span>:(<span class="id" title="tactic">case</span> <span class="id" title="var">equation_to_rewrite</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="var">t</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">let</span> <span class="id" title="var">_</span> := ?<span class="id" title="var">G</span> <span class="id" title="tactic">in</span> (<a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">λ</span></a> <a id="f:7" class="idref" href="#f:7"><span class="id" title="binder">f</span></a><a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">,</span></a> <span class="id" title="keyword">match</span> ?<span class="id" title="var">pf</span> <span class="id" title="keyword">with</span> <a class="idref" href="AffineConstructive.interfaces.prop_eq.html#eq_refl"><span class="id" title="constructor">eq_refl</span></a> ⇒ <span class="id" title="var">_</span> <span class="id" title="keyword">end</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="keyword">type</span> <span class="id" title="keyword">of</span> <span class="id" title="var">pf</span> <span class="id" title="keyword">with</span> ?<span class="id" title="var">x</span> <a class="idref" href="AffineConstructive.interfaces.prop_eq.html#dc8d630d628b8527318d6b8ab8ce8456"><span class="id" title="notation">≡</span></a> <span class="id" title="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">continuation_tactic</span> <span class="id" title="var">x</span> <span class="id" title="var">G</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Local Ltac</span> <span class="id" title="var">forall_subst</span> <span class="id" title="var">P</span> <span class="id" title="var">x</span> := <span class="id" title="keyword">lazymatch</span> <span class="id" title="var">P</span> <span class="id" title="keyword">with</span> (<a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">∀</span></a> <a id="y:9" class="idref" href="#y:9"><span class="id" title="binder">y</span></a><a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">,</span></a> ?<span class="id" title="var">Py</span>) ⇒ <span class="id" title="keyword">constr</span>:(<span class="id" title="keyword">match</span> <span class="id" title="var">x</span> <span class="id" title="keyword">with</span> <span class="id" title="var">y</span> ⇒ <span class="id" title="var">Py</span> <span class="id" title="keyword">end</span>) <span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">chain_rewrite</span> <span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">k</span> <span class="id" title="var">tag_term</span> <span class="id" title="var">rewritten_term</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">swapped_tag_term</span> := <span class="id" title="var">swap_rewrite_tag</span> <span class="id" title="var">tag_term</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">k'</span> <span class="id" title="var">g</span> <span class="id" title="var">h</span> := (<span class="id" title="keyword">let</span> <span class="id" title="var">g'</span> := <span class="id" title="var">forall_subst</span> <span class="id" title="var">g</span> <span class="id" title="var">tag_term</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">h'</span> := <span class="id" title="var">forall_subst</span> <span class="id" title="var">h</span> <span class="id" title="var">swapped_tag_term</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">k</span> <span class="id" title="var">g'</span> <span class="id" title="var">h'</span><br/>
+&nbsp;&nbsp;) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="tactic">eval</span> <span class="id" title="tactic">pattern</span> <span class="id" title="var">tag_term</span> <span class="id" title="tactic">in</span> <span class="id" title="var">rewritten_term</span> <span class="id" title="keyword">with</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">(</span></a><a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">λ</span></a> <a id="tagged_term_var:12" class="idref" href="#tagged_term_var:12"><span class="id" title="binder">tagged_term_var</span></a> : ?<span class="id" title="var">T</span><a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">,</span></a> ?<span class="id" title="var">F</span><a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">)</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">_</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">uconstr</span>:(<span class="id" title="keyword">∀</span> <a id="tagged_term_var:13" class="idref" href="#tagged_term_var:13"><span class="id" title="binder">tagged_term_var</span></a> : <span class="id" title="var">T</span>, <span class="id" title="var">F</span>) <span class="id" title="var">k'</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">rewrite_in_term</span> <span class="id" title="var">equation_to_rewrite</span> <span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">term_to_rewrite</span> <span class="id" title="var">k</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">rewrite_in_term_gen</span> <span class="id" title="var">equation_to_rewrite</span> <span class="id" title="keyword">ltac</span>:(<span class="id" title="var">chain_rewrite</span> <span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">k</span>) <span class="id" title="var">term_to_rewrite</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">drop_rewrite_tags</span> <span class="id" title="var">change_tac</span> <span class="id" title="var">tagged</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">x</span> := <span class="id" title="tactic">eval</span> <span class="id" title="tactic">red</span> <span class="id" title="tactic">in</span> <span class="id" title="var">tagged</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">drop</span> := <span class="id" title="tactic">fresh</span> "drop" <span class="id" title="tactic">in</span> <span class="id" title="tactic">set</span> (<span class="id" title="var">drop</span> := <span class="id" title="var">tagged</span>);<br/>
+&nbsp;&nbsp;<span class="id" title="var">change_tac</span> <span class="id" title="var">drop</span> <span class="id" title="var">tagged</span>;<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">change</span> <span class="id" title="var">drop</span> <span class="id" title="keyword">with</span> <span class="id" title="var">x</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">drop</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">rewrite_in_term_at</span> <span class="id" title="var">equation_to_rewrite</span> <span class="id" title="var">change_tac</span> <span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">term_to_rewrite</span> <span class="id" title="var">k</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">then_drop_terms</span> <span class="id" title="var">tagged</span> <span class="id" title="var">G</span> := (<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">G'</span> := <span class="id" title="var">run_tactic_on_term</span> <span class="id" title="var">G</span> <span class="id" title="keyword">ltac</span>:(<span class="id" title="var">drop_rewrite_tags</span> <span class="id" title="var">change_tac</span> <span class="id" title="var">tagged</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">chain_rewrite</span> <span class="id" title="var">next_rewrite_tac</span> <span class="id" title="var">k</span> <span class="id" title="var">tagged</span> <span class="id" title="var">G'</span><br/>
+&nbsp;&nbsp;) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="var">rewrite_in_term_gen</span> <span class="id" title="var">equation_to_rewrite</span> <span class="id" title="var">then_drop_terms</span> <span class="id" title="var">term_to_rewrite</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">tag_rewrite_done</span> <span class="id" title="var">t</span> <span class="id" title="var">k</span> := <span class="id" title="keyword">let</span> <span class="id" title="var">t'</span> := <span class="id" title="keyword">constr</span>:(<span class="id" title="var">t</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">k</span> <span class="id" title="var">t'</span> <span class="id" title="var">t'</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">hyp_rewrite_gen</span> <span class="id" title="var">clear_tags</span> <span class="id" title="var">H</span> <span class="id" title="var">P</span> <span class="id" title="var">Q</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">first</span> [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">pf</span> := <span class="id" title="var">proper_solution</span> (<a class="idref" href="AffineConstructive.interfaces.sprop.html#impl"><span class="id" title="definition">impl</span></a> <span class="id" title="var">P</span> <span class="id" title="var">Q</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">pf'</span> := <span class="id" title="var">clear_tags</span> <span class="id" title="var">pf</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">Q'</span> := <span class="id" title="var">clear_tags</span> <span class="id" title="var">Q</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">H'</span> := <span class="id" title="tactic">fresh</span> <span class="id" title="var">H</span> <span class="id" title="tactic">in</span> <span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> <span class="id" title="var">pf'</span> <span class="id" title="var">H</span> : <span class="id" title="var">Q'</span> <span class="id" title="keyword">as</span> <span class="id" title="var">H'</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">rename</span> <span class="id" title="var">H'</span> <span class="id" title="var">into</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;| <span class="id" title="tactic">idtac</span> "Could not solve proper goal.";<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<a class="idref" href="AffineConstructive.interfaces.sprop.html#impl"><span class="id" title="definition">impl</span></a> <span class="id" title="var">P</span> <span class="id" title="var">Q</span>) ].<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">goal_rewrite_gen</span> <span class="id" title="var">clear_tags</span> <span class="id" title="var">P</span> <span class="id" title="var">Q</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">first</span> [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">pf</span> := <span class="id" title="var">proper_solution</span> (<a class="idref" href="AffineConstructive.interfaces.sprop.html#impl"><span class="id" title="definition">impl</span></a> <span class="id" title="var">Q</span> <span class="id" title="var">P</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">pf'</span> := <span class="id" title="var">clear_tags</span> <span class="id" title="var">pf</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">Q'</span> := <span class="id" title="var">clear_tags</span> <span class="id" title="var">Q</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simple</span> <span class="id" title="var">notypeclasses</span> <span class="id" title="tactic">refine</span> (<span class="id" title="var">pf'</span> <span class="id" title="var">_</span>); <span class="id" title="tactic">change</span> <span class="id" title="var">Q'</span><br/>
+&nbsp;&nbsp;| <span class="id" title="tactic">idtac</span> "Could not solve proper goal.";<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<a class="idref" href="AffineConstructive.interfaces.sprop.html#impl"><span class="id" title="definition">impl</span></a> <span class="id" title="var">Q</span> <span class="id" title="var">P</span>)<br/>
+&nbsp;&nbsp;].<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">goal_debug_rewrite</span> <span class="id" title="var">P</span> <span class="id" title="var">Q</span> := <span class="id" title="tactic">assert</span> (<a class="idref" href="AffineConstructive.interfaces.sprop.html#impl"><span class="id" title="definition">impl</span></a> <span class="id" title="var">Q</span> <span class="id" title="var">P</span>).<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

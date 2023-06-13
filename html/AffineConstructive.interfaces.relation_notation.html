@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.interfaces.relation_notation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.interfaces.relation_notation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#"><span class="id" title="library">interfaces.notation</span></a> <a class="idref" href="AffineConstructive.interfaces.aprop.html#"><span class="id" title="library">interfaces.aprop</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Set</span> <span class="id" title="keyword">Typeclasses</span> <span class="id" title="var">Unique</span> <span class="id" title="var">Instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Declare Scope</span> <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">rel_scope</span> <span class="id" title="keyword">with</span> <span class="id" title="var">rel</span>.<br/>
+<span class="id" title="keyword">Global Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">rel_scope</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="Equiv" class="idref" href="#Equiv"><span class="id" title="record">Equiv@</span></a>{<span class="id" title="var">i</span>} (<a id="A:1" class="idref" href="#A:1"><span class="id" title="binder">A</span></a>:<span class="id" title="var">Type@</span>{<span class="id" title="var">i</span>}) := <a id="equiv" class="idref" href="#equiv"><span class="id" title="projection">equiv</span></a> : <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#A:1"><span class="id" title="variable">A</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#A:1"><span class="id" title="variable">A</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="6b9a5c160360edefd992463ff8bf70e9" class="idref" href="#6b9a5c160360edefd992463ff8bf70e9"><span class="id" title="notation">&quot;</span></a>x = y :&gt; A" := (@<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#equiv"><span class="id" title="definition">equiv</span></a> <span class="id" title="var">A</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="0116a7076a6d72d281b02d637d930e28" class="idref" href="#0116a7076a6d72d281b02d637d930e28"><span class="id" title="notation">&quot;</span></a>x = y" := (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#equiv"><span class="id" title="definition">equiv</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="4fce044d5cef0c85319f49257775effd" class="idref" href="#4fce044d5cef0c85319f49257775effd"><span class="id" title="notation">&quot;</span></a>(=)" := (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#equiv"><span class="id" title="definition">equiv</span></a>) (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="4329eb688ebe6998a771c12badecfe0f" class="idref" href="#4329eb688ebe6998a771c12badecfe0f"><span class="id" title="notation">&quot;</span></a>x ≠ y" := (<a class="idref" href="AffineConstructive.interfaces.aprop.html#anot"><span class="id" title="definition">anot</span></a> (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#equiv"><span class="id" title="definition">equiv</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>)) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="a17af155224266dc09bad52cc73d8127" class="idref" href="#a17af155224266dc09bad52cc73d8127"><span class="id" title="notation">&quot;</span></a>(≠)" := (<a class="idref" href="AffineConstructive.interfaces.aprop.html#complement"><span class="id" title="definition">complement</span></a> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#equiv"><span class="id" title="definition">equiv</span></a>) (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#Equiv"><span class="id" title="class">Equiv</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="Le" class="idref" href="#Le"><span class="id" title="record">Le@</span></a>{<span class="id" title="var">i</span>} (<a id="A:4" class="idref" href="#A:4"><span class="id" title="binder">A</span></a>:<span class="id" title="var">Type@</span>{<span class="id" title="var">i</span>}) := <a id="le" class="idref" href="#le"><span class="id" title="projection">le</span></a> : <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#A:4"><span class="id" title="variable">A</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#A:4"><span class="id" title="variable">A</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="171322885b3ddf02843ed885e65a0566" class="idref" href="#171322885b3ddf02843ed885e65a0566"><span class="id" title="notation">&quot;</span></a>x ≤ y :&gt; A" := (@<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#le"><span class="id" title="definition">le</span></a> <span class="id" title="var">A</span> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="ff7f4b5ef53f6b7ca3436335b1b80ab3" class="idref" href="#ff7f4b5ef53f6b7ca3436335b1b80ab3"><span class="id" title="notation">&quot;</span></a>x ≤ y" := (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#le"><span class="id" title="definition">le</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="624f2a7251cda9d0a1227d83d38c1268" class="idref" href="#624f2a7251cda9d0a1227d83d38c1268"><span class="id" title="notation">&quot;</span></a>(≤)" := <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#le"><span class="id" title="definition">le</span></a> (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#Le"><span class="id" title="class">Le</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="lt" class="idref" href="#lt"><span class="id" title="definition">lt</span></a> `{<a id="H:8" class="idref" href="#H:8"><span class="id" title="binder">Le</span></a> <a id="H:8" class="idref" href="#H:8"><span class="id" title="binder">A</span></a>} := <a class="idref" href="AffineConstructive.interfaces.aprop.html#complement"><span class="id" title="definition">complement</span></a> (<a class="idref" href="AffineConstructive.interfaces.aprop.html#flip"><span class="id" title="definition">flip</span></a> (@<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#le"><span class="id" title="definition">le</span></a> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#A:7"><span class="id" title="variable">A</span></a> <span class="id" title="var">_</span>)).<br/>
+<span class="id" title="keyword">Notation</span> <a id="::rel_scope:x_'&lt;'_x" class="idref" href="#::rel_scope:x_'&lt;'_x"><span class="id" title="notation">&quot;</span></a>x &lt; y" := (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#lt"><span class="id" title="definition">lt</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="c529bc1d37035150cb17459abd72d5fc" class="idref" href="#c529bc1d37035150cb17459abd72d5fc"><span class="id" title="notation">&quot;</span></a>(&lt;)" := <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#lt"><span class="id" title="definition">lt</span></a> (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">rel_scope</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Unset</span> <span class="id" title="keyword">Typeclasses</span> <span class="id" title="var">Unique</span> <span class="id" title="var">Instances</span>.<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

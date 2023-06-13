@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.interfaces.set_lambda.notation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.interfaces.set_lambda.notation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.interfaces.set.html#"><span class="id" title="library">interfaces.set</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="SetLambdaDerivation" class="idref" href="#SetLambdaDerivation"><span class="id" title="definition">SetLambdaDerivation@</span></a>{<span class="id" title="var">i</span>} {<a id="X:1" class="idref" href="#X:1"><span class="id" title="binder">X</span></a> <a id="Y:2" class="idref" href="#Y:2"><span class="id" title="binder">Y</span></a> : <a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">set@</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">{</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">i</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">}</span></a>} (<a id="f:3" class="idref" href="#f:3"><span class="id" title="binder">f</span></a> : <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#X:1"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#Y:2"><span class="id" title="variable">Y</span></a>) := <a class="idref" href="AffineConstructive.interfaces.set.html#IsFun"><span class="id" title="class">IsFun</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#f:3"><span class="id" title="variable">f</span></a>.<br/>
+<span class="id" title="keyword">Existing Class</span> <span class="id" title="var">SetLambdaDerivation</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="set_lambda" class="idref" href="#set_lambda"><span class="id" title="definition">set_lambda@</span></a>{<span class="id" title="var">i</span>} : <a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">∀</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">{</span></a><a id="X:4" class="idref" href="#X:4"><span class="id" title="binder">X</span></a> <a id="Y:5" class="idref" href="#Y:5"><span class="id" title="binder">Y</span></a> : <a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">set@</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">{</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">i</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">}</span></a> } (<a id="f:6" class="idref" href="#f:6"><span class="id" title="binder">f</span></a> : <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#X:4"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#Y:5"><span class="id" title="variable">Y</span></a>) {<a id="H:7" class="idref" href="#H:7"><span class="id" title="binder">H</span></a>:<a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#SetLambdaDerivation"><span class="id" title="class">SetLambdaDerivation</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#f:6"><span class="id" title="variable">f</span></a><a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">},</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#X:4"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.set.html#b0e233f2f2b3c047123c6b17789ec7e0"><span class="id" title="notation">⇾</span></a> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#Y:5"><span class="id" title="variable">Y</span></a> := @<a class="idref" href="AffineConstructive.interfaces.set.html#make_fun"><span class="id" title="definition">make_fun</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="af84166c3c27dc53dfb154cf768582ec" class="idref" href="#af84166c3c27dc53dfb154cf768582ec"><span class="id" title="notation">&quot;</span></a>'λₛ' x .. y , t" := (<a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#set_lambda"><span class="id" title="definition">set_lambda</span></a> (<span class="id" title="keyword">fun</span> <a id="x:8" class="idref" href="#x:8"><span class="id" title="binder">x</span></a> ⇒ .. (<a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#set_lambda"><span class="id" title="definition">set_lambda</span></a> (<span class="id" title="keyword">fun</span> <a id="y:9" class="idref" href="#y:9"><span class="id" title="binder">y</span></a> ⇒ <span class="id" title="var">t</span>)) ..))<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200, <span class="id" title="var">x</span> <span class="id" title="var">binder</span>, <span class="id" title="var">y</span> <span class="id" title="var">binder</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

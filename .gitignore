@@ -1,5 +1,4 @@
 .Makefile.d
-html/
 .coq-native
 *.aux
 *.glob

@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.interfaces.notation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.interfaces.notation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.interfaces.prelude.html#"><span class="id" title="library">prelude</span></a> <a class="idref" href="AffineConstructive.tactics.try_all_hyps.html#"><span class="id" title="library">try_all_hyps</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x → y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 99, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊸ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 99, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ↔ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 95, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⧟ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 95, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≅ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 95, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⇾ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 92, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⟶ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 90, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⇒ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 85, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ∨ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 85, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊞ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 85, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ∧ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 80, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊠ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 80, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;¬ x" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 75, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x = y :&gt; T"<br/>
+(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="var">next</span> <span class="id" title="keyword">level</span>, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x = y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≠ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≡ y :&gt; T"<br/>
+(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="var">next</span> <span class="id" title="keyword">level</span>, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≡ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≣ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≤ y :&gt; T"<br/>
+(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="var">y</span> <span class="id" title="tactic">at</span> <span class="id" title="var">next</span> <span class="id" title="keyword">level</span>, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ≤ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x &lt; y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊆ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70, <span class="id" title="keyword">no</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊔ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 59, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊓ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 54, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x + y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 50, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x - y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 50, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊕ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 50, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x * y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x × y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x · y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⊗ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ∙ y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;- x" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 35, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;( x , y , .. , z )" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 0).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x || y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 50, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x &amp;&amp; y" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 40, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;g ∘ f" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 30, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;g ⊚ f" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 30, <span class="id" title="tactic">left</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;x ⁻¹" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 1, <span class="id" title="var">format</span> "x ⁻¹").<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="e15f3fa8414cf45e36c73a91b3f5f2c2" class="idref" href="#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">&quot;</span></a>'∀' x .. y , P" := (<span class="id" title="keyword">∀</span> <a id="x:1" class="idref" href="#x:1"><span class="id" title="binder">x</span></a>, .. (<span class="id" title="keyword">∀</span> <a id="y:2" class="idref" href="#y:2"><span class="id" title="binder">y</span></a>, <span class="id" title="var">P</span>) ..)<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200, <span class="id" title="var">x</span> <span class="id" title="var">binder</span>, <span class="id" title="var">y</span> <span class="id" title="var">binder</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>) : <span class="id" title="var">type_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="bc1ad27deabe143d39d35abe6be2c1a4" class="idref" href="#bc1ad27deabe143d39d35abe6be2c1a4"><span class="id" title="notation">&quot;</span></a>'λ' x .. y , t" := (<span class="id" title="keyword">fun</span> <a id="x:3" class="idref" href="#x:3"><span class="id" title="binder">x</span></a> ⇒ .. (<span class="id" title="keyword">fun</span> <a id="y:4" class="idref" href="#y:4"><span class="id" title="binder">y</span></a> ⇒ <span class="id" title="var">t</span>) ..)<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200, <span class="id" title="var">x</span> <span class="id" title="var">binder</span>, <span class="id" title="var">y</span> <span class="id" title="var">binder</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="c41c566ddac4c1298b9e7dd2bae1c794" class="idref" href="#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">&quot;</span></a>A → B" := (<a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">∀</span></a> <span class="id" title="var">_</span> : <span class="id" title="var">A</span><a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">,</span></a> <span class="id" title="var">B</span>) : <span class="id" title="var">type_scope</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Infix</span> <a id="11c698c8685bb8ab1cf725545c085ac4" class="idref" href="#11c698c8685bb8ab1cf725545c085ac4"><span class="id" title="notation">&quot;</span></a>×" := <a class="idref" href="AffineConstructive.interfaces.prelude.html#tprod"><span class="id" title="record">tprod</span></a> : <span class="id" title="var">type_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="0d8cf0893fac4d159028bab1792de6ef" class="idref" href="#0d8cf0893fac4d159028bab1792de6ef"><span class="id" title="notation">&quot;</span></a>( a , b , .. , c )" := (<a class="idref" href="AffineConstructive.interfaces.prelude.html#pair"><span class="id" title="constructor">pair</span></a> .. (<a class="idref" href="AffineConstructive.interfaces.prelude.html#pair"><span class="id" title="constructor">pair</span></a> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) .. <span class="id" title="var">c</span> ).<br/>
+<span class="id" title="keyword">Module</span> <a id="projection_notation" class="idref" href="#projection_notation"><span class="id" title="module">projection_notation</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> <a id="aee5befed8d5c9e830433744ea53acef" class="idref" href="#aee5befed8d5c9e830433744ea53acef"><span class="id" title="abbreviation">π</span></a><a id="aee5befed8d5c9e830433744ea53acef" class="idref" href="#aee5befed8d5c9e830433744ea53acef"><span class="id" title="abbreviation">₁</span></a> := <a class="idref" href="AffineConstructive.interfaces.prelude.html#proj1"><span class="id" title="projection">proj1</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> <a id="6bf63edc5d8e8bacc3e31f05db72ce2a" class="idref" href="#6bf63edc5d8e8bacc3e31f05db72ce2a"><span class="id" title="abbreviation">π</span></a><a id="6bf63edc5d8e8bacc3e31f05db72ce2a" class="idref" href="#6bf63edc5d8e8bacc3e31f05db72ce2a"><span class="id" title="abbreviation">₂</span></a> := <a class="idref" href="AffineConstructive.interfaces.prelude.html#proj2"><span class="id" title="projection">proj2</span></a>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#projection_notation"><span class="id" title="module">projection_notation</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Module</span> <a id="sigma_notation" class="idref" href="#sigma_notation"><span class="id" title="module">sigma_notation</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> <a id="41878ba26f7f81c30c775b2db89350ea" class="idref" href="#41878ba26f7f81c30c775b2db89350ea"><span class="id" title="notation">&quot;</span></a>'Σ' x .. y , P" := (<a class="idref" href="AffineConstructive.interfaces.prelude.html#tsig"><span class="id" title="inductive">tsig</span></a> (<span class="id" title="keyword">fun</span> <a id="x:5" class="idref" href="#x:5"><span class="id" title="binder">x</span></a> ⇒ .. (<a class="idref" href="AffineConstructive.interfaces.prelude.html#tsig"><span class="id" title="inductive">tsig</span></a> (<span class="id" title="keyword">fun</span> <a id="y:6" class="idref" href="#y:6"><span class="id" title="binder">y</span></a> ⇒ <span class="id" title="var">P</span>)) ..))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 200, <span class="id" title="var">x</span> <span class="id" title="var">binder</span>, <span class="id" title="var">y</span> <span class="id" title="var">binder</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>) : <span class="id" title="var">type_scope</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#sigma_notation"><span class="id" title="module">sigma_notation</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Module</span> <a id="tsum_notation" class="idref" href="#tsum_notation"><span class="id" title="module">tsum_notation</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Infix</span> <a id="c41026ba5578bc21fade6dda46a32686" class="idref" href="#c41026ba5578bc21fade6dda46a32686"><span class="id" title="notation">&quot;</span></a>+" := <a class="idref" href="AffineConstructive.interfaces.prelude.html#tsum"><span class="id" title="inductive">tsum</span></a> : <span class="id" title="var">type_scope</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#tsum_notation"><span class="id" title="module">tsum_notation</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;{ x | P }" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 0, <span class="id" title="var">x</span> <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 99 <span class="id" title="keyword">as</span> <span class="id" title="var">name</span>).<br/>
+<span class="id" title="keyword">Reserved Notation</span> &quot;{ x : A | P }" (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 0, <span class="id" title="var">x</span> <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 99 <span class="id" title="keyword">as</span> <span class="id" title="var">name</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Set</span> <span class="id" title="keyword">Typeclasses</span> <span class="id" title="var">Unique</span> <span class="id" title="var">Instances</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Notation for the unique term of some type. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Declare Scope</span> <span class="id" title="var">the_scope</span>.<br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">the_scope</span> <span class="id" title="keyword">with</span> <span class="id" title="var">the</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="The" class="idref" href="#The"><span class="id" title="record">The</span></a> <a id="X:7" class="idref" href="#X:7"><span class="id" title="binder">X</span></a> := <a id="the" class="idref" href="#the"><span class="id" title="projection">the</span></a> : <a class="idref" href="AffineConstructive.interfaces.notation.html#X:7"><span class="id" title="variable">X</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="c11b4453b9c7916547592430b781e254" class="idref" href="#c11b4453b9c7916547592430b781e254"><span class="id" title="notation">&quot;</span></a>!" := <a class="idref" href="AffineConstructive.interfaces.notation.html#the"><span class="id" title="definition">the</span></a> : <span class="id" title="var">the_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#The"><span class="id" title="class">The</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+<span class="id" title="keyword">Global Typeclasses Transparent</span> <span class="id" title="var">The</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Notations for categories 
+</div>
+<div class="code">
+<span class="id" title="keyword">Declare Scope</span> <span class="id" title="var">cat_scope</span>.<br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">cat_scope</span> <span class="id" title="keyword">with</span> <span class="id" title="var">cat</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="BoldZero" class="idref" href="#BoldZero"><span class="id" title="record">BoldZero</span></a> <a id="Ob:10" class="idref" href="#Ob:10"><span class="id" title="binder">Ob</span></a> := <a id="bzero" class="idref" href="#bzero"><span class="id" title="projection">bzero</span></a> : <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:10"><span class="id" title="variable">Ob</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="5c33e0e37045ad966dbf15e4454154be" class="idref" href="#5c33e0e37045ad966dbf15e4454154be"><span class="id" title="notation">&quot;</span></a>𝟎" := <a class="idref" href="AffineConstructive.interfaces.notation.html#bzero"><span class="id" title="definition">bzero</span></a> : <span class="id" title="var">cat_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#BoldZero"><span class="id" title="class">BoldZero</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="BoldOne" class="idref" href="#BoldOne"><span class="id" title="record">BoldOne</span></a> <a id="Ob:13" class="idref" href="#Ob:13"><span class="id" title="binder">Ob</span></a> := <a id="bone" class="idref" href="#bone"><span class="id" title="projection">bone</span></a> : <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:13"><span class="id" title="variable">Ob</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="4a1cf84bc99a43fada4761f871a52b03" class="idref" href="#4a1cf84bc99a43fada4761f871a52b03"><span class="id" title="notation">&quot;</span></a>𝟏" := <a class="idref" href="AffineConstructive.interfaces.notation.html#bone"><span class="id" title="definition">bone</span></a> : <span class="id" title="var">cat_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#BoldOne"><span class="id" title="class">BoldOne</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="Product" class="idref" href="#Product"><span class="id" title="record">Product</span></a> <a id="Ob:16" class="idref" href="#Ob:16"><span class="id" title="binder">Ob</span></a> := <a id="prod" class="idref" href="#prod"><span class="id" title="projection">prod</span></a> : <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:16"><span class="id" title="variable">Ob</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:16"><span class="id" title="variable">Ob</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:16"><span class="id" title="variable">Ob</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="bf5620754b0e32cd5edb3974f8d678d4" class="idref" href="#bf5620754b0e32cd5edb3974f8d678d4"><span class="id" title="notation">&quot;</span></a>X × Y" := (<a class="idref" href="AffineConstructive.interfaces.notation.html#prod"><span class="id" title="definition">prod</span></a> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>) : <span class="id" title="var">cat_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#Product"><span class="id" title="class">Product</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="Tensor" class="idref" href="#Tensor"><span class="id" title="record">Tensor</span></a> <a id="Ob:19" class="idref" href="#Ob:19"><span class="id" title="binder">Ob</span></a> := <a id="tensor" class="idref" href="#tensor"><span class="id" title="projection">tensor</span></a> : <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:19"><span class="id" title="variable">Ob</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:19"><span class="id" title="variable">Ob</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#Ob:19"><span class="id" title="variable">Ob</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="57be2a995c7f3befcfa40321fc545d1c" class="idref" href="#57be2a995c7f3befcfa40321fc545d1c"><span class="id" title="notation">&quot;</span></a>X ⊗ Y" := (<a class="idref" href="AffineConstructive.interfaces.notation.html#tensor"><span class="id" title="definition">tensor</span></a> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>) : <span class="id" title="var">cat_scope</span>.<br/>
+<span class="id" title="keyword">Global</span> <span class="id" title="keyword">Hint</span> <span class="id" title="var">Mode</span> <a class="idref" href="AffineConstructive.interfaces.notation.html#Tensor"><span class="id" title="class">Tensor</span></a> + : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Typeclasses Transparent</span> <span class="id" title="var">BoldZero</span> <span class="id" title="var">BoldOne</span> <span class="id" title="var">Product</span> <span class="id" title="var">Tensor</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Hint Extern</span> 1 (<a class="idref" href="AffineConstructive.interfaces.notation.html#BoldZero"><span class="id" title="class">BoldZero</span></a> <span class="id" title="keyword">Type</span>) ⇒ <span class="id" title="tactic">refine</span> <a class="idref" href="AffineConstructive.interfaces.prelude.html#empty"><span class="id" title="inductive">empty</span></a> : <span class="id" title="var">typeclass_instances</span>.<br/>
+<span class="id" title="keyword">Global Hint Extern</span> 1 (<a class="idref" href="AffineConstructive.interfaces.notation.html#BoldOne"><span class="id" title="class">BoldOne</span></a>  <span class="id" title="keyword">Type</span>) ⇒ <span class="id" title="tactic">refine</span> <a class="idref" href="AffineConstructive.interfaces.prelude.html#unit"><span class="id" title="class">unit</span></a>  : <span class="id" title="var">typeclass_instances</span>.<br/>
+<span class="id" title="keyword">Global Hint Extern</span> 1 (<a class="idref" href="AffineConstructive.interfaces.notation.html#Product"><span class="id" title="class">Product</span></a>  <span class="id" title="keyword">Type</span>) ⇒ <span class="id" title="tactic">refine</span> <a class="idref" href="AffineConstructive.interfaces.prelude.html#tprod"><span class="id" title="record">tprod</span></a> : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Unset</span> <span class="id" title="keyword">Typeclasses</span> <span class="id" title="var">Unique</span> <span class="id" title="var">Instances</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

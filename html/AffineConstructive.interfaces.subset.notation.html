@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.interfaces.subset.notation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.interfaces.subset.notation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.aprop.html#"><span class="id" title="library">interfaces.aprop</span></a> <a class="idref" href="AffineConstructive.theory.set.html#"><span class="id" title="library">theory.set</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#"><span class="id" title="library">interfaces.set_lambda.notation</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Define 𝒫 X ≡ subset X to be convertible to X ⇾ Ω.
+    We give subsets a type with a distinct name to enable coercions specific to subsets. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="subset" class="idref" href="#subset"><span class="id" title="definition">subset</span></a> (<a id="X:1" class="idref" href="#X:1"><span class="id" title="binder">X</span></a>:<a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">set</span></a>) := <a class="idref" href="AffineConstructive.interfaces.set.html#func"><span class="id" title="record">func</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#X:1"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="fac9eac512c0414e6fd34811214b8846" class="idref" href="#fac9eac512c0414e6fd34811214b8846"><span class="id" title="abbreviation">𝒫</span></a> := <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset"><span class="id" title="definition">subset</span></a>.<br/>
+<span class="id" title="keyword">Identity</span> <span class="id" title="keyword">Coercion</span> <span class="id" title="var">subset_func</span> : <span class="id" title="var">subset</span> &gt;-&gt; <span class="id" title="var">func</span>.<br/>
+<span class="id" title="keyword">Global Hint Extern</span> 2 (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#Equiv"><span class="id" title="class">Equiv</span></a> (<a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset"><span class="id" title="definition">subset</span></a> ?<span class="id" title="var">X</span>)) ⇒ <span class="id" title="tactic">change</span> (<a class="idref" href="AffineConstructive.interfaces.relation_notation.html#Equiv"><span class="id" title="class">Equiv</span></a> (<a class="idref" href="AffineConstructive.interfaces.set.html#func"><span class="id" title="record">func</span></a> <span class="id" title="var">X</span> <a class="idref" href="AffineConstructive.theory.set.html#AProp_set"><span class="id" title="definition">AProp_set</span></a>)) : <span class="id" title="var">typeclass_instances</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Canonical</span> <span class="id" title="keyword">Structure</span> <a id="subset_set" class="idref" href="#subset_set"><span class="id" title="definition">subset_set</span></a> (<a id="X:2" class="idref" href="#X:2"><span class="id" title="binder">X</span></a>:<a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">set</span></a>) := {| <a class="idref" href="AffineConstructive.interfaces.set.html#set_T"><span class="id" title="projection">set_T</span></a> := <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset"><span class="id" title="definition">subset</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#X:2"><span class="id" title="variable">X</span></a>; <a class="idref" href="AffineConstructive.interfaces.set.html#set_eq"><span class="id" title="projection">set_eq</span></a> := <a class="idref" href="AffineConstructive.interfaces.set.html#ext_eq"><span class="id" title="instance">ext_eq</span></a>; <a class="idref" href="AffineConstructive.interfaces.set.html#set_is_set"><span class="id" title="projection">set_is_set</span></a> := <a class="idref" href="AffineConstructive.interfaces.set.html#func_is_set"><span class="id" title="instance">func_is_set</span></a> |}.<br/>
+<span class="id" title="keyword">Notation</span> <a id="a17ca158725f9e755308ec294b896ae4" class="idref" href="#a17ca158725f9e755308ec294b896ae4"><span class="id" title="notation">&quot;</span></a>'𝒫'" := <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset_set"><span class="id" title="definition">subset_set</span></a> (<span class="id" title="var">only</span> <span class="id" title="var">printing</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="subset_comprehension" class="idref" href="#subset_comprehension"><span class="id" title="definition">subset_comprehension@</span></a>{<span class="id" title="var">i</span>} {<a id="X:3" class="idref" href="#X:3"><span class="id" title="binder">X</span></a> : <a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">set@</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">{</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">i</span></a><a class="idref" href="AffineConstructive.interfaces.set.html#set"><span class="id" title="record">}</span></a> } : <a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">∀</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">(</span></a><a id="f:4" class="idref" href="#f:4"><span class="id" title="binder">f</span></a> : <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#X:3"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.notation.html#c41c566ddac4c1298b9e7dd2bae1c794"><span class="id" title="notation">→</span></a> <a class="idref" href="AffineConstructive.theory.set.html#AProp_set"><span class="id" title="definition">AProp_set</span></a>) {<a id="H:5" class="idref" href="#H:5"><span class="id" title="binder">H</span></a>:<a class="idref" href="AffineConstructive.interfaces.set_lambda.notation.html#SetLambdaDerivation"><span class="id" title="class">SetLambdaDerivation</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#f:4"><span class="id" title="variable">f</span></a><a class="idref" href="AffineConstructive.interfaces.notation.html#e15f3fa8414cf45e36c73a91b3f5f2c2"><span class="id" title="notation">},</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#fac9eac512c0414e6fd34811214b8846"><span class="id" title="abbreviation">𝒫</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#X:3"><span class="id" title="variable">X</span></a> := @<a class="idref" href="AffineConstructive.interfaces.set.html#make_fun"><span class="id" title="definition">make_fun</span></a> <a class="idref" href="AffineConstructive.interfaces.subset.notation.html#X:3"><span class="id" title="variable">X</span></a> <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="fdae25fe8addb48ba04541389398d61b" class="idref" href="#fdae25fe8addb48ba04541389398d61b"><span class="id" title="notation">&quot;</span></a>{ x | P }" := (<a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset_comprehension"><span class="id" title="definition">subset_comprehension</span></a> (<span class="id" title="keyword">fun</span> <a id="x:6" class="idref" href="#x:6"><span class="id" title="binder">x</span></a> ⇒ <span class="id" title="var">P</span> : <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a> )) (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">set_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="80c771db61c5790da62b9ae4f0f4e9ba" class="idref" href="#80c771db61c5790da62b9ae4f0f4e9ba"><span class="id" title="notation">&quot;</span></a>{ x : X | P }" := (<a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset_comprehension"><span class="id" title="definition">subset_comprehension</span></a> (<span class="id" title="var">X</span>:=<span class="id" title="var">X</span>) (<span class="id" title="keyword">fun</span> <a id="x:7" class="idref" href="#x:7"><span class="id" title="binder">x</span></a> ⇒ <span class="id" title="var">P</span> : <a class="idref" href="AffineConstructive.interfaces.aprop.html#c7859fe5d42efae890c4404dada70253"><span class="id" title="notation">Ω</span></a> )) (<span class="id" title="var">only</span> <span class="id" title="var">parsing</span>) : <span class="id" title="var">set_scope</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="80c771db61c5790da62b9ae4f0f4e9ba" class="idref" href="#80c771db61c5790da62b9ae4f0f4e9ba"><span class="id" title="notation">&quot;</span></a>{ x : X | P }" := (<a class="idref" href="AffineConstructive.interfaces.subset.notation.html#subset_comprehension"><span class="id" title="definition">subset_comprehension</span></a> (<span class="id" title="var">X</span>:=<span class="id" title="var">X</span>) (<span class="id" title="keyword">fun</span> <a id="x:8" class="idref" href="#x:8"><span class="id" title="binder">x</span></a> ⇒ <span class="id" title="var">P</span> )) (<span class="id" title="var">only</span> <span class="id" title="var">printing</span>) : <span class="id" title="var">set_scope</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

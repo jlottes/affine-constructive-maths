@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.tactics.rewrite.replc</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.tactics.rewrite.replc</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.tactics.rewrite.rewrite.html#"><span class="id" title="library">rewrite</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#"><span class="id" title="library">relation_notation</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Tactic Notation</span> "replc" <span class="id" title="keyword">constr</span>(<span class="id" title="var">x</span>) "with" <span class="id" title="var">uconstr</span>(<span class="id" title="var">y</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">E</span> := <span class="id" title="tactic">fresh</span> "E" <span class="id" title="tactic">in</span> <span class="id" title="tactic">assert</span> (<span class="id" title="var">x</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#0116a7076a6d72d281b02d637d930e28"><span class="id" title="notation">=</span></a> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">E</span>; [| <span class="id" title="var">rew</span> <span class="id" title="var">E</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">E</span> ].<br/>
+
+<br/>
+<span class="id" title="keyword">Tactic Notation</span> "replc" <span class="id" title="keyword">constr</span>(<span class="id" title="var">x</span>) "with" <span class="id" title="var">uconstr</span>(<span class="id" title="var">y</span>) "by" <span class="id" title="var">tactic3</span>(<span class="id" title="var">tac</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">E</span> := <span class="id" title="tactic">fresh</span> "E" <span class="id" title="tactic">in</span> <span class="id" title="tactic">assert</span> (<span class="id" title="var">x</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#0116a7076a6d72d281b02d637d930e28"><span class="id" title="notation">=</span></a> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">E</span> <span class="id" title="tactic">by</span> <span class="id" title="var">tac</span>; <span class="id" title="var">rew</span> <span class="id" title="var">E</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">E</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Tactic Notation</span> "replc" <span class="id" title="keyword">constr</span>(<span class="id" title="var">x₁</span>) "with" <span class="id" title="var">uconstr</span>(<span class="id" title="var">y₁</span>) "by" <span class="id" title="var">tactic3</span>(<span class="id" title="var">tac₁</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"and"   <span class="id" title="keyword">constr</span>(<span class="id" title="var">x₂</span>) "with" <span class="id" title="var">uconstr</span>(<span class="id" title="var">y₂</span>) "by" <span class="id" title="var">tactic3</span>(<span class="id" title="var">tac₂</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">E₁</span> := <span class="id" title="tactic">fresh</span> "E" <span class="id" title="tactic">in</span> <span class="id" title="keyword">let</span> <span class="id" title="var">E₂</span> := <span class="id" title="tactic">fresh</span> "E" <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">x₁</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#0116a7076a6d72d281b02d637d930e28"><span class="id" title="notation">=</span></a> <span class="id" title="var">y₁</span> <a class="idref" href="AffineConstructive.interfaces.sprop.html#c64531ddd22f5be82e559faca445f98b"><span class="id" title="notation">∧</span></a> <span class="id" title="var">x₂</span> <a class="idref" href="AffineConstructive.interfaces.relation_notation.html#0116a7076a6d72d281b02d637d930e28"><span class="id" title="notation">=</span></a> <span class="id" title="var">y₂</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">E₁</span> <span class="id" title="var">E₂</span>] <span class="id" title="tactic">by</span> (<span class="id" title="tactic">split</span>; [<span class="id" title="var">tac₁</span> | <span class="id" title="var">tac₂</span>]);<br/>
+&nbsp;&nbsp;<span class="id" title="var">rew</span> [ <span class="id" title="var">E₁</span> | <span class="id" title="var">E₂</span> ]; <span class="id" title="tactic">clear</span> <span class="id" title="var">E₁</span> <span class="id" title="var">E₂</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Tactic Notation</span> "replc" <span class="id" title="keyword">constr</span>(<span class="id" title="var">x</span>) "with" <span class="id" title="var">uconstr</span>(<span class="id" title="var">y</span>) "using" <span class="id" title="var">uconstr</span>(<span class="id" title="var">R</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">E</span> := <span class="id" title="tactic">fresh</span> "E" <span class="id" title="tactic">in</span> <span class="id" title="tactic">assert</span> (<span class="id" title="var">R</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">E</span>; [| <span class="id" title="var">rew</span> <span class="id" title="var">E</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">E</span> ].<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

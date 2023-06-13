@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.tactics.algebra.ab_groups</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.tactics.algebra.ab_groups</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.abstract_algebra.html#"><span class="id" title="library">abstract_algebra</span></a> <a class="idref" href="AffineConstructive.interfaces.bundled_algebra.html#"><span class="id" title="library">bundled_algebra</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.implementations.nat.html#"><span class="id" title="library">nat</span></a> <a class="idref" href="AffineConstructive.implementations.list.html#"><span class="id" title="library">list</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.interfaces.free.generators.html#"><span class="id" title="library">interfaces.free.generators</span></a> <a class="idref" href="AffineConstructive.interfaces.free.groups.html#"><span class="id" title="library">interfaces.free.groups</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.implementations.free.ab_groups.html#"><span class="id" title="library">implementations.free.ab_groups</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#"><span class="id" title="library">signed_naturals_integers</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.logic.dec.html#"><span class="id" title="library">logic.dec</span></a> <a class="idref" href="AffineConstructive.tactics.misc.html#"><span class="id" title="library">tactics.misc</span></a> <a class="idref" href="AffineConstructive.tactics.strip_coercions.html#"><span class="id" title="library">strip_coercions</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.tactics.quote.base.html#"><span class="id" title="library">quote.base</span></a> <a class="idref" href="AffineConstructive.tactics.quote.vars.html#"><span class="id" title="library">quote.vars</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.theory.bundled_groups.html#"><span class="id" title="library">theory.bundled_groups</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Module</span> <a id="add_grp" class="idref" href="#add_grp"><span class="id" title="module">add_grp</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="add_grp.F" class="idref" href="#add_grp.F"><span class="id" title="definition">F@</span></a>{<span class="id" title="var">u</span>} := <a class="idref" href="AffineConstructive.implementations.free.ab_groups.html#free_add_group"><span class="id" title="definition">free_add_group@</span></a><a class="idref" href="AffineConstructive.implementations.free.ab_groups.html#free_add_group"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.free.ab_groups.html#free_add_group"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.free.ab_groups.html#free_add_group"><span class="id" title="definition">}</span></a> <a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#SignedNat"><span class="id" title="definition">SignedNat@</span></a><a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#SignedNat"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#SignedNat"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.signed_naturals_integers.html#SignedNat"><span class="id" title="definition">}</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="add_grp.eval" class="idref" href="#add_grp.eval"><span class="id" title="definition">eval</span></a> := @<a class="idref" href="AffineConstructive.interfaces.free.groups.html#free_additive_group.eval"><span class="id" title="projection">free_additive_group.eval</span></a> <a class="idref" href="AffineConstructive.tactics.algebra.ab_groups.html#add_grp.F"><span class="id" title="definition">F</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Arguments</span> <a class="idref" href="AffineConstructive.tactics.algebra.ab_groups.html#add_grp.eval"><span class="id" title="definition">eval</span></a> {<span class="id" title="var">G</span>} <span class="id" title="var">Γ</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.tactics.algebra.ab_groups.html#add_grp"><span class="id" title="module">add_grp</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">add_grp_tac</span> <span class="id" title="var">_</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">find_structure_and_quote_equation</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">additive_group</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">G</span> ⇒ <span class="id" title="tactic">refine</span> (<a class="idref" href="AffineConstructive.interfaces.bundled_algebra.html#make_additive_group"><span class="id" title="definition">make_additive_group</span></a> <span class="id" title="var">G</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">G</span> <span class="id" title="var">Γ</span> ⇒ <span class="id" title="keyword">constr</span>:(@<a class="idref" href="AffineConstructive.tactics.algebra.ab_groups.html#eval"><span class="id" title="definition">add_grp.eval</span></a> <span class="id" title="var">G</span> <span class="id" title="var">Γ</span>));<br/>
+&nbsp;&nbsp;<span class="id" title="var">decide_relation</span>.<br/>
+<span class="id" title="keyword">Tactic Notation</span> "add_grp" := <span class="id" title="var">add_grp_tac</span> <span class="id" title="keyword">ltac</span>:(0).<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

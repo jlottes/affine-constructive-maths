@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.tactics.algebra.com_monoids</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.tactics.algebra.com_monoids</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.abstract_algebra.html#"><span class="id" title="library">abstract_algebra</span></a> <a class="idref" href="AffineConstructive.interfaces.bundled_algebra.html#"><span class="id" title="library">bundled_algebra</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.implementations.nat.html#"><span class="id" title="library">nat</span></a> <a class="idref" href="AffineConstructive.implementations.list.html#"><span class="id" title="library">list</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.interfaces.free.generators.html#"><span class="id" title="library">interfaces.free.generators</span></a> <a class="idref" href="AffineConstructive.interfaces.free.groups.html#"><span class="id" title="library">interfaces.free.groups</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#"><span class="id" title="library">implementations.free.com_monoids</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.logic.dec.html#"><span class="id" title="library">logic.dec</span></a> <a class="idref" href="AffineConstructive.tactics.misc.html#"><span class="id" title="library">tactics.misc</span></a> <a class="idref" href="AffineConstructive.tactics.strip_coercions.html#"><span class="id" title="library">strip_coercions</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.tactics.quote.base.html#"><span class="id" title="library">quote.base</span></a> <a class="idref" href="AffineConstructive.tactics.quote.vars.html#"><span class="id" title="library">quote.vars</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="AffineConstructive.theory.bundled_groups.html#"><span class="id" title="library">theory.bundled_groups</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Module</span> <a id="add_mon" class="idref" href="#add_mon"><span class="id" title="module">add_mon</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="add_mon.F" class="idref" href="#add_mon.F"><span class="id" title="definition">F@</span></a>{<span class="id" title="var">u</span>} := <a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_add_mon"><span class="id" title="definition">free_add_mon@</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_add_mon"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_add_mon"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_add_mon"><span class="id" title="definition">}</span></a> <a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">Nat_naturals@</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">}</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="add_mon.eval" class="idref" href="#add_mon.eval"><span class="id" title="definition">eval</span></a> := @<a class="idref" href="AffineConstructive.interfaces.free.groups.html#free_additive_monoid.eval"><span class="id" title="projection">free_additive_monoid.eval</span></a> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#add_mon.F"><span class="id" title="definition">F</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Arguments</span> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#add_mon.eval"><span class="id" title="definition">eval</span></a> {<span class="id" title="var">M</span>} <span class="id" title="var">Γ</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#add_mon"><span class="id" title="module">add_mon</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Module</span> <a id="com_mon" class="idref" href="#com_mon"><span class="id" title="module">com_mon</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="com_mon.F" class="idref" href="#com_mon.F"><span class="id" title="definition">F@</span></a>{<span class="id" title="var">u</span>} := <a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_com_mon"><span class="id" title="definition">free_com_mon@</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_com_mon"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_com_mon"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.free.com_monoids.html#free_com_mon"><span class="id" title="definition">}</span></a> <a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">Nat_naturals@</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">{</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">u</span></a><a class="idref" href="AffineConstructive.implementations.nat.rig.html#Nat_naturals"><span class="id" title="definition">}</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <a id="com_mon.eval" class="idref" href="#com_mon.eval"><span class="id" title="definition">eval</span></a> := @<a class="idref" href="AffineConstructive.interfaces.free.groups.html#free_commutative_monoid.eval"><span class="id" title="projection">free_commutative_monoid.eval</span></a> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#com_mon.F"><span class="id" title="definition">F</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Arguments</span> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#com_mon.eval"><span class="id" title="definition">eval</span></a> {<span class="id" title="var">M</span>} <span class="id" title="var">Γ</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#com_mon"><span class="id" title="module">com_mon</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">add_mon_tac</span> <span class="id" title="var">_</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">find_structure_and_quote_equation</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">additive_monoid</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">M</span> ⇒ <span class="id" title="tactic">refine</span> (<a class="idref" href="AffineConstructive.interfaces.bundled_algebra.html#make_additive_monoid"><span class="id" title="definition">make_additive_monoid</span></a> <span class="id" title="var">M</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">M</span> <span class="id" title="var">Γ</span> ⇒ <span class="id" title="keyword">constr</span>:(@<a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#eval"><span class="id" title="definition">add_mon.eval</span></a> <span class="id" title="var">M</span> <span class="id" title="var">Γ</span>));<br/>
+&nbsp;&nbsp;<span class="id" title="var">decide_relation</span>.<br/>
+<span class="id" title="keyword">Tactic Notation</span> "add_mon" := <span class="id" title="var">add_mon_tac</span> <span class="id" title="keyword">ltac</span>:(0).<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">com_mon_tac</span> <span class="id" title="var">_</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">find_structure_and_quote_equation</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">commutative_monoid</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">M</span> ⇒ <span class="id" title="tactic">refine</span> (<a class="idref" href="AffineConstructive.interfaces.bundled_algebra.html#make_commutative_monoid"><span class="id" title="definition">make_commutative_monoid</span></a> <span class="id" title="var">M</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">M</span> <span class="id" title="var">Γ</span> ⇒ <span class="id" title="keyword">constr</span>:(@<a class="idref" href="AffineConstructive.tactics.algebra.com_monoids.html#eval"><span class="id" title="definition">com_mon.eval</span></a> <span class="id" title="var">M</span> <span class="id" title="var">Γ</span>));<br/>
+&nbsp;&nbsp;<span class="id" title="var">decide_relation</span>.<br/>
+<span class="id" title="keyword">Tactic Notation</span> "com_mon" := <span class="id" title="var">com_mon_tac</span> <span class="id" title="keyword">ltac</span>:(0).<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

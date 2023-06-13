@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>AffineConstructive.tactics.try_all_hyps</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library AffineConstructive.tactics.try_all_hyps</h1>
+
+<div class="code">
+</div>
+
+<div class="doc">
+Extend typeclass resolution to consider all possible <i>coercions</i> of hypotheses in the current context.
+  The standard resolution behavior does consider hypotheses, but not coercions from them.
+  This effectively allows coercions to be used to declare "forward mode" typeclass hints.
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="AffineConstructive.interfaces.prelude.html#"><span class="id" title="library">prelude</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Local Ltac</span> <span class="id" title="var">debug_msg</span> <span class="id" title="var">tac</span> := <span class="id" title="tactic">idtac</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Inductive</span> <a id="Dummy" class="idref" href="#Dummy"><span class="id" title="inductive">Dummy</span></a> : <span class="id" title="var">SProp</span> := <a id="dummy" class="idref" href="#dummy"><span class="id" title="constructor">dummy</span></a> : <a class="idref" href="AffineConstructive.tactics.try_all_hyps.html#Dummy:1"><span class="id" title="inductive">Dummy</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Linear iteration over hypotheses. From a Jonathan Leivent post to coq-club:
+   https://coq-club.inria.narkive.com/Gog56von/a-trick-for-iterating-over-hypotheses 
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">revert_clearbody_all</span> := <span class="id" title="tactic">repeat</span> <span class="id" title="keyword">lazymatch</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span> <span class="id" title="var">H</span>:<span class="id" title="var">_</span> |- <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">try</span> <span class="id" title="var">clearbody</span> <span class="id" title="var">H</span>; <span class="id" title="var">revert</span> <span class="id" title="var">H</span> <span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">hyp_stack</span> := <span class="id" title="keyword">constr</span>:(<span class="id" title="keyword">ltac</span>:(<span class="id" title="var">revert_clearbody_all</span>;<span class="id" title="tactic">constructor</span>) : <a class="idref" href="AffineConstructive.tactics.try_all_hyps.html#Dummy"><span class="id" title="inductive">Dummy</span></a>).<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">assert_fails'</span> <span class="id" title="var">tac</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">tryif</span> (<span class="id" title="var">once</span> <span class="id" title="var">tac</span>) <span class="id" title="keyword">then</span> <span class="id" title="var">gfail</span> 0 <span class="id" title="var">tac</span> "succeeds" <span class="id" title="keyword">else</span> <span class="id" title="tactic">idtac</span>.<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">assert_succeeds'</span> <span class="id" title="var">tac</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">tryif</span> (<span class="id" title="var">assert_fails'</span> <span class="id" title="var">tac</span>) <span class="id" title="keyword">then</span> <span class="id" title="var">gfail</span> 0 <span class="id" title="var">tac</span> "fails" <span class="id" title="keyword">else</span> <span class="id" title="tactic">idtac</span>.<br/>
+<span class="id" title="keyword">Tactic Notation</span> "assert_succeeds" <span class="id" title="var">tactic3</span>(<span class="id" title="var">tac</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">assert_succeeds'</span> <span class="id" title="var">tac</span>.<br/>
+<span class="id" title="keyword">Tactic Notation</span> "assert_fails" <span class="id" title="var">tactic3</span>(<span class="id" title="var">tac</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">assert_fails'</span> <span class="id" title="var">tac</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Filter the "stack" of hypotheses, keeping only those for which (tac H) would succeed.
+   Pass the new "stack" to the continuation cont. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">filtered_hyp_stack</span> <span class="id" title="var">tac</span> <span class="id" title="var">cont</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="keyword">rec</span> <span class="id" title="var">step</span> <span class="id" title="var">stack</span> <span class="id" title="var">out</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">lazymatch</span> <span class="id" title="var">stack</span> <span class="id" title="keyword">with</span> (?<span class="id" title="var">stack'</span> ?<span class="id" title="var">H</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">first</span> [<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">assert_fails</span> (<span class="id" title="keyword">let</span> <span class="id" title="var">t</span> := <span class="id" title="keyword">type</span> <span class="id" title="keyword">of</span> <span class="id" title="var">H</span> <span class="id" title="tactic">in</span> <span class="id" title="var">has_evar</span> <span class="id" title="var">t</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">assert_succeeds</span> <span class="id" title="var">tac</span> <span class="id" title="var">H</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">out'</span> := <span class="id" title="keyword">constr</span>:((<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <span class="id" title="var">out</span>) <span class="id" title="var">H</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">step</span> <span class="id" title="var">stack'</span> <span class="id" title="var">out'</span> || <span class="id" title="tactic">fail</span> 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">step</span> <span class="id" title="var">stack'</span> <span class="id" title="var">out</span> ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">_</span> ⇒ <span class="id" title="var">cont</span> <span class="id" title="var">out</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">in</span> <span class="id" title="keyword">let</span> <span class="id" title="var">stack</span> := <span class="id" title="var">hyp_stack</span> <span class="id" title="tactic">in</span> <span class="id" title="var">step</span> <span class="id" title="var">stack</span> <span class="id" title="var">dummy</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Try <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="var">tac</span></span> <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode"></span> for every hypothesis H, with back-tracking.
+   Done in two stages; the set of hypotheses is filtered down to those that would
+   succeed, limiting the back-tracking. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Tactic Notation</span> "try_all_hyps" <span class="id" title="var">tactic</span>(<span class="id" title="var">tac</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">use</span> <span class="id" title="var">H</span> := <span class="id" title="keyword">let</span> <span class="id" title="var">_</span> := <span class="id" title="var">debug_msg</span> <span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">G</span> ⇒ <span class="id" title="tactic">idtac</span> "using" <span class="id" title="var">H</span> "on" <span class="id" title="var">G</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">tac</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">in</span> <span class="id" title="keyword">let</span> <span class="id" title="keyword">rec</span> <span class="id" title="var">step</span> <span class="id" title="var">stack</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">multimatch</span> <span class="id" title="var">stack</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| ((<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ ?<span class="id" title="var">stack'</span>) ?<span class="id" title="var">H</span>) ⇒ <span class="id" title="var">use</span> <span class="id" title="var">H</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| ((<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ ?<span class="id" title="var">stack'</span>) ?<span class="id" title="var">H</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">_</span> := <span class="id" title="var">debug_msg</span> <span class="id" title="keyword">ltac</span>:(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">idtac</span> "using" <span class="id" title="var">H</span> "failed") <span class="id" title="tactic">in</span> <span class="id" title="var">step</span> <span class="id" title="var">stack'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="tactic">in</span> <span class="id" title="var">filtered_hyp_stack</span> <span class="id" title="var">tac</span> <span class="id" title="var">step</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Extend typeclass resolution to try <span class="inlinecode"></span> <span class="inlinecode"><span class="id" title="tactic">exact</span></span> <span class="inlinecode"><span class="id" title="var">H</span></span> <span class="inlinecode"></span> with every hypothesis, but
+   only for (S)Props, since it does not matter (in principle) which instance is chosen.
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">use_assumption</span> := <span class="id" title="var">try_all_hyps</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">H</span> ⇒ <span class="id" title="tactic">exact</span> <span class="id" title="var">H</span>).<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">check_is_prop</span> := <span class="id" title="keyword">lazymatch</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span> |- ?<span class="id" title="var">G</span> ⇒ <span class="id" title="keyword">lazymatch</span> <span class="id" title="keyword">type</span> <span class="id" title="keyword">of</span> <span class="id" title="var">G</span> <span class="id" title="keyword">with</span> <span class="id" title="keyword">Prop</span> ⇒ <span class="id" title="tactic">idtac</span> | <span class="id" title="var">SProp</span> ⇒ <span class="id" title="tactic">idtac</span> <span class="id" title="keyword">end</span> <span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Hint Extern</span> 1 ⇒ <span class="id" title="var">check_is_prop</span>; <span class="id" title="var">use_assumption</span> : <span class="id" title="var">typeclass_instances</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
