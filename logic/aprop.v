@@ -203,8 +203,6 @@ Lemma antisym_aimpl_aiff : Antisymmetric aimpl aiff.  Proof. easy. Qed.
 Global Hint Extern 0 (Antisymmetric aiff aimpl) => exact antisym_aimpl_aiff : typeclass_instances.
 
 
-(*Set Universe Polymorphism.*)
-
 Definition aex_adj `{P:A → Ω} {Q} : (∀ x, P x ⊸ Q) ↔ (aex P ⊸ Q) := tautology.
 Definition all_adj `{P:A → Ω} {Q} : (∀ x, Q ⊸ P x) ↔ (Q ⊸ all P) := tautology.
 
@@ -226,8 +224,6 @@ Definition aex_frob_l {P} `{Q:A → Ω} : P ⊠ aex Q ⧟ ∐ x, P ⊠ Q x := ta
 Definition aex_frob_r `{P:A → Ω} {Q} : aex P ⊠ Q ⧟ ∐ x, P x ⊠ Q := tautology.
 Definition all_frob_l {P} `{Q:A → Ω} : P ⊞ all Q ⧟ ∏ x, P ⊞ Q x := tautology.
 Definition all_frob_r `{P:A → Ω} {Q} : all P ⊞ Q ⧟ ∏ x, P x ⊞ Q := tautology.
-
-(*Unset Universe Polymorphism.*)
 
 
 Definition Affirmative_of_course P : Affirmative (!P) := tautology.
@@ -300,7 +296,6 @@ Global Hint Extern 2 (iff  (Affirmative _) _) => sapply_1 Affirmative_proper_iff
 Global Hint Extern 2 (impl (Refutative  _) _) => sapply_1 Refutative_proper_impl  : proper.
 Global Hint Extern 2 (iff  (Refutative  _) _) => sapply_1 Refutative_proper_iff   : proper.
 
-(*Set Universe Polymorphism.*)
 Lemma all_proper_aimpl `{P:A → Ω} {Q:A → Ω} : (∀ x, P x ⊸ Q x) → all P ⊸ all Q.  Proof. apply all_aimpl. Qed.
 Lemma all_proper_aiff  `{P:A → Ω} {Q:A → Ω} : (∀ x, P x ⧟ Q x) → all P ⧟ all Q.  Proof. apply all_aiff. Qed.
 Lemma aex_proper_aimpl `{P:A → Ω} {Q:A → Ω} : (∀ x, P x ⊸ Q x) → aex P ⊸ aex Q.  Proof. apply aex_aimpl. Qed.
@@ -340,8 +335,6 @@ Proof. sym. trans (apos ( (∐ x₁, (P₁ x₁)ᗮ) ⊠ (∐ x₂, (P₂ x₂)�
   do 2 forall_proper_iff_tac.
   refine (aiff_iff_pos (acontra_eq _ _)).
 Qed.
-
-(* Unset Universe Polymorphism. *)
 
 Definition affirmative_alt P : Affirmative P ↔ (aneg P ↔ ¬ apos P) := tautology.
 Definition refutative_alt P : Refutative P ↔ (apos P ↔ ¬ aneg P) := tautology.
@@ -429,8 +422,6 @@ Definition affirmative_aprod_aimpl_l {P Q R : Ω} `{!Affirmative P} : (P → (Q 
 Definition affirmative_aprod_aimpl_r {P Q R : Ω} `{!Affirmative P} : (P → (Q ⊸ R)) → (Q ⊠ P ⊸ R) := tautology.
 Definition of_course_aprod_aimpl_l {P Q R : Ω} : (P → (Q ⊸ R)) → (!P ⊠ Q ⊸ R) := tautology.
 Definition of_course_aprod_aimpl_r {P Q R : Ω} : (P → (Q ⊸ R)) → (Q ⊠ !P ⊸ R) := tautology.
-
-(* Set Universe Polymorphism. *)
 
 Lemma affirmative_aex `{P:A → Ω} {H:∀ x, Affirmative (P x)} : Affirmative (aex P).
 Proof. apply affirmative_alt. split.

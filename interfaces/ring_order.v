@@ -32,29 +32,26 @@ Global Hint Extern 2 (OrderEmbedding (_+)) => simple notypeclasses refine plus_l
 Global Hint Extern 2 (OrderPreserving (_+)) => simple notypeclasses refine plus_l_order_embedding : typeclass_instances.
 Global Hint Extern 2 (OrderReflecting (_+)) => simple notypeclasses refine plus_l_order_embedding : typeclass_instances.
 
-Record SubtractionMonoidOrder (M:set) {p:Plus M} {z:Zero M} {Mle:Le M} : SProp :=
+
+Record SubtractionMonoidOrder (M:set) {Mp:Plus M} {Mz:Zero M} {Mle:Le M} : SProp :=
 { SubtractionMonoidOrder_add_mon_order :> AdditiveMonoidOrder M
-; sub_mon_order_partial_minus : ∏ x y : M, ∐ z : M, x ≤ y ⊸ y = x + z
+; SubtractionMonoidOrder_linear_order :> LinearOrder M
+; decompose_le (x y : M) : ∐ z : M, x ≤ y ⊸ 0 ≤ z ⊠ y = x + z
+; decompose_lt (x y : M) : ∐ z : M, x < y ⊸ 0 < z ⊠ y = x + z
 }.
 Existing Class SubtractionMonoidOrder.
+Arguments decompose_le {M _ _ _ _} x y.
+Arguments decompose_lt {M _ _ _ _} x y.
 
-(*
+
 Local Open Scope mult_scope.
 
-Record RgOrder (R:set) {p:Plus R} {m:Mult R} {z:Zero R} {Rle:Le R} : SProp :=
-{ RgOrder_rg :> Rg R
-; RgOrder_sub_mon_order :> SubtractionMonoidOrder R
-; RgOrder_mult_nonneg (x y : R) : 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y
+Record RigOrder (R:set) {Rp:Plus R} {Rm:Mult R} {Rz:Zero R} {Ro:One R} {Rle:Le R} : SProp :=
+{ RigOrder_rig :> Rig R
+; RigOrder_sub_mon_order :> SubtractionMonoidOrder R
+; mult_nonneg (x y : R) : 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y
+; mult_pos    (x y : R) : 0 < x ⊠ 0 < y ⊸ 0 < x · y
 }.
-Existing Class RgOrder.
-
-Require Import logic.aprop.
-
-
-Section blah.
-Context `{Rg R} `{Le R} `{!RgOrder R}.
-Context (x y : R).
-Goal atrue.
-Check contrapositive (RgOrder_mult_nonneg R _ x y).
-
-*)
+Existing Class RigOrder.
+Arguments mult_nonneg {R _ _ _ _ _ _} x y.
+Arguments mult_pos    {R _ _ _ _ _ _} x y.

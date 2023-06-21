@@ -133,7 +133,7 @@ Ltac naturals_induction :=
       intros ??; let E := fresh "E" in intro E; now rew E
     |..].
 
-Lemma naturals_add_cancel `{Naturals N} : AdditiveCancellation N.
+Coercion naturals_add_cancel `{Naturals N} : AdditiveCancellation N.
 Proof. apply alt_Build_AdditiveCancellation.
   change (∏ z x y : N, z + x = z + y ⊸ x = y).
   naturals_induction.
@@ -143,8 +143,6 @@ Proof. apply alt_Build_AdditiveCancellation.
     rew <-(IHn x y).
     exact (injective (X:=N) suc _ _).
 Qed.
-Coercion naturals_add_cancel : Naturals >-> AdditiveCancellation.
-
 
 Lemma zero_sum `{Naturals N} : ∀ (x y : N), x + y = 0 ⧟ x = 0 ⊠ y = 0.
 Proof. intros x y; split.
@@ -155,6 +153,16 @@ Proof. intros x y; split.
     exact (nno_suc_nonzero _).
 * apply affirmative_aimpl. intros [Ex Ey]. rew [Ex | Ey]. exact (plus_0_r _).
 Qed.
+
+Coercion naturals_zero_product `{Naturals N} : ZeroProduct N.
+Proof. intros x y. pose proof nno_zero_or_suc x as [E|[n E]].
++ now rew (aor_is_true_l E).
++ change (suc n) with (1+n) in E; rew E; clear E x.
+  rew <-(aorr _ _).
+  rew (plus_mult_distr_r _ _ _), (mult_1_l _).
+  now rew (zero_sum _ _).
+Qed.
+
 
 Section with_a_near_ring.
   Universes i.

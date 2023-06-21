@@ -149,6 +149,9 @@ Section rings.
   ; add_cancel_r (z:R) : Injective (+ z)
   }.
 
+  Class NoZeroDivisors : SProp := no_zero_divisors (x y : R) : x · y = 0 ⊸ x = 0 ⊞ y = 0.
+  Class ZeroProduct    : SProp := zero_product     (x y : R) : x · y = 0 ⊸ x = 0 ∨ y = 0.
+
   Record NearRg : SProp :=
   { near_rg_plus_monoid    :> AdditiveNonComMonoid
   ; near_rg_mult_semigroup :> MultiplicativeSemiGroup
@@ -239,6 +242,8 @@ Section rings.
   Existing Class CommutativeRing.
 
 End rings.
+Arguments no_zero_divisors {R _ _ _} _ _.
+Arguments zero_product     {R _ _ _} _ _.
 Arguments mult_0_l {R _ _ _ _} _.
 Arguments mult_0_r {R _ _ _ _} _.
 Arguments plus_mult_distr_l {R _ _ _ _} _ _ _.

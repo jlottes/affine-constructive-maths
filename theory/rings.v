@@ -1,5 +1,6 @@
 Require Export theory.additive_groups theory.multiplicative_groups.
 Require Import interfaces.sprop abstract_algebra.
+Require Import logic.aprop.
 Require Import easy rewrite.
 
 Local Notation "X 'ᵒᵖ'" := (ring_op X) (at level 1, format "X 'ᵒᵖ'").
@@ -341,6 +342,11 @@ Coercion Ring_LeftNearRing `{H:Ring R} : LeftNearRing R.  Proof. now apply alt_B
 (** Opposite ring structures: multiplication order reversed *)
 
 Section opposite.
+  Instance NoZeroDivisors_op `{NoZeroDivisors R} : NoZeroDivisors (R ᵒᵖ).
+  Proof. change (∀ x y : R, y · x = 0 ⊸ x = 0 ⊞ y = 0). intros x y; now rew (apar_com _ _). Qed.
+  Instance ZeroProduct_op `{ZeroProduct R} : ZeroProduct (R ᵒᵖ).
+  Proof. change (∀ x y : R, y · x = 0 ⊸ x = 0 ∨ y = 0). intros x y; now rew (aor_com _ _). Qed.
+
   Ltac go := split; try exact _; change (@mult (ring_op _) ?f) with f; unfold ring_op; exact _.
   Instance NearRg_op          `{NearRg R}          : LeftNearRg (R ᵒᵖ).      Proof. go. Defined.
   Instance LeftNearRg_op      `{LeftNearRg R}      : NearRg (R ᵒᵖ).          Proof. go. Defined.
@@ -357,6 +363,8 @@ Section opposite.
   Instance Ring_op            `{Ring R}            : Ring (R ᵒᵖ).            Proof. go. Defined.
   Instance CommutativeRing_op `{CommutativeRing R} : CommutativeRing (R ᵒᵖ). Proof. go. Defined.
 End opposite.
+Global Hint Extern 2 (NoZeroDivisors  (_ ᵒᵖ)) => simple notypeclasses refine NoZeroDivisors_op  : typeclass_instances.
+Global Hint Extern 2 (ZeroProduct     (_ ᵒᵖ)) => simple notypeclasses refine ZeroProduct_op     : typeclass_instances.
 Global Hint Extern 2 (LeftNearRg      (_ ᵒᵖ)) => simple notypeclasses refine NearRg_op          : typeclass_instances.
 Global Hint Extern 2 (NearRg          (_ ᵒᵖ)) => simple notypeclasses refine LeftNearRg_op      : typeclass_instances.
 Global Hint Extern 2 (Rg              (_ ᵒᵖ)) => simple notypeclasses refine Rg_op              : typeclass_instances.
@@ -372,15 +380,18 @@ Global Hint Extern 2 (NearRing        (_ ᵒᵖ)) => simple notypeclasses refine
 Global Hint Extern 2 (Ring            (_ ᵒᵖ)) => simple notypeclasses refine Ring_op            : typeclass_instances.
 Global Hint Extern 2 (CommutativeRing (_ ᵒᵖ)) => simple notypeclasses refine CommutativeRing_op : typeclass_instances.
 
+Coercion zero_product_no_zero_divisors `{H:ZeroProduct R} : NoZeroDivisors R.
+Proof. red; intros x y. rew <-(aor_apar _ _). apply H. Qed.
+
 (** Miscellaneous Rg properties *)
-Lemma zero_product `{Rg R} : ∀ x y : R, x = 0 ∨ y = 0 ⊸ x · y = 0.
-Proof left_or_right_absorb _.
+(* Lemma zero_product `{Rg R} : ∀ x y : R, x = 0 ∨ y = 0 ⊸ x · y = 0.
+Proof left_or_right_absorb _. *)
 
 Lemma nonzero_product `{Rg R} : ∀ x y : R, x · y ≠ 0 ⊸ x ≠ 0 ∧ y ≠ 0.
 Proof absorb_ne_left_and_right _.
 
-Lemma zero_product_par `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x = 0 ⊞ y = 0 ⊸ x · y = 0.
-Proof left_par_right_absorb _.
+(*Lemma zero_product_par `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x = 0 ⊞ y = 0 ⊸ x · y = 0.
+Proof left_par_right_absorb _.*)
 
 Lemma nonzero_product_prod `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x · y ≠ 0 ⊸ x ≠ 0 ⊠ y ≠ 0.
 Proof absorb_ne_left_prod_right _.

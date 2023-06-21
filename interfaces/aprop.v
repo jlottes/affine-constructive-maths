@@ -1,8 +1,6 @@
 Require Import interfaces.notation sprop tauto tactics.misc.
 Export sprop.notation.
 
-(* Unset Universe Polymorphism. *)
-
 Definition NotBoth (P Q : SProp) := ¬ (P ∧ Q).
 Record AProp :=
 { apos :> SProp
@@ -60,8 +58,8 @@ Definition aimpl_nb (P Q : Ω) := nb ( (P⁺ → Q⁺) ∧ (Q⁻ → P⁻) ) ( P
 Definition of_course_nb     (P : SProp) := nb P (¬ P).
 Definition not_of_course_nb (P : SProp) := nb (¬ P) P.
 Definition why_not_nb       (P : Ω) := not_of_course_nb P⁻.
-Polymorphic Definition all_nb `(P:A → Ω) := nb ( ∀ x, (P x)⁺ ) ( ∃ x, (P x)⁻ ).
-Polymorphic Definition aex_nb `(P:A → Ω) := nb ( ∃ x, (P x)⁺ ) ( ∀ x, (P x)⁻ ).
+Definition all_nb `(P:A → Ω) := nb ( ∀ x, (P x)⁺ ) ( ∃ x, (P x)⁻ ).
+Definition aex_nb `(P:A → Ω) := nb ( ∃ x, (P x)⁺ ) ( ∀ x, (P x)⁻ ).
 
 Canonical Structure atrue := Build_AProp atrue_nb.
 Canonical Structure afalse := Build_AProp afalse_nb.
@@ -74,8 +72,8 @@ Definition aimpl (P Q : Ω) := Build_AProp (aimpl_nb P Q).
 Definition of_course (P : SProp) := Build_AProp (of_course_nb P).
 Definition not_of_course (P : SProp) := Build_AProp (not_of_course_nb P).
 Definition why_not (P : Ω) := Build_AProp (why_not_nb P).
-Polymorphic Definition all `(P:A → Ω) := Build_AProp (all_nb P).
-Polymorphic Definition aex `(P:A → Ω) := Build_AProp (aex_nb P).
+Definition all `(P:A → Ω) := Build_AProp (all_nb P).
+Definition aex `(P:A → Ω) := Build_AProp (aex_nb P).
 
 (** Shared notation with [SProp].
   Parsed as [SProp], but coerceable to [Ω] via canonical projections. *)

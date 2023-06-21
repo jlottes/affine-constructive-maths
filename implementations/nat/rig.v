@@ -3,8 +3,6 @@ Require Import theory.set theory.rings logic.aprop.
 Require Import nat.nno theory.nno nno_rig nno_naturals.
 Require Import easy.
 
-(* Unset Universe Polymorphism. *)
-
 Definition nat_one  : One  Nat := nno_one.
 Definition nat_plus : Plus Nat := nno_plus.
 Definition nat_mult : Mult Nat := nno_mult.

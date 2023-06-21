@@ -79,6 +79,8 @@ orders/maps.v
 orders/lattices.v
 orders/aprop.v
 orders/subset.v
+orders/groups.v
+orders/rings.v
 implementations/bool.v
 implementations/nat/nno.v
 implementations/nat/rig.v
