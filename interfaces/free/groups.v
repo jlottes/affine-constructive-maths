@@ -17,7 +17,7 @@ Module free_additive_monoid.
   Global Hint Extern 2 (StripCoercions (to_var_set ?X)) => strip_coercions_chain X : strip_coercions.
 
   Set Implicit Arguments.
-  Record mor (F:t) {M:additive_monoid} (Γ:list M) :=
+  Record mor@{u} (F:t@{u}) {M:additive_monoid@{u}} (Γ:list@{u} M) :=
   { mor_f :> additive_non_com_monoid_morphism_t F M
   ; #[canonical=no] mor_prop :> Var_Morphism Γ mor_f
   }.
@@ -28,12 +28,12 @@ Module free_additive_monoid.
   Global Coercion to_var_mor : mor >-> var_morphism_t.
   Global Hint Extern 2 (StripCoercions (to_var_mor ?f)) => strip_coercions_chain f : strip_coercions.
 
-  Record F :=
-  { X :> t
-  ; #[canonical=no] eval : ∀ {M:additive_monoid} (Γ:list M), mor X Γ
+  Record F@{u} :=
+  { X :> t@{u}
+  ; #[canonical=no] eval : ∀ {M:additive_monoid@{u}} (Γ:list@{u} M), mor X Γ
   }.
 End free_additive_monoid.
-Notation free_additive_monoid := free_additive_monoid.F.
+Abbreviation free_additive_monoid := free_additive_monoid.F.
 
 Global Coercion free_additive_monoid.car : free_additive_monoid.t >-> additive_monoid.
 Global Coercion free_additive_monoid.var : free_additive_monoid.t >-> has_var.
@@ -62,7 +62,7 @@ Module free_commutative_monoid.
   Global Hint Extern 2 (StripCoercions (to_var_set ?X)) => strip_coercions_chain X : strip_coercions.
 
   Set Implicit Arguments.
-  Record mor (F:t) {M:commutative_monoid} (Γ:list M) :=
+  Record mor@{u} (F:t@{u}) {M:commutative_monoid@{u}} (Γ:list M) :=
   { mor_f :> monoid_morphism_t F M
   ; #[canonical=no] mor_prop :> Var_Morphism Γ mor_f
   }.
@@ -73,12 +73,12 @@ Module free_commutative_monoid.
   Global Coercion to_var_mor : mor >-> var_morphism_t.
   Global Hint Extern 2 (StripCoercions (to_var_mor ?f)) => strip_coercions_chain f : strip_coercions.
 
-  Record F :=
-  { X :> t
-  ; #[canonical=no] eval : ∀ {M:commutative_monoid} (Γ:list M), mor X Γ
+  Record F@{u} :=
+  { X :> t@{u}
+  ; #[canonical=no] eval : ∀ {M:commutative_monoid@{u}} (Γ:list@{u} M), mor X Γ
   }.
 End free_commutative_monoid.
-Notation free_commutative_monoid := free_commutative_monoid.F.
+Abbreviation free_commutative_monoid := free_commutative_monoid.F.
 
 Global Coercion free_commutative_monoid.car : free_commutative_monoid.t >-> commutative_monoid.
 Global Coercion free_commutative_monoid.var : free_commutative_monoid.t >-> has_var.
@@ -107,7 +107,7 @@ Module free_additive_group.
   Global Hint Extern 2 (StripCoercions (to_var_set ?X)) => strip_coercions_chain X : strip_coercions.
 
   Set Implicit Arguments.
-  Record mor (F:t) {G:additive_group} (Γ:list G) :=
+  Record mor@{u} (F:t@{u}) {G:additive_group@{u}} (Γ:list@{u} G) :=
   { mor_f :> additive_non_com_monoid_morphism_t F G
   ; #[canonical=no] mor_prop :> Var_Morphism Γ mor_f
   }.
@@ -118,12 +118,12 @@ Module free_additive_group.
   Global Coercion to_var_mor : mor >-> var_morphism_t.
   Global Hint Extern 2 (StripCoercions (to_var_mor ?f)) => strip_coercions_chain f : strip_coercions.
 
-  Record F :=
-  { X :> t
-  ; #[canonical=no] eval : ∀ {G:additive_group} (Γ:list G), mor X Γ
+  Record F@{u} :=
+  { X :> t@{u}
+  ; #[canonical=no] eval : ∀ {G:additive_group@{u}} (Γ:list@{u} G), mor X Γ
   }.
 End free_additive_group.
-Notation free_additive_group := free_additive_group.F.
+Abbreviation free_additive_group := free_additive_group.F.
 
 Global Coercion free_additive_group.car : free_additive_group.t >-> additive_group.
 Global Coercion free_additive_group.var : free_additive_group.t >-> has_var.

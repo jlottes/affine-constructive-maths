@@ -15,13 +15,13 @@ Module signed_naturals.
     Universes u.
     Context (ℕ:naturals@{u}).
 
-    Notation ℤ := (GrothendieckPairs (near_rig_car (nats_near_rig ℕ))).
-    Notation i := (to_grothendieck_group (near_rig_car (nats_near_rig ℕ))).
+    Abbreviation ℤ := (GrothendieckPairs (near_rig_car (nats_near_rig ℕ))).
+    Abbreviation i := (to_grothendieck_group (near_rig_car (nats_near_rig ℕ))).
 
     Let inst : Integers ℤ := _.
     Let inst2 : Rig_Morphism i := _.
     Let inst3 : Injective i.
-    Proof naturals_to_integers_inj_alt (N:=ℕ) (Z:=ℤ) i.
+    Proof. exact (naturals_to_integers_inj_alt (N:=ℕ) (Z:=ℤ) i). Qed.
 
     (** Note: zero has (at least) two representations *)
     Inductive t := pos : ℕ → t | neg : ℕ → t.
@@ -37,28 +37,28 @@ Module signed_naturals.
     Definition to_ℤ : Z ⇾ ℤ := projected_set_project _.
     Instance to_ℤ_inj : Injective to_ℤ := projected_set_project_injective Z.
 
-    Definition of_ℕ := @make_fun ℕ Z pos (is_fun i).
+    Definition of_ℕ : _ ⇾ _ := @func_make ℕ Z pos (is_fun i).
 
     Local Open Scope bool_scope.
-    Instance eq_dec {d:Dec (A:=ℕ) (=)} : Dec (A:=Z) (=) := λ x y,
+    Instance eq_dec {d:Dec (A:=ℕ∗ℕ) (=)} : Dec (A:=Z∗Z) (=) := λ '(x, y),
     match x with
     | pos x' =>
       match y with
-      | pos y' => dec (=) x' y'
-      | neg y' => dec (=) x' 0 && dec (=) y' 0
+      | pos y' => dec (=) (x', y')
+      | neg y' => dec (=) (x', 0) && dec (=) (y', 0)
       end
     | neg x' =>
       match y with
-      | pos y' => dec (=) x' 0 && dec (=) y' 0
-      | neg y' => dec (=) x' y'
+      | pos y' => dec (=) (x', 0) && dec (=) (y', 0)
+      | neg y' => dec (=) (x', y')
       end
     end.
 
     Lemma pos_eq (x y : ℕ) : x = y ⧟ pos x = pos y :> Z.
-    Proof injective_iff i _ _.
+    Proof. exact (injective_iff i _ _). Qed.
 
     Lemma neg_eq (x y : ℕ) : x = y ⧟ neg x = neg y :> Z.
-    Proof injective_iff ((-) ∘ i) _ _.
+    Proof. exact (injective_iff ((-) ∘ i) _ _). Qed.
 
     Lemma neg_pos_eq (x y : ℕ) : x = 0 ∧ y = 0 ⧟ neg x = pos y :> Z.
     Proof. change (neg x = pos y) with (-i x = i y).
@@ -70,11 +70,11 @@ Module signed_naturals.
     Qed.
 
     Lemma eq_is_dec `{!IsDecEq ℕ (d:=d)} : IsDecEq Z (d:=eq_dec).
-    Proof. intros [p₁|n₁] [p₂|n₂]; unfold dec, eq_dec.
+    Proof. intros [[p₁|n₁] [p₂|n₂]]; unfold dec, eq_dec.
     + apply dec_spec_by_iff. exact (pos_eq _ _).
-    + generalize (dec_spec_andb p₁ 0 n₂ 0); destruct (andb (dec (=) p₁ 0, dec (=) n₂ 0));
+    + generalize (dec_spec_andb (p₁, 0) (n₂, 0)); destruct (andb (dec (=) (p₁, 0), dec (=) (n₂, 0)));
       now rew <-(pos_neg_eq _ _).
-    + generalize (dec_spec_andb n₁ 0 p₂ 0); destruct (andb (dec (=) n₁ 0, dec (=) p₂ 0));
+    + generalize (dec_spec_andb (n₁, 0) (p₂, 0)); destruct (andb (dec (=) (n₁, 0), dec (=) (p₂, 0)));
       now rew <-(neg_pos_eq _ _).
     + apply dec_spec_by_iff. exact (neg_eq _ _).
     Qed.
@@ -121,14 +121,14 @@ Module signed_naturals.
     | pos x' =>
       match y with
       | pos y' => pos (x' + y')
-      | neg y' => match nat_subtract (x', y') with
+      | neg y' => match nat_subtract_alt (x', y') with
         | inl z => neg z
         | inr z => pos z
         end
       end
     | neg x' =>
       match y with
-      | pos y' => match nat_subtract (x', y') with
+      | pos y' => match nat_subtract_alt (x', y') with
         | inl z => pos z
         | inr z => neg z
         end
@@ -143,11 +143,11 @@ Module signed_naturals.
     Lemma negate_op_correct : ∀ x:Z, to_ℤ (negate_op x) = - to_ℤ x.
     Proof. intros [p|n]; smpl.
     + refl.
-    + sym. exact (negate_involutive _).
+    + sym. exact (involutive_alt (-) _).
     Qed.
 
     Instance ngt : Negate Z
-      := @make_fun _ _ _ (projected_is_fun negate_op (-) negate_op_correct).
+      := @func_make _ _ _ (projected_is_fun negate_op (-) negate_op_correct).
     Definition negate_correct : ∀ x:Z, to_ℤ (-x) = -(to_ℤ x) := negate_op_correct.
 
     Lemma mult_op_correct : ∀ p : Z ⊗ Z,
@@ -160,19 +160,19 @@ Module signed_naturals.
     Qed.
 
     Instance mlt : Mult Z
-      := @make_fun _ _ _ (projected_is_fun (X:=Z ⊗ Z) (tuncurry mult_op) (·) mult_op_correct).
+      := @func_make _ _ _ (projected_is_fun (X:=Z ⊗ Z) (tuncurry mult_op) (·) mult_op_correct).
     Definition mult_correct x y : to_ℤ (x · y) = to_ℤ x · to_ℤ y := mult_op_correct (x,y).
 
     Lemma plus_op_correct : ∀ p : Z ⊗ Z,
         to_ℤ (tuncurry plus_op p) = to_ℤ (π₁ p) + to_ℤ (π₂ p).
     Proof. intros [[p₁|n₁] [p₂|n₂]]; smpl.
     + exact (preserves_plus i _ _).
-    + generalize (nat_subtract_spec p₁ n₂); destruct (nat_subtract (p₁, n₂)) as [z | z]; smpl; intro E.
+    + generalize (nat_subtract_alt_spec p₁ n₂); destruct (nat_subtract_alt (p₁, n₂)) as [z | z]; smpl; intro E.
       * rew <-E, (preserves_plus i _ _), (negate_plus_distr _ _), (associativity (+) _ _ _).
         now rew (plus_negate_r _), (plus_0_l _).
       * rew E, (commutativity (+) n₂ z), (preserves_plus i _ _), <-(associativity (+) _ _ _).
         now rew (plus_negate_r _), (plus_0_r _).
-    + generalize (nat_subtract_spec n₁ p₂); destruct (nat_subtract (n₁, p₂)) as [z | z]; smpl; intro E.
+    + generalize (nat_subtract_alt_spec n₁ p₂); destruct (nat_subtract_alt (n₁, p₂)) as [z | z]; smpl; intro E.
       * rew <-E, (preserves_plus i _ _), (associativity (+) _ _ _).
         now rew (plus_negate_l _), (plus_0_l _).
       * rew E, (commutativity (+) p₂ z), (preserves_plus i _ _), (negate_plus_distr _ _).
@@ -181,7 +181,7 @@ Module signed_naturals.
     Qed.
 
     Instance pls : Plus Z
-      := @make_fun _ _ _ (projected_is_fun (X:=Z ⊗ Z) (tuncurry plus_op) (+) plus_op_correct).
+      := @func_make _ _ _ (projected_is_fun (X:=Z ⊗ Z) (tuncurry plus_op) (+) plus_op_correct).
     Definition plus_correct x y : to_ℤ (x + y) = to_ℤ x + to_ℤ y := plus_op_correct (x,y).
 
     Lemma zero_correct : to_ℤ 0 = 0.  Proof. refl. Qed.
@@ -208,7 +208,7 @@ Module signed_naturals.
     Instance of_ℤ_mor : Rig_Morphism of_ℤ.  Proof. now unfold of_ℤ. Qed.
 
     Lemma of_ℤ_spec : of_ℤ ∘ i = of_ℕ.
-    Proof from_group_completion2_spec.
+    Proof. exact from_group_completion2_spec. Qed.
   End with_naturals.
 
   #[global] Hint Extern 1 (Dec (A:=t ?ℕ) (=)) => refine (eq_dec ℕ) : typeclass_instances.
@@ -288,15 +288,15 @@ Module signed_naturals.
     Context (ℕ:naturals@{u}).
     Context {sub:NatSubtract ℕ} `{!NatSubtractSpec ℕ}.
 
-    Notation ℤ := (GrothendieckPairs (near_rig_car (nats_near_rig ℕ))).
-    Notation i := (to_grothendieck_group (near_rig_car (nats_near_rig ℕ))).
+    Abbreviation ℤ := (GrothendieckPairs (near_rig_car (nats_near_rig ℕ))).
+    Abbreviation i := (to_grothendieck_group (near_rig_car (nats_near_rig ℕ))).
 
     Let inst : Integers ℤ := _.
     Let inst2 : Rig_Morphism i := _.
     Let inst3 : Injective i.
-    Proof naturals_to_integers_inj_alt (N:=ℕ) (Z:=ℤ) i.
+    Proof. exact (naturals_to_integers_inj_alt (N:=ℕ) (Z:=ℤ) i). Qed.
 
-    Local Notation Z' := (Z ℕ).
+    Local Abbreviation Z' := (Z ℕ).
 
     Instance of_ℤ_surj : Surjective (of_ℤ ℕ).
     Proof. intros [p|n].
@@ -312,9 +312,13 @@ Module signed_naturals.
 
   #[global] Hint Extern 1 (IntegersToGroup (Z ?ℕ)) => refine (to_group ℕ) : typeclass_instances.
   #[global] Hint Extern 1 (Integers (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
-  #[global] Hint Extern 1 (DecidableEquality   (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
-  #[global] Hint Extern 1 (AffirmativeEquality (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
-  #[global] Hint Extern 1 (RefutativeEquality  (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (DecidableEquality    (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (AffirmativeEquality  (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (RefutativeEquality   (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (IntegralDomain       (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (NoZeroDivisors       (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (StrongNoZeroDivisors (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
+  #[global] Hint Extern 1 (NonZeroMultiplicativeCancellation (Z ?ℕ)) => refine (is_integers ℕ) : typeclass_instances.
 
   Definition ints (ℕ:naturals) {sub:NatSubtract ℕ} `{!NatSubtractSpec ℕ} : integers.
   Proof. unshelve esplit.
@@ -340,10 +344,9 @@ End signed_naturals.
 Require Import nat.
 
 Definition SignedNat := signed_naturals.ints Nat_naturals.
-Definition SignedNat_eq_dec : Dec (A:=SignedNat) (=) := signed_naturals.eq_dec _.
-Global Hint Extern 1 (Dec (A:=set_T (ring_car (ints_ring SignedNat))) (=)) => refine SignedNat_eq_dec : typeclass_instances.
+Definition SignedNat_eq_dec : Dec (A:=SignedNat∗SignedNat) (=) := signed_naturals.eq_dec _.
+Global Hint Extern 1 (Dec (A:=set_T (ring_car (ints_ring SignedNat)) ∗ _) (=)) => refine SignedNat_eq_dec : typeclass_instances.
 
 Definition SignedNat_eq_is_dec : IsDecEq SignedNat := signed_naturals.eq_is_dec _.
 Global Hint Extern 1 (IsDecEq _ (d:=SignedNat_eq_dec)) => refine SignedNat_eq_is_dec : typeclass_instances.
-
 

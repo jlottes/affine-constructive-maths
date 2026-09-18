@@ -1,201 +1,218 @@
 Require Export interfaces.orders interfaces.ring_order.
 Require Export orders.orders orders.maps orders.groups.
-Require Import theory.rings.
+Require Import theory.rings theory.subrings.
 Require Import logic.aprop relations logic.refutative.
-Require Import easy rewrite replc.
+Require Import easy rewrite replc simplify.
+Require Import tactics.algebra.com_monoids.
 
 Local Open Scope mult_scope.
 Import cone_notation.
 
 Global Hint Extern 1 (Le (set_T (ring_op ?R))) => change (Le (set_T R)) : typeclass_instances.
 Global Hint Extern 2 (AdditiveMonoidOrder (ring_op ?R)) => change (AdditiveMonoidOrder R) : typeclass_instances.
-Global Hint Extern 2 (SubtractionMonoidOrder (ring_op ?R)) => change (SubtractionMonoidOrder R) : typeclass_instances.
 
-Lemma RigOrder_op `{RigOrder R} : RigOrder (ring_op R).
+Section opposite_ring.
+  Ltac go := split; try exact _; change (@mult (ring_op _) ?f) with f; unfold ring_op; try exact _.
+
+  Instance StrongLinearRefutativeRigOrder_op `{StrongLinearRefutativeRigOrder (R:=R)}
+    : StrongLinearRefutativeRigOrder (ring_op R).
+  Proof. go. intros b a d c. change (b < a ⊠ d < c ⊸ d · a + c · b < c · a + d · b).
+    rew (aprod_com _ _).
+    rew (mult_lt_compat_full _ _ _ _). now rew (commutativity (+) (c · b) _).
+  Qed.
+
+  Instance StrongLinearRefutativeRingOrder_op `{StrongLinearRefutativeRingOrder (R:=R)}
+    : StrongLinearRefutativeRingOrder (ring_op R).
+  Proof. go. intros x y; simplify. rew (aprod_com _ _). apply H. Qed.
+End opposite_ring.
+Global Hint Extern 2 (StrongLinearRefutativeRigOrder (ring_op ?R)) => simple notypeclasses refine StrongLinearRefutativeRigOrder_op : typeclass_instances.
+Global Hint Extern 2 (StrongLinearRefutativeRingOrder (ring_op ?R)) => simple notypeclasses refine StrongLinearRefutativeRingOrder_op : typeclass_instances.
+
+
+Lemma mult_le_compat_full `{StrongLinearRefutativeRigOrder (R:=R)} (b a d c : R)
+: b ≤ a ⊠ d ≤ c ⊸ a · d + b · c ≤ a · c + b · d.
+Proof.
+  rew (le_iff_lt_par_eq _ (a · c + b · d)).
+  rew (apar_adj_dual _ _ _).
+  rew exact:(contrapositive (mult_lt_compat_full b a d c)).
+  rew (apar_aprod_distr_l _ _ _ _).
+  rew [(le_pseudo_antisym b a)|(le_pseudo_antisym d c)].
+  rew (refutativity (a · d + b · c = a · c + b · d)), <-(apar_why_not _).
+  rew (commutativity (+) _ _) at 1.
+  rew <-exact:(is_fun (strong_op (+)) (_, _) (_,_) : _ = _ ∧ _ = _ ⊸ b · c + a · d = a · c + b · d).
+  rew <-exact:(is_fun (strong_op (+)) (_, _) (_,_) : _ = _ ∧ _ = _ ⊸ a · d + b · c = a · c + b · d).
+  rew [<-exact:(is_fun (·c) _ _ : b = a ⊸ b · c = a · c)
+      |<-exact:(is_fun (·d) _ _ : a = b ⊸ a · d = b · d)
+      |<-exact:(is_fun (a·) _ _ : d = c ⊸ a · d = a · c)
+      |<-exact:(is_fun (b·) _ _ : c = d ⊸ b · c = b · d)
+      ].
+  rew [(symmetry_iff (=) a b) | (symmetry_iff (=) c d)].
+  now simplify.
+Qed.
+
+
+Lemma strong_linear_refutative_rig_order_from_partial_minus
+  `{Rig (R:=R)} {Rle : Le R}
+  `{!StrongPoset R, !LinearOrder R, !RefutativeOrder R}
+  `{!AdditiveMonoidOrder R}
+  : (∀ x y : R, x < y ⊸ ∐ z : R, 0 < z ⊠ y = x + z)
+  → (∀ x y : R, 0 < x ⊠ 0 < y ⊸ 0 < x · y)
+  → StrongLinearRefutativeRigOrder R.
+Proof. intros Pminus Pmult. split; try exact _.
+  intros b a d c. apply affirmative_aimpl.
+  intros [E1 E2].
+  pose proof aimpl_impl_pos (Pminus _ _) E1 as [x [Px Ex]].
+  pose proof aimpl_impl_pos (Pminus _ _) E2 as [y [Py Ey]].
+  rew [Ex | Ey]. clear Ex Ey E1 E2 a c.
+  rew (plus_mult_distr_r b x (d+y)).
+  replc (b · (d + y) + x · (d + y) + b · d) with (x · (d + y) + b · d + b · (d + y)) by add_mon.
+  apply (strictly_order_preserving (+ b·(d+y))).
+  rew [(plus_mult_distr_r b x d) | (plus_mult_distr_l x d y)].
+  replc (x · d + x · y + b · d) with (x·y + (b · d + x · d)) by add_mon.
+  apply (strictly_order_preserving_simp (+ (b · d + x · d) ) 0 (x · y)).
+  now apply Pmult.
+Qed.
+
+
+Coercion StrongLinearRefutativeRingOrder_StrongLinearRefutativeRigOrder
+  `{H:StrongLinearRefutativeRingOrder R} : StrongLinearRefutativeRigOrder R.
+Proof. apply strong_linear_refutative_rig_order_from_partial_minus; [| exact slr_ring_order_pos_mult ].
+  intros x y. apply affirmative_aimpl. intros E. exists (y - x). split.
+  * now apply (strictly_order_reflecting_simp (+x) 0 (y - x)).
+  * now simplify.
+Qed.
+
+
+Coercion StrongLinearRefutativeRigOrder_NoZeroDivisors
+  `{H:StrongLinearRefutativeRigOrder R} : NoZeroDivisors R.
+Proof. intros x y. rew <-?(le_antisym_iff _ _). apply by_contrapositive.
+  apply affirmative_aimpl; intros [[Ex|Ex] [Ey|Ey]];
+  generalize (aimpl_impl_pos (mult_lt_compat_full _ _ _ _) (sprop.conj Ex Ey));
+  apply aimpl_impl_pos; now simplify.
+Qed.
+
+
+Lemma nonneg_mult_order_preserving_l `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{0 ≤ z} : OrderPreserving (z·).
+Proof. apply alt_Build_OrderPreserving; intros x y; simplify. exact (simplify_thm (mult_le_compat_full 0 z x y)). Qed.
+Global Hint Extern 2 (OrderPreserving (_·)) => simple notypeclasses refine nonneg_mult_order_preserving_l : typeclass_instances.
+
+Lemma nonneg_mult_order_preserving_r `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{0 ≤ z} : OrderPreserving (·z).
+Proof. exact (nonneg_mult_order_preserving_l (R:=ring_op R)). Qed.
+Global Hint Extern 2 (OrderPreserving (·_)) => simple notypeclasses refine nonneg_mult_order_preserving_r : typeclass_instances.
+
+Lemma nonpos_mult_order_preserving_flip_l `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{z ≤ 0} : OrderPreservingFlip (z·).
+Proof. apply alt_Build_OrderPreservingFlip; intros x y; simplify. exact (simplify_thm (mult_le_compat_full z 0 x y)). Qed.
+Global Hint Extern 2 (OrderPreservingFlip (_·)) => simple notypeclasses refine nonpos_mult_order_preserving_flip_l : typeclass_instances.
+
+Lemma nonpos_mult_order_preserving_flip_r `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{z ≤ 0} : OrderPreservingFlip (·z).
+Proof. exact (nonpos_mult_order_preserving_flip_l (R:=ring_op R)). Qed.
+Global Hint Extern 2 (OrderPreservingFlip (·_)) => simple notypeclasses refine nonpos_mult_order_preserving_flip_r : typeclass_instances.
+
+
+
+Lemma pos_mult_order_embedding_l `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{0 < z} : OrderEmbedding (z·).
+Proof. split; [ exact _ |]. apply alt_Build_OrderReflecting. intros x y; simplify.
+  apply by_contrapositive. exact (simplify_thm (mult_lt_compat_full 0 z y x)).
+Qed.
+Global Hint Extern 2 (OrderEmbedding (_·)) => simple notypeclasses refine pos_mult_order_embedding_l : typeclass_instances.
+Global Hint Extern 2 (OrderReflecting (_·)) => simple notypeclasses refine pos_mult_order_embedding_l : typeclass_instances.
+
+Lemma pos_mult_order_embedding_r `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{0 < z} : OrderEmbedding (·z).
+Proof. exact (pos_mult_order_embedding_l (R:=ring_op R)). Qed.
+Global Hint Extern 2 (OrderEmbedding (·_)) => simple notypeclasses refine pos_mult_order_embedding_r : typeclass_instances.
+Global Hint Extern 2 (OrderReflecting (·_)) => simple notypeclasses refine pos_mult_order_embedding_r : typeclass_instances.
+
+
+Lemma neg_mult_order_embedding_flip_l `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{z < 0} : OrderEmbeddingFlip (z·).
+Proof. apply Build_OrderEmbeddingFlip; [ exact _ |]. apply alt_Build_OrderReflectingFlip. intros x y; simplify.
+  apply by_contrapositive. exact (simplify_thm (mult_lt_compat_full z 0 y x)).
+Qed.
+Global Hint Extern 2 (OrderEmbeddingFlip (_·)) => simple notypeclasses refine neg_mult_order_embedding_flip_l : typeclass_instances.
+Global Hint Extern 2 (OrderReflectingFlip (_·)) => simple notypeclasses refine neg_mult_order_embedding_flip_l : typeclass_instances.
+
+Lemma neg_mult_order_embedding_flip_r `{StrongLinearRefutativeRigOrder (R:=R)} {z:R} `{z < 0} : OrderEmbeddingFlip (z·).
+Proof. exact (neg_mult_order_embedding_flip_l (R:=ring_op R)). Qed.
+Global Hint Extern 2 (OrderEmbeddingFlip (·_)) => simple notypeclasses refine neg_mult_order_embedding_flip_r : typeclass_instances.
+Global Hint Extern 2 (OrderReflectingFlip (·_)) => simple notypeclasses refine neg_mult_order_embedding_flip_r : typeclass_instances.
+
+
+Lemma rig_order_mult_cancel_left `{StrongLinearRefutativeRigOrder (R:=R)} (z:R) {E:z ≠ 0} : Injective (z·).
+Proof.
+  intros x y; simplify. rew <-(le_antisym_iff (z·x) _).
+  rew (ne_iff_lt _ _) in E. destruct E as [E|E].
++ rew [exact:(order_reflecting_flip_simp (z·) x y) | exact:(order_reflecting_flip_simp (z·) y x)].
+  rew (le_antisym_iff _ _). now apply symmetry.
++ rew [exact:(order_reflecting_simp (z·) x y) | exact:(order_reflecting_simp (z·) y x)].
+  now apply antisymmetry.
+Qed.
+
+Lemma rig_order_mult_cancel_right `{StrongLinearRefutativeRigOrder (R:=R)} (z:R) {E:z ≠ 0} : Injective (·z).
+Proof. exact (rig_order_mult_cancel_left (R:=ring_op R) _). Qed.
+
+Coercion rig_order_mult_cancel `{StrongLinearRefutativeRigOrder (R:=R)} : NonZeroMultiplicativeCancellation R.
+Proof. split; [ exact rig_order_mult_cancel_left | exact rig_order_mult_cancel_right ]. Qed.
+
+
+Section squares.
+  Context `{StrongLinearRefutativeRigOrder (R:=R)}.
+
+  Lemma square_pos (z:R) {E:z ≠ 0} : 0 < z · z.
+  Proof. rew (ne_iff_lt _ _) in E. destruct E as [E|E].
+  + now rew <-(strictly_order_embedding_flip_simp (z·) z 0).
+  + now rew <-(strictly_order_embedding_simp (z·) 0 z).
+  Qed.
+
+  Lemma square_nonneg (z:R) : 0 ≤ z · z.
+  Proof. apply (refutative_by_aff_cases (0 ≤ z)); intros [E|E].
+  + now apply (order_preserving_simp (z·) 0 z).
+  + apply lt_le. exact (square_pos _).
+  Qed.
+
+  Lemma le_0_1: 0 ≤ 1 :> R.   Proof. exact (simplify_thm (square_nonneg 1)). Qed.
+  Lemma le_0_2: 0 ≤ 2 :> R.   Proof. rew <-le_0_1; now simplify. Qed.
+
+  Context `{!OneNonZero R}.
+  Local Instance lt_0_1: 0 < 1 :> R.  Proof. exact (simplify_thm (square_pos 1)). Qed.
+  Local Instance lt_0_2: 0 < 2 :> R.  Proof. rew <-le_0_1 at 1. now simplify. Qed.
+
+  Lemma ne_2_0: anot (2 = 0 :> R).  Proof. now apply lt_ne_flip. Qed.
+End squares.
+
+Global Hint Extern 8 (apos (0 < ?x · ?x)) => simple notypeclasses refine square_pos : typeclass_instances.
+Global Hint Extern 8 (apos (0 ≤ ?x · ?x)) => simple notypeclasses refine square_nonneg : typeclass_instances.
+Global Hint Extern 4 (apos (0 < 1)) => simple notypeclasses refine lt_0_1 : typeclass_instances.
+Global Hint Extern 4 (apos (0 ≤ 1)) => simple notypeclasses refine le_0_1 : typeclass_instances.
+Global Hint Extern 4 (apos (0 < 2)) => simple notypeclasses refine lt_0_2 : typeclass_instances.
+Global Hint Extern 4 (apos (0 ≤ 2)) => simple notypeclasses refine le_0_2 : typeclass_instances.
+Global Hint Extern 4 (apos (2 ≠ 0)) => simple notypeclasses refine ne_2_0 : typeclass_instances.
+
+Section misc.
+  Context `{StrongLinearRefutativeRingOrder (R:=R)}.
+  Lemma minus_le_swap (a b c d : R) : a - b ≤ c - d ⧟ a + d ≤ c + b.
+    rew (order_embedding_simp (+ b + d) _ _) at 1.
+    replc (a - b + (b + d)) with (a + d + (b - b)) by add_mon
+      and (c - d + (b + d)) with (c + b + (d - d)) by add_mon.
+    now simplify.
+  Qed.
+
+  Lemma minus_lt_swap (a b c d : R) : a - b < c - d ⧟ a + d < c + b.
+  Proof. exact (contrapositive_iff (minus_le_swap c d a b)). Qed.
+End misc.
+
+
+Lemma slr_rig_order_nonneg_sub_rig `{StrongLinearRefutativeRigOrder R} : SubNearRig R⁺.
 Proof. split; try exact _.
-+ change (∀ x y : R, 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ y · x); intros x y.
-  rew (aprod_com _ _). now apply mult_nonneg.
-+ change (∀ x y : R, 0 < x ⊠ 0 < y ⊸ 0 < y · x); intros x y.
-  rew (aprod_com _ _). now apply mult_pos.
+  apply alt_Build_MultiplicativeSubMonoid.
++ intros x y. change (0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y).
+  exact ( simplify_thm (mult_le_compat_full 0 x 0 y) ).
++ now change (0 ≤ 1 :> R).
 Qed.
-Global Hint Extern 2 (RigOrder (ring_op ?R)) => simple notypeclasses refine RigOrder_op : typeclass_instances.
+Global Hint Extern 2 (SubNearRig _⁺) => simple notypeclasses refine slr_rig_order_nonneg_sub_rig : typeclass_instances.
+Global Hint Extern 2 (SubNearRg _⁺) => simple notypeclasses refine slr_rig_order_nonneg_sub_rig : typeclass_instances.
+Global Hint Extern 2 (MultiplicativeSubMonoid _⁺) => simple notypeclasses refine slr_rig_order_nonneg_sub_rig : typeclass_instances.
+Global Hint Extern 2 (MultiplicativeSubSemiGroup _⁺) => simple notypeclasses refine slr_rig_order_nonneg_sub_rig : typeclass_instances.
 
 
-(** Multiplication by nonnegative / positive elements is order preserving / reflecting. *)
-
-Lemma nonneg_mult_l `{RigOrder R} `{z ∊ R⁺} : OrderPreserving (z ·).
-Proof.
-  apply alt_Build_OrderPreserving.
-  intros x y; change ((z·) ?x) with (z·x).
-  pose proof decompose_le x y as [a Ha]. rew Ha.
-  rew <-(transitivity (≤) (z·x) (z·(x+a)) (z·y)).
-  apply aprod_proper_aimpl.
-  * rew [ <-(plus_0_r (z·x)) | (plus_mult_distr_l _ _ _) ].
-    rew <-exact:(order_preserving (z·x +) _ _ : _ ⊸ z · x + 0 ≤ z · x + z · a).
-    rew <-(mult_nonneg _ _).
-    now rew (aprod_true_l (_: 0 ≤ z)).
-  * rew <-(eq_le_flip _ _). exact (is_fun (z ·) _ _).
-Qed.
-
-Lemma pos_mult_l `{RigOrder R} `{z ∊ R₊} : OrderReflecting (z ·).
-Proof.
-  apply alt_Build_OrderReflecting.
-  intros x y; change ((z·) ?x) with (z·x).
-  apply by_contrapositive.
-  pose proof decompose_lt y x as [a Ha].
-  rew [ Ha | <-(lt_le_trans (z·y) (z·(y+a)) (z·x)) ].
-  apply aprod_proper_aimpl.
-  * rew [ <-(plus_0_r (z·y)) | (plus_mult_distr_l _ _ _) ].
-    rew <-exact:(strictly_order_preserving (z·y +) _ _ : _ ⊸ z · y + 0 < z · y + z · a).
-    rew <-(mult_pos _ _).
-    now rew (aprod_true_l (_: 0 < z)).
-  * rew <-(eq_le_flip _ _). exact (is_fun (z ·) _ _).
-Qed.
-
-Lemma nonneg_mult_r `{RigOrder R} `{z ∊ R⁺} : OrderPreserving (· z).
-Proof nonneg_mult_l (R:=ring_op R).
-
-Lemma pos_mult_r `{RigOrder R} `{z ∊ R₊} : OrderReflecting (· z).
-Proof pos_mult_l (R:=ring_op R).
-
-
-(** Multiplication by nonpositive / negative elements is (contravariantly) order preserving / reflecting. *)
-
-
-Lemma nonpos_mult_l `{RigOrder R} `{z ∊ R⁻} : OrderPreservingFlip (z ·).
-Proof.
-  apply alt_Build_OrderPreservingFlip.
-  intros x y; change ((z·) ?x) with (z·x).
-  pose proof decompose_le x y as [a Ha]. rew Ha; clear Ha.
-  rew [ (aprod_com _ _) | <-(transitivity (≤) (z·y) (z·(x+a)) (z·x)) ].
-  apply aprod_proper_aimpl.
-  * rew <-(eq_le _ _). exact (is_fun (z ·) _ _).
-  * rew [ (plus_mult_distr_l _ _ _) | <-(plus_0_r (z·x)) ].
-    rew <-exact:(order_preserving (z·x +) _ _ : _ ⊸ z · x + z · a ≤ z · x + 0).
-    pose proof decompose_le z 0 as [b [Hb _]]; specialize (Hb _); destruct Hb as [? E].
-    rew <-exact:(order_reflecting (+ b·a) (z·a) 0 : z · a + b · a ≤ 0 + b · a ⊸ _).
-    rew [ <-(plus_mult_distr_r _ _ _) | (plus_0_l _) ].
-    rew <-E, (mult_0_l _).
-    rew <-(mult_nonneg _ _).
-    now rew (aprod_true_l (_: 0 ≤ b)).
-Qed.
-
-Lemma neg_mult_l `{RigOrder R} `{z ∊ R₋} : OrderReflectingFlip (z ·).
-Proof.
-  apply alt_Build_OrderReflectingFlip.
-  intros x y; change ((z·) ?x) with (z·x).
-  apply by_contrapositive.
-  pose proof decompose_lt y x as [a Ha].
-  rew Ha.
-  rew [ (aprod_com _ _) | <-(le_lt_trans (z·x) (z·(y+a)) (z·y)) ].
-  apply aprod_proper_aimpl.
-  * rew <-(eq_le _ _). exact (is_fun (z ·) _ _).
-  * rew [ <-(plus_0_r (z·y)) | (plus_mult_distr_l _ _ _) ].
-    rew <-exact:(strictly_order_preserving (z·y +) _ _ : _ ⊸ z · y + z · a < z · y + 0).
-    pose proof decompose_lt z 0 as [b [Hb _]]; specialize (Hb _); destruct Hb as [? E].
-    rew <-exact:(strictly_order_reflecting (+ b·a) (z·a) 0 : z · a + b · a < 0 + b · a ⊸ _).
-    rew [ <-(plus_mult_distr_r _ _ _) | (plus_0_l _) ].
-    rew <-E, (mult_0_l _).
-    rew <-(mult_pos _ _).
-    now rew (aprod_true_l (_: 0 < b)).
-Qed.
-
-Lemma nonpos_mult_r `{RigOrder R} `{z ∊ R⁻} : OrderPreservingFlip (· z).
-Proof nonpos_mult_l (R:=ring_op R).
-
-Lemma neg_mult_r `{RigOrder R} `{z ∊ R₋} : OrderReflectingFlip (· z).
-Proof neg_mult_l (R:=ring_op R).
-
-
-(** In a totally ordered rig with no zero divisors,
-    we can derive that multiplication preserves positivity from
-    the fact that it preserves nonnegativity. *)
-
-Lemma total_rig_order `{Rig (R:=R)} {Rle:Le R}
-  `{!SubtractionMonoidOrder R}
-  `{!TotalOrder R}
-  `{!NoZeroDivisors R}
-:  (∀ x y : R, 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y)
-  → RigOrder R.
-Proof. intros mult_nonneg. unshelve esplit; try exact _.
-  intros x y.
-  apply by_contrapositive.
-  pose proof total (≤) x 0 as [Ex|Ex]; [ now rew (apar_is_true_l Ex) |].
-  pose proof total (≤) y 0 as [Ey|Ey]; [ now rew (apar_is_true_r Ey) |].
-  rew <-(aand_true_r (P:=x ≤ 0) Ex), (le_antisym_iff _ _).
-  rew <-(aand_true_r (P:=y ≤ 0) Ey), (le_antisym_iff _ _).
-  assert (0 ≤ x · y) as E by (apply mult_nonneg; now split).
-  rew <-(aand_true_r (P:=x · y ≤ 0) E), (le_antisym_iff _ _).
-  now apply no_zero_divisors.
-Qed.
-
-Lemma total_rig_order2 `{Rig (R:=R)} {Rle:Le R}
-  `{!AdditiveMonoidOrder R}
-  `{!TotalOrder R}
-  `{!NoZeroDivisors R}
-: (∀ x y : R, ∐ z, x ≤ y ⊸ 0 ≤ z ⊠ y = x + z)
-  → (∀ x y : R, 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y)
-  → RigOrder R.
-Proof. intros. simple refine (total_rig_order _).
-  now apply total_subtraction_monoid_order.
-Qed.
-
-Lemma total_ring_order `{Ring (R:=R)} {Rle:Le R}
-  `{!TotalOrder R}
-  `{!NoZeroDivisors R}
-: (∀ z : R, OrderPreserving (z+))
-  → (∀ x y : R, 0 ≤ x ⊠ 0 ≤ y ⊸ 0 ≤ x · y)
-  → RigOrder R.
-Proof. intros ??.
-  assert (SubtractionMonoidOrder R) by now apply alt_Build_AdditiveGroupOrder.
-  now apply total_rig_order.
-Qed.
-
-
-(** In a rig with a linear refutative order,
-    we can derive that multiplication preserves nonnegativity from
-    the fact that it preserves positivity. *)
-
-Lemma linear_refutative_rig_order `{Rig (R:=R)} {Rle:Le R}
-  `{!SubtractionMonoidOrder R}
-  `{!RefutativeOrder R}
-: (∀ x y : R, 0 < x ⊠ 0 < y ⊸ 0 < x · y)
-  → RigOrder R.
-Proof. intros mult_pos. unshelve esplit; try exact _.
-  intros x y. apply by_contrapositive.
-  apply affirmative_aimpl. intros E.
-  assert (x · y ≠ 0) as E2 by now rew <-(lt_ne _ _).
-  rew (nonzero_product _ _) in E2. destruct E2 as [Ex Ey].
-  rew [ (lt_iff_le_prod_ne _ _) | (lt_iff_le_prod_ne _ _) ].
-  rew [ (aprod_true_r Ex) | (aprod_true_r Ey) ].
-  rew <-(contrapositive (mult_pos x y)).
-  now apply lt_le.
-Qed.
-
-
-Lemma linear_refutative_rig_order2 `{Rig (R:=R)} {Rle:Le R}
-  `{!AdditiveMonoidOrder R}
-  `{!LinearOrder R}
-  `{!RefutativeOrder R}
-: (∀ x y : R, ∐ z, x ≤ y ⊸ 0 ≤ z ⊠ y = x + z)
-  → (∀ x y : R, 0 < x ⊠ 0 < y ⊸ 0 < x · y)
-  → RigOrder R.
-Proof. intros partial_minus mult_pos.
-  pose proof refutative_subtraction_monoid_order partial_minus.
-  now apply linear_refutative_rig_order.
-Qed.
-
-
-Lemma linear_refutative_ring_order `{Ring (R:=R)} {Rle:Le R}
-  `{!LinearOrder R} `{!RefutativeOrder R}
-: (∀ z:R, OrderPreserving (z+))
-  → (∀ x y : R, 0 < x ⊠ 0 < y ⊸ 0 < x · y)
-  → RigOrder R.
-Proof. intros ? mult_pos.
-  assert (SubtractionMonoidOrder R) by now apply alt_Build_AdditiveGroupOrder.
-  now apply linear_refutative_rig_order.
-Qed.
-
-
-
-
+Lemma slr_rig_order_nonneg_order `{StrongLinearRefutativeRigOrder R} : StrongLinearRefutativeRigOrder R⁺.
+Proof. split; try exact _. intros a b c d. exact (mult_lt_compat_full (R:=R) a b c d). Qed.
+Global Hint Extern 2 (StrongLinearRefutativeRigOrder (subset_to_set _⁺)) => simple notypeclasses refine slr_rig_order_nonneg_order : typeclass_instances.

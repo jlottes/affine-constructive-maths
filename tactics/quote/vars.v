@@ -7,13 +7,13 @@ Definition QuoteFindEnv := empty.
 Existing Class QuoteFindEnv.
 
 Lemma quote_find_atom `(f:X ⇾ Y) y {e:QuoteFindEnv} : quote f (abort e) y.
-Proof match e with end.
+Proof. exact (match e with end). Qed.
 
 Global Hint Extern 101 (quote ?f ?x ?y) => is_evar x; refine (quote_find_atom f _) : quote.
 
 Lemma quote_var_alt `(f:X ⇾ Y) `{Var_Morphism (X:=X) (Y:=Y) (Γ:=Γ) (f:=f)}
   (n:nat) {b:ListInBounds Γ n} : quote f (var n) (list_nth Γ n).
-Proof preserves_var Γ f n.
+Proof. exact (preserves_var Γ f n). Qed.
 
 Definition quote_var `(f:var_morphism X (Y:=Y) Γ) (n:nat) {b:ListInBounds Γ n}
   : quote f (var n) (list_nth Γ n)
@@ -130,7 +130,7 @@ Ltac quote_equation ev :=
     end.
 
 Ltac find_structure_and_quote_equation structure make ev :=
-  let Y := lazymatch goal with |- apos (_ = _ :> set_T ?Y) => strip_coercions Y end in
+  let Y := lazymatch goal with |- apos (_ = _ :> set_T ?Y) => strip_coercions_or_self Y end in
   let X := fresh "X" in
   lazymatch constr:(ltac:(solve [ exact Y | make Y ] ) : structure) with ?s => pose (X := s) end;
   quote_equation ltac:(ev X); clear X.

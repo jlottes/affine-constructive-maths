@@ -13,14 +13,10 @@ Inductive Dummy : SProp := dummy : Dummy.
 (** Linear iteration over hypotheses. From a Jonathan Leivent post to coq-club:
    https://coq-club.inria.narkive.com/Gog56von/a-trick-for-iterating-over-hypotheses *)
 Ltac revert_clearbody_all := repeat lazymatch goal with H:_ |- _ => try clearbody H; revert H end.
-Ltac hyp_stack := constr:(ltac:(revert_clearbody_all;constructor) : Dummy).
+Ltac hyp_stack := constr:(ltac:(revert_clearbody_all; intros; exact dummy) : Dummy).
 
 Ltac assert_fails' tac :=
   tryif (once tac) then gfail 0 tac "succeeds" else idtac.
-Ltac assert_succeeds' tac :=
-  tryif (assert_fails' tac) then gfail 0 tac "fails" else idtac.
-Tactic Notation "assert_succeeds" tactic3(tac) :=
-  assert_succeeds' tac.
 Tactic Notation "assert_fails" tactic3(tac) :=
   assert_fails' tac.
 
@@ -34,7 +30,8 @@ Ltac filtered_hyp_stack tac cont :=
           assert_succeeds tac H;
           let out' := constr:((fun _ => out) H) in
           step stack' out' || fail 1
-        | step stack' out ]
+        | let _ := debug_msg ltac:(fun G => idtac "skipping" H) in 
+          step stack' out ]
       | _ => cont out
     end
   in let stack := hyp_stack in step stack dummy.
@@ -43,6 +40,7 @@ Ltac filtered_hyp_stack tac cont :=
    Done in two stages; the set of hypotheses is filtered down to those that would
    succeed, limiting the back-tracking. *)
 Tactic Notation "try_all_hyps" tactic(tac) :=
+  let _ := debug_msg ltac:(fun G => idtac "try_all_hyps on" G) in
   let use H := let _ := debug_msg ltac:(fun G => idtac "using" H "on" G) in tac H
   in let rec step stack :=
     multimatch stack with
@@ -57,7 +55,17 @@ Tactic Notation "try_all_hyps" tactic(tac) :=
    only for (S)Props, since it does not matter (in principle) which instance is chosen.
 *)
 
-Ltac use_assumption := try_all_hyps (fun H => exact H).
+Ltac use_assumption := try_all_hyps (fun H => simple notypeclasses refine H; fail).
 Ltac check_is_prop := lazymatch goal with |- ?G => lazymatch type of G with Prop => idtac | SProp => idtac end end.
 
-Global Hint Extern 1 => check_is_prop; use_assumption : typeclass_instances.
+(** Solving a goal containing evars from a hypothesis risks instantiating them
+   incorrectly: unification may see through definitional walls (e.g. carrier-identity
+   constructions) and pick a hypothesis that determines the evars wrongly.  So on
+   goals with evars, demote this greedy fallback below all pattern-keyed hints:
+   the correct structured instance wins if one is registered, while coercion-fills
+   with no competing hint still resolve as before, just later. *)
+Ltac check_no_evars := lazymatch goal with |- ?G => assert_fails (has_evar G) end.
+Ltac check_has_evar := lazymatch goal with |- ?G => has_evar G end.
+
+Global Hint Extern 1  => check_is_prop; check_no_evars; use_assumption : typeclass_instances.
+Global Hint Extern 99 => check_is_prop; check_has_evar; use_assumption : typeclass_instances.

@@ -14,8 +14,8 @@ Module eval.
 
 Local Notation "x ,, s" := (func_op FinSeq_cons (x, s)) (at level 60, right associativity).
 Import finite_sequences.index_notation.
-Local Notation "[ x ]" := (func_op ProdList_unit x).
-Local Notation e := mon_unit.
+Local Notation "[ x ]" := (func_op ProdList_unit x) (at level 0).
+Local Abbreviation e := mon_unit.
 Local Open Scope grp_scope.
 
 Import projection_notation.
@@ -47,7 +47,7 @@ Section contents.
   Lemma act_map_nil : ∀ (Γ : list X), act_map_op Γ nil = ProdList_map (const 0) Γ.
   Proof. now intros [| x Γ]. Qed.
 
-  Local Notation tl := FinSeq_tail.
+  Local Abbreviation tl := FinSeq_tail.
 
   Lemma act_map_spec : ∀ x (Γ : list X) (s:M*), act_map_op (cons x Γ) s = x · [s]_0 :: act_map_op Γ (tl s).
   Proof. intros x Γ. refine (ProdList_sdestruct _ _ _).
@@ -67,17 +67,17 @@ Section contents.
     rew <-(IH _ _). rew <-E; now split.
   Qed.
 
-  Definition act_map (Γ:list X) : M* ⇾ X* := @make_fun _ _ _ (act_map_is_fun Γ).
+  Definition act_map (Γ:list X) : M* ⇾ X* := @func_make _ _ _ (act_map_is_fun Γ).
 
   Local Definition sum : X* ⇾ X := TensorList_to_monoid (id_fun (additive_monoid_as_com_monoid X)).
   Definition eval (Γ:list X) := sum ∘ act_map Γ.
 
   Lemma eval_spec : ∀ x (Γ : list X) (s:M*), eval (cons x Γ) s = x · [s]_0 + eval Γ (tl s).
-  Proof. intros x Γ s. now rew (FinSeq_tail_spec s) at 1. Qed.
+  Proof. intros x Γ s. now rew (FinSeq_tail_spec s : _ = _) at 1. Qed.
 
   Lemma eval_pres_0 : ∀ Γ, eval Γ 0 = 0.
   Proof. refine (list_sinduction _ _ _); [ refl | intros x Γ IH ]. rew (eval_spec _ _ _).
-    change (x · 0 + eval Γ 0 = 0). rew [ (preserves_0 _) | IH ]. exact (plus_0_l _).
+    change (x · 0 + eval Γ 0 = 0). rew [IH | (preserves_0 _)]. exact (plus_0_l _).
   Qed.
 
   Lemma eval_addmon_mor (Γ:list X) : AdditiveMonoid_Morphism (eval Γ).
@@ -90,8 +90,8 @@ Section contents.
     rewrite_preserves (FinSeq_index (X:=M) 0).
     rewrite_preserves (act x).
     rew (IH _ _).
-    rew ?(associativity (+) _ _ _). apply (is_fun (+ eval Γ (tl t))).
-    rew <-?(associativity (+) _ _ _). apply (is_fun (x · [s]_0 +)).
+    rew (associativity (+) _ _ _). apply (is_fun (+ eval Γ (tl t))).
+    rew <-(associativity (+) _ _ _). apply (is_fun (x · [s]_0 +)).
     exact (commutativity (+) _ _).
   Qed.
 
@@ -117,13 +117,13 @@ Definition nat_action (ℕ:naturals) (M:additive_monoid) (x:M) : additive_monoid
   := make_additive_non_com_monoid_morphism (of_course_counit _ ∘ ap2 (add_nat_act ℕ (X:=of_course_set M)) x).
 
 Lemma nat_action_1_r {ℕ M} x : @nat_action ℕ M x 1 = x.
-Proof add_nat_act_1_l ℕ (X:=of_course_set M) x.
+Proof. exact (add_nat_act_1_l ℕ (X:=of_course_set M) x). Qed.
 
 Definition free_add_mon@{u} (ℕ:naturals@{u}) `{!IsDecEq ℕ (d:=d)} : free_additive_monoid@{u}.
 Proof. unshelve esplit.
 + unshelve esplit.
   - exact (make_additive_monoid (FinSeq ℕ)).
-  - split. now change (Dec (A:=FinSeq ℕ) (=)).
+  - split. now change (Dec (A:=FinSeq ℕ ∗ FinSeq ℕ) (=)).
   - split. exact (eval.v (M:=ℕ)).
   - now change (IsDecEq (FinSeq ℕ)).
 + intros M Γ. unshelve esplit.
@@ -144,3 +144,4 @@ Defined.
 
 Definition free_com_mon@{u} (ℕ:naturals@{u}) `{!IsDecEq ℕ (d:=d)} : free_commutative_monoid@{u}
   := free_additive_monoid_as_free_com_mon (free_add_mon ℕ).
+

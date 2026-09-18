@@ -19,21 +19,25 @@ Global Hint Extern 2 (Bottom_Pointed_Morphism  (id_fun _)) => simple notypeclass
 Global Hint Extern 2 (Zero_Pointed_Morphism    (id_fun _)) => simple notypeclasses refine id_zero_pointed   : typeclass_instances.
 Global Hint Extern 2 (One_Pointed_Morphism     (id_fun _)) => simple notypeclasses refine id_one_pointed    : typeclass_instances.
 
-Lemma compose_pointed {X Y Z:set} {x:X} {y:Y} {z:Z} {g f} : Pointed_Morphism x y f → Pointed_Morphism y z g
+Lemma compose_pointed@{u} {X Y Z:set@{u}} {x:X} {y:Y} {z:Z} {g f} : Pointed_Morphism x y f → Pointed_Morphism y z g
   → Pointed_Morphism x z (g ∘ f).
 Proof. intros. change (g (f x) = z). rew (preserves_point f). exact (preserves_point g). Qed.
 Global Hint Extern 2 (Pointed_Morphism _ _ (_ ∘ _)) => simple notypeclasses refine (compose_pointed _ _) : typeclass_instances.
 
-Definition compose_unit_pointed {X Y Z:set} {x:MonUnit X} {y:MonUnit Y} {z:MonUnit Z} {g:Y ⇾ Z} {f:X ⇾ Y}
-  : MonUnit_Pointed_Morphism f → MonUnit_Pointed_Morphism g → MonUnit_Pointed_Morphism (g ∘ f) := compose_pointed.
-Definition compose_top_pointed {X Y Z:set} {x:Top X} {y:Top Y} {z:Top Z} {g:Y ⇾ Z} {f:X ⇾ Y}
-  : Top_Pointed_Morphism f → Top_Pointed_Morphism g → Top_Pointed_Morphism (g ∘ f) := compose_pointed.
-Definition compose_bottom_pointed {X Y Z:set} {x:Bottom X} {y:Bottom Y} {z:Bottom Z} {g:Y ⇾ Z} {f:X ⇾ Y}
-  : Bottom_Pointed_Morphism f → Bottom_Pointed_Morphism g → Bottom_Pointed_Morphism (g ∘ f) := compose_pointed.
-Definition compose_zero_pointed {X Y Z:set} {x:Zero X} {y:Zero Y} {z:Zero Z} {g:Y ⇾ Z} {f:X ⇾ Y}
-  : Zero_Pointed_Morphism f → Zero_Pointed_Morphism g → Zero_Pointed_Morphism (g ∘ f) := compose_pointed.
-Definition compose_one_pointed {X Y Z:set} {x:One X} {y:One Y} {z:One Z} {g:Y ⇾ Z} {f:X ⇾ Y}
-  : One_Pointed_Morphism f → One_Pointed_Morphism g → One_Pointed_Morphism (g ∘ f) := compose_pointed.
+Section compose_pointed.
+  Universes u.
+  Context {X Y Z:set@{u}}.
+  Definition compose_unit_pointed {x:MonUnit X} {y:MonUnit Y} {z:MonUnit Z} {g:Y ⇾ Z} {f:X ⇾ Y}
+    : MonUnit_Pointed_Morphism f → MonUnit_Pointed_Morphism g → MonUnit_Pointed_Morphism (g ∘ f) := compose_pointed.
+  Definition compose_top_pointed {x:Top X} {y:Top Y} {z:Top Z} {g:Y ⇾ Z} {f:X ⇾ Y}
+    : Top_Pointed_Morphism f → Top_Pointed_Morphism g → Top_Pointed_Morphism (g ∘ f) := compose_pointed.
+  Definition compose_bottom_pointed {x:Bottom X} {y:Bottom Y} {z:Bottom Z} {g:Y ⇾ Z} {f:X ⇾ Y}
+    : Bottom_Pointed_Morphism f → Bottom_Pointed_Morphism g → Bottom_Pointed_Morphism (g ∘ f) := compose_pointed.
+  Definition compose_zero_pointed {x:Zero X} {y:Zero Y} {z:Zero Z} {g:Y ⇾ Z} {f:X ⇾ Y}
+    : Zero_Pointed_Morphism f → Zero_Pointed_Morphism g → Zero_Pointed_Morphism (g ∘ f) := compose_pointed.
+  Definition compose_one_pointed {x:One X} {y:One Y} {z:One Z} {g:Y ⇾ Z} {f:X ⇾ Y}
+    : One_Pointed_Morphism f → One_Pointed_Morphism g → One_Pointed_Morphism (g ∘ f) := compose_pointed.
+End compose_pointed.
 Global Hint Extern 2 (MonUnit_Pointed_Morphism (_ ∘ _)) => simple notypeclasses refine (compose_unit_pointed   _ _) : typeclass_instances.
 Global Hint Extern 2 (Top_Pointed_Morphism     (_ ∘ _)) => simple notypeclasses refine (compose_top_pointed    _ _) : typeclass_instances.
 Global Hint Extern 2 (Bottom_Pointed_Morphism  (_ ∘ _)) => simple notypeclasses refine (compose_bottom_pointed _ _) : typeclass_instances.
@@ -42,21 +46,26 @@ Global Hint Extern 2 (One_Pointed_Morphism     (_ ∘ _)) => simple notypeclasse
 
 Local Open Scope fun_inv_scope.
 
-Lemma invert_pointed {X Y:set} {x:X} {y:Y} {f} `{!Pointed_Morphism x y f} `{!Inverse f} `{!Bijective f}
+Lemma invert_pointed@{u} {X Y:set@{u}} {x:X} {y:Y} {f} `{!Pointed_Morphism x y f, !Inverse f, !Bijective f}
   : Pointed_Morphism y x f⁻¹.
 Proof. red. now rew (injective_iff f _ _), (surjective_applied f _). Qed.
 Global Hint Extern 2 (Pointed_Morphism _⁻¹) => simple notypeclasses refine invert_pointed : typeclass_instances.
 
-Definition invert_unit_pointed {X Y:set} {x:MonUnit X} {y:MonUnit Y} {f:X ⇾ Y} `{!MonUnit_Pointed_Morphism f} `{!Inverse f} `{!Bijective f}
-  : MonUnit_Pointed_Morphism f⁻¹ := invert_pointed.
-Definition invert_top_pointed {X Y:set} {x:Top X} {y:Top Y} {f:X ⇾ Y} `{!Top_Pointed_Morphism f} `{!Inverse f} `{!Bijective f}
-  : Top_Pointed_Morphism f⁻¹ := invert_pointed.
-Definition invert_bottom_pointed {X Y:set} {x:Bottom X} {y:Bottom Y} {f:X ⇾ Y} `{!Bottom_Pointed_Morphism f} `{!Inverse f} `{!Bijective f}
-  : Bottom_Pointed_Morphism f⁻¹ := invert_pointed.
-Definition invert_zero_pointed {X Y:set} {x:Zero X} {y:Zero Y} {f:X ⇾ Y} `{!Zero_Pointed_Morphism f} `{!Inverse f} `{!Bijective f}
-  : Zero_Pointed_Morphism f⁻¹ := invert_pointed.
-Definition invert_one_pointed {X Y:set} {x:One X} {y:One Y} {f:X ⇾ Y} `{!One_Pointed_Morphism f} `{!Inverse f} `{!Bijective f}
-  : One_Pointed_Morphism f⁻¹ := invert_pointed.
+Section invert.
+  Universes u.
+  Context {X Y:set@{u}}.
+
+  Definition invert_unit_pointed {x:MonUnit X} {y:MonUnit Y} {f:X ⇾ Y} `{!MonUnit_Pointed_Morphism f, !Inverse f, !Bijective f}
+    : MonUnit_Pointed_Morphism f⁻¹ := invert_pointed.
+  Definition invert_top_pointed {x:Top X} {y:Top Y} {f:X ⇾ Y} `{!Top_Pointed_Morphism f, !Inverse f, !Bijective f}
+    : Top_Pointed_Morphism f⁻¹ := invert_pointed.
+  Definition invert_bottom_pointed {x:Bottom X} {y:Bottom Y} {f:X ⇾ Y} `{!Bottom_Pointed_Morphism f, !Inverse f, !Bijective f}
+    : Bottom_Pointed_Morphism f⁻¹ := invert_pointed.
+  Definition invert_zero_pointed {x:Zero X} {y:Zero Y} {f:X ⇾ Y} `{!Zero_Pointed_Morphism f, !Inverse f, !Bijective f}
+    : Zero_Pointed_Morphism f⁻¹ := invert_pointed.
+  Definition invert_one_pointed {x:One X} {y:One Y} {f:X ⇾ Y} `{!One_Pointed_Morphism f, !Inverse f, !Bijective f}
+    : One_Pointed_Morphism f⁻¹ := invert_pointed.
+End invert.
 Global Hint Extern 2 (MonUnit_Pointed_Morphism _⁻¹) => simple notypeclasses refine invert_unit_pointed   : typeclass_instances.
 Global Hint Extern 2 (Top_Pointed_Morphism     _⁻¹) => simple notypeclasses refine invert_top_pointed    : typeclass_instances.
 Global Hint Extern 2 (Bottom_Pointed_Morphism  _⁻¹) => simple notypeclasses refine invert_bottom_pointed : typeclass_instances.
@@ -67,23 +76,23 @@ Global Hint Extern 2 (One_Pointed_Morphism     _⁻¹) => simple notypeclasses r
 
 Lemma quote_mon_unit_alt `(f:X ⇾ Y) `{MonUnit_Pointed_Morphism (X:=X) (Y:=Y) (f:=f)}
   : quote f mon_unit mon_unit.
-Proof preserves_unit f.
+Proof. exact (preserves_unit f). Qed.
 
 Lemma quote_top_alt `(f:X ⇾ Y) `{Top_Pointed_Morphism (X:=X) (Y:=Y) (f:=f)}
   : quote f ⊤ ⊤.
-Proof preserves_top f.
+Proof. exact (preserves_top f). Qed.
 
 Lemma quote_bottom_alt `(f:X ⇾ Y) `{Bottom_Pointed_Morphism (X:=X) (Y:=Y) (f:=f)}
   : quote f ⊥ ⊥.
-Proof preserves_bottom f.
+Proof. exact (preserves_bottom f). Qed.
 
 Lemma quote_zero_alt `(f:X ⇾ Y) `{Zero_Pointed_Morphism (X:=X) (Y:=Y) (f:=f)}
   : quote f 0 0.
-Proof preserves_0 f.
+Proof. exact (preserves_0 f). Qed.
 
 Lemma quote_one_alt `(f:X ⇾ Y) `{One_Pointed_Morphism (X:=X) (Y:=Y) (f:=f)}
   : quote f 1 1.
-Proof preserves_1 f.
+Proof. exact (preserves_1 f). Qed.
 
 Global Hint Extern 4 (quote _ mon_unit _) => quote_hint_strip (fun f => refine (quote_mon_unit_alt f)) : quote.
 Global Hint Extern 4 (quote _ _ mon_unit) => quote_hint_strip (fun f => refine (quote_mon_unit_alt f)) : quote.

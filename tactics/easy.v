@@ -2,12 +2,12 @@ Require Import interfaces.notation sprop interfaces.aprop tactics.misc.
 
 Ltac fold_complement :=
   lazymatch goal with
-  | |- ¬ (?R ?x ?y) => change ((scomplement R) x y)
+  | |- ¬ (?R (?x, ?y)) => change ((scomplement R) (x, y))
   end.
 
-Ltac fold_impl := lazymatch goal with |- forall _ : ?P, ?Q => change (impl P Q) end.
+Ltac fold_impl := lazymatch goal with |- forall _ : ?P, ?Q => change (impl (P, Q)) end.
 
-Ltac unfold_sflip := lazymatch goal with |- (sflip ?R) ?a ?b => change (R b a) end.
+Ltac unfold_sflip := lazymatch goal with |- (sflip ?R) (?a, ?b) => change (R (b, a)) end.
 
 Ltac refl :=
   lazymatch goal with

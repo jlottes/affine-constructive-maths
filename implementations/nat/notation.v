@@ -20,3 +20,4 @@ Definition of_num_uint (x:Number.uint) : nat := of_stdlib_nat (Nat.of_num_uint x
 Definition to_num_uint (x:nat) : Number.uint := Nat.to_num_uint (to_stdlib_nat x).
 
 Number Notation nat of_num_uint to_num_uint : nat_scope.
+

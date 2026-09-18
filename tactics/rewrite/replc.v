@@ -15,4 +15,8 @@ Tactic Notation "replc" constr(x₁) "with" uconstr(y₁) "by" tactic3(tac₁)
   rew [ E₁ | E₂ ]; clear E₁ E₂.
 
 Tactic Notation "replc" constr(x) "with" uconstr(y) "using" uconstr(R) :=
-  let E := fresh "E" in assert (R x y) as E; [| rew E; clear E ].
+  let E := fresh "E" in assert (R (x, y)) as E; [| rew E; clear E ].
+
+Tactic Notation "replc" constr(x) "with" uconstr(y) "using" uconstr(R) "by" tactic3(tac) :=
+  let E := fresh "E" in assert (R (x, y)) as E by tac; rew E; clear E.
+  

@@ -26,18 +26,21 @@ Notation "⊥" := bottom : op_scope.
 Global Hint Mode Bottom + : typeclass_instances.
 
 Class SgOp (G:set) := sg_op : G ⊗ G ⇾ G.
-Declare Scope grp_scope.
-Notation "x ∙ y" := (func_op sg_op (x, y)) : grp_scope.
-Notation "(∙)" := sg_op : grp_scope.
-Notation "( x ∙)" := (func_op2 ap1 sg_op x) : grp_scope.
-Notation "(∙ x )" := (func_op2 ap2 sg_op x) : grp_scope.
+Declare Scope sg_op_scope.
+Notation "x ∙ y" := (func_op sg_op (x, y)) : sg_op_scope.
+Notation "(∙)" := sg_op : sg_op_scope.
+Notation "( x ∙)" := (func_op2 ap1 sg_op x) : sg_op_scope.
+Notation "(∙ x )" := (func_op2 ap2 sg_op x) : sg_op_scope.
 Global Hint Mode SgOp + : typeclass_instances.
 Global Hint Extern 1 (StrongOp (@sg_op _ (?f ∘ tensor_to_prod _ _))) => simple notypeclasses refine (is_fun f) : typeclass_instances.
 
 Class Inv G := inv : G ⇾ G.
+Global Hint Mode Inv + : typeclass_instances.
+Declare Scope grp_scope.
 Notation "x ⁻¹" := (func_op inv x) : grp_scope.
 Notation "(⁻¹)" := inv : grp_scope.
-Global Hint Mode Inv + : typeclass_instances.
+Declare Scope star_scope.
+Notation "x *" := (func_op inv x) : star_scope.
 
 Class Plus (X:set) := plus : X ⊗ X ⇾ X.
 Notation "x + y" := (func_op plus (x, y)) : op_scope.
@@ -89,20 +92,24 @@ Notation "- 3" := (-(3)) : op_scope.
 Notation "- 4" := (-(4)) : op_scope.
 
 Definition semigroup_op (G:set) := G.
+Global Typeclasses Opaque semigroup_op.
 Global Hint Extern 1 (SgOp (semigroup_op ?G)) => notypeclasses refine (@sg_op G _ ∘ tensor_swap G G) : typeclass_instances.
 Global Hint Extern 1 (MonUnit (semigroup_op ?G)) => change (MonUnit G) : typeclass_instances.
 Global Hint Extern 1 (Inv (semigroup_op ?G)) => change (Inv G) : typeclass_instances.
 
 Definition AdditiveGroupOps       (X:set) := X.
+Global Typeclasses Opaque AdditiveGroupOps.
 Global Hint Extern 1 (SgOp    (AdditiveGroupOps ?X)) => change (Plus   X) : typeclass_instances.
 Global Hint Extern 1 (MonUnit (AdditiveGroupOps ?X)) => change (Zero   X) : typeclass_instances.
 Global Hint Extern 1 (Inv     (AdditiveGroupOps ?X)) => change (Negate X) : typeclass_instances.
 
 Definition MultiplicativeGroupOps (X:set) := X.
+Global Typeclasses Opaque MultiplicativeGroupOps.
 Global Hint Extern 1 (SgOp    (MultiplicativeGroupOps ?X)) => change (Mult X) : typeclass_instances.
 Global Hint Extern 1 (MonUnit (MultiplicativeGroupOps ?X)) => change (One  X) : typeclass_instances.
 
 Definition ring_op (R:set) := R.
+Global Typeclasses Opaque ring_op.
 Global Hint Extern 1 (Mult   (ring_op ?R)) => notypeclasses refine (@mult R _ ∘ tensor_swap R R) : typeclass_instances.
 Global Hint Extern 1 (Plus   (ring_op ?R)) => change (Plus    R) : typeclass_instances.
 Global Hint Extern 1 (Zero   (ring_op ?R)) => change (Zero    R) : typeclass_instances.
@@ -112,15 +119,20 @@ Global Hint Extern 1 (Negate (ring_op ?R)) => change (Negate  R) : typeclass_ins
 
 Definition MeetSemigroupOps (L:set) := L.
 Definition JoinSemigroupOps (L:set) := L.
+Global Typeclasses Opaque MeetSemigroupOps.
+Global Typeclasses Opaque JoinSemigroupOps.
 Global Hint Extern 1 (SgOp (MeetSemigroupOps ?L)) => change (Meet L) : typeclass_instances.
 Global Hint Extern 1 (SgOp (JoinSemigroupOps ?L)) => change (Join L) : typeclass_instances.
 Global Hint Extern 1 (MonUnit (MeetSemigroupOps ?L)) => change (Top L) : typeclass_instances.
 Global Hint Extern 1 (MonUnit (JoinSemigroupOps ?L)) => change (Bottom L) : typeclass_instances.
 
-Definition order_op (X:set) := X.
-Global Hint Extern 2 (Meet   (order_op ?L)) => change (Join   L) : typeclass_instances.
-Global Hint Extern 2 (Join   (order_op ?L)) => change (Meet   L) : typeclass_instances.
-Global Hint Extern 2 (Top    (order_op ?L)) => change (Bottom L) : typeclass_instances.
-Global Hint Extern 2 (Bottom (order_op ?L)) => change (Top    L) : typeclass_instances.
+
+Canonical Order_op (X:set) := {| set_T := order_op (set_T X); set_eq := set_eq X; set_is_set := set_is_set X |}.
+Global Typeclasses Opaque Order_op.
+Global Hint Extern 2 (Le (set_T (Order_op ?X))) => change (Le (order_op (set_T X))) : typeclass_instances.
+Global Hint Extern 2 (Meet   (Order_op ?L)) => change (Join   L) : typeclass_instances.
+Global Hint Extern 2 (Join   (Order_op ?L)) => change (Meet   L) : typeclass_instances.
+Global Hint Extern 2 (Top    (Order_op ?L)) => change (Bottom L) : typeclass_instances.
+Global Hint Extern 2 (Bottom (Order_op ?L)) => change (Top    L) : typeclass_instances.
 
 

@@ -1,7 +1,7 @@
 Require Export theory.additive_groups theory.multiplicative_groups.
 Require Import interfaces.sprop abstract_algebra.
 Require Import logic.aprop.
-Require Import easy rewrite.
+Require Import easy rewrite simplify.
 
 Local Notation "X 'ᵒᵖ'" := (ring_op X) (at level 1, format "X 'ᵒᵖ'").
 Local Open Scope mult_scope.
@@ -9,8 +9,8 @@ Local Open Scope mult_scope.
 (** Alternative axiomatizations *)
 
 Section alt_build.
-  Universes i.
-  Context {R:set@{i}} {Rplus: Plus R} {Rmult: Mult R} {Rzero: Zero R} {Rone: One R} {Rnegate: Negate R}.
+  Universes u.
+  Context {R:set@{u}} {Rplus: Plus R} {Rmult: Mult R} {Rzero: Zero R} {Rone: One R} {Rnegate: Negate R}.
 
   Lemma alt_Build_NearRg :
       Associative (X:=R) (+)
@@ -159,8 +159,8 @@ Section alt_build.
     → RightDistribute (X:=R) (·) (+)
     → NearRng R.
   Proof. intros. split; trivial. apply alt_Build_NearRg; try exact _.
-    intros y. apply (right_cancellation (+) (0 · y) _ _).
-    now rew <-(distribute_r (·) (+) 0 0 y), (plus_0_r _), (plus_0_l (0 · y)).
+    intros y. rew (injective_iff_simp (+ 0·y) _ _).
+    rew <-(distribute_r (·) (+) 0 0 y). now simplify.
   Qed.
 
   Lemma alt_Build_LeftNearRng :
@@ -169,8 +169,8 @@ Section alt_build.
     → LeftDistribute (X:=R) (·) (+)
     → LeftNearRng R.
   Proof. intros. split; trivial. apply alt_Build_LeftNearRg; try exact _.
-    intros y. apply (left_cancellation (+) (y · 0) _ _).
-    now rew <-(distribute_l (·) (+) y 0 0), (plus_0_l _), (plus_0_r (y · 0)).
+    intros y. rew (injective_iff_simp (y·0 +) _ _).
+    rew <-(distribute_l (·) (+) y 0 0). now simplify.
   Qed.
 
   Lemma alt_Build_Rng :
@@ -341,10 +341,11 @@ Coercion Ring_LeftNearRing `{H:Ring R} : LeftNearRing R.  Proof. now apply alt_B
 
 (** Opposite ring structures: multiplication order reversed *)
 
+Global Hint Extern 2 (@OneNonZero (?R ᵒᵖ) ?z ?o) => change (@OneNonZero R z o) : typeclass_instances.
 Section opposite.
   Instance NoZeroDivisors_op `{NoZeroDivisors R} : NoZeroDivisors (R ᵒᵖ).
   Proof. change (∀ x y : R, y · x = 0 ⊸ x = 0 ⊞ y = 0). intros x y; now rew (apar_com _ _). Qed.
-  Instance ZeroProduct_op `{ZeroProduct R} : ZeroProduct (R ᵒᵖ).
+  Instance StrongNoZeroDivisors_op `{StrongNoZeroDivisors R} : StrongNoZeroDivisors (R ᵒᵖ).
   Proof. change (∀ x y : R, y · x = 0 ⊸ x = 0 ∨ y = 0). intros x y; now rew (aor_com _ _). Qed.
 
   Ltac go := split; try exact _; change (@mult (ring_op _) ?f) with f; unfold ring_op; exact _.
@@ -362,9 +363,10 @@ Section opposite.
   Instance LeftNearRing_op    `{LeftNearRing R}    : NearRing (R ᵒᵖ).        Proof. go. Defined.
   Instance Ring_op            `{Ring R}            : Ring (R ᵒᵖ).            Proof. go. Defined.
   Instance CommutativeRing_op `{CommutativeRing R} : CommutativeRing (R ᵒᵖ). Proof. go. Defined.
+  Instance IntegralDomain_op  `{IntegralDomain R}  : IntegralDomain (R ᵒᵖ).  Proof. go. Defined.
 End opposite.
-Global Hint Extern 2 (NoZeroDivisors  (_ ᵒᵖ)) => simple notypeclasses refine NoZeroDivisors_op  : typeclass_instances.
-Global Hint Extern 2 (ZeroProduct     (_ ᵒᵖ)) => simple notypeclasses refine ZeroProduct_op     : typeclass_instances.
+Global Hint Extern 2 (NoZeroDivisors       (_ ᵒᵖ)) => simple notypeclasses refine NoZeroDivisors_op       : typeclass_instances.
+Global Hint Extern 2 (StrongNoZeroDivisors (_ ᵒᵖ)) => simple notypeclasses refine StrongNoZeroDivisors_op : typeclass_instances.
 Global Hint Extern 2 (LeftNearRg      (_ ᵒᵖ)) => simple notypeclasses refine NearRg_op          : typeclass_instances.
 Global Hint Extern 2 (NearRg          (_ ᵒᵖ)) => simple notypeclasses refine LeftNearRg_op      : typeclass_instances.
 Global Hint Extern 2 (Rg              (_ ᵒᵖ)) => simple notypeclasses refine Rg_op              : typeclass_instances.
@@ -379,30 +381,51 @@ Global Hint Extern 2 (LeftNearRing    (_ ᵒᵖ)) => simple notypeclasses refine
 Global Hint Extern 2 (NearRing        (_ ᵒᵖ)) => simple notypeclasses refine LeftNearRing_op    : typeclass_instances.
 Global Hint Extern 2 (Ring            (_ ᵒᵖ)) => simple notypeclasses refine Ring_op            : typeclass_instances.
 Global Hint Extern 2 (CommutativeRing (_ ᵒᵖ)) => simple notypeclasses refine CommutativeRing_op : typeclass_instances.
+Global Hint Extern 2 (IntegralDomain  (_ ᵒᵖ)) => simple notypeclasses refine IntegralDomain_op  : typeclass_instances.
 
-Coercion zero_product_no_zero_divisors `{H:ZeroProduct R} : NoZeroDivisors R.
+
+Global Hint Extern 2 (SimplifiesTo (0 · _) _) => solve_simplify (mult_0_l _) : typeclass_instances.
+Global Hint Extern 2 (SimplifiesTo (_ · 0) _) => solve_simplify (mult_0_r _) : typeclass_instances.
+
+
+Coercion strong_no_zero_divisors_no_zero_divisors `{H:StrongNoZeroDivisors R} : NoZeroDivisors R.
 Proof. red; intros x y. rew <-(aor_apar _ _). apply H. Qed.
 
+Lemma dec_strong_no_zero_divisors `{NoZeroDivisors R} `{!DecidableEquality R} : StrongNoZeroDivisors R.
+Proof. red. intros x y. rew (no_zero_divisors x y).
+  destruct (_ : Decidable (x = 0)) as [Ex|Ex]; [ now simplify |].
+  destruct (_ : Decidable (y = 0)) as [Ey|Ey]; [ now simplify |].
+  apply by_contrapositive. now simplify.
+Qed.
+
 (** Miscellaneous Rg properties *)
-(* Lemma zero_product `{Rg R} : ∀ x y : R, x = 0 ∨ y = 0 ⊸ x · y = 0.
-Proof left_or_right_absorb _. *)
+Lemma zero_product `{Rg R} : ∀ x y : R, x = 0 ∨ y = 0 ⊸ x · y = 0.
+Proof. exact (left_or_right_absorb _). Qed.
 
 Lemma nonzero_product `{Rg R} : ∀ x y : R, x · y ≠ 0 ⊸ x ≠ 0 ∧ y ≠ 0.
-Proof absorb_ne_left_and_right _.
+Proof. exact (absorb_ne_left_and_right _). Qed.
 
-(*Lemma zero_product_par `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x = 0 ⊞ y = 0 ⊸ x · y = 0.
-Proof left_par_right_absorb _.*)
+Lemma zero_product_par `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x = 0 ⊞ y = 0 ⊸ x · y = 0.
+Proof. exact (left_par_right_absorb _). Qed.
 
 Lemma nonzero_product_prod `{Rg R} `{!RefutativeEquality R} : ∀ x y : R, x · y ≠ 0 ⊸ x ≠ 0 ⊠ y ≠ 0.
-Proof absorb_ne_left_prod_right _.
+Proof. exact (absorb_ne_left_prod_right _). Qed.
+
+Lemma zero_product_par_iff `{Rg R} `{!RefutativeEquality R, !NoZeroDivisors R}
+  : ∀ x y : R, x = 0 ⊞ y = 0 ⧟ x · y = 0.
+Proof. split. exact (zero_product_par _ _). exact (no_zero_divisors _ _). Qed.
+
+Lemma nonzero_product_prod_iff `{Rg R} `{!RefutativeEquality R, !NoZeroDivisors R}
+  : ∀ x y : R, x · y ≠ 0 ⧟ x ≠ 0 ⊠ y ≠ 0.
+Proof. intros x y. apply by_contrapositive_iff. apply symmetry; [ easy |]. exact (zero_product_par_iff _ _). Qed.
 
 (** Miscellaneous Rig properties *)
 
 Lemma mult_2_plus_l `{NearRig R} (x:R) : 2 · x = x + x.
-Proof. now rew (plus_mult_distr_r _ _ _), (mult_1_l _). Qed.
+Proof. rew (plus_mult_distr_r _ _ _). now simplify. Qed.
 
 Lemma mult_2_plus_r `{LeftNearRig R} : ∀ x:R, x · 2 = x + x.
-Proof mult_2_plus_l (R:=R ᵒᵖ).
+Proof. exact (mult_2_plus_l (R:=R ᵒᵖ)). Qed.
 
 Lemma mult_2_2 `{Rig R} : 2 · 2 = 4 :> R.
 Proof. rew (mult_2_plus_l _). exact plus_2_2. Qed.
@@ -413,50 +436,91 @@ Proof. now rew [(mult_2_plus_l _) | (mult_2_plus_r _)]. Qed.
 (** Miscellaneous Rng properties *)
 
 Lemma negate_mult_distr_l `{NearRng R} (x y : R) : -(x · y) = -x · y.
-Proof. apply (left_cancellation (+) (x · y) _ _).
-  rew [(plus_negate_r _) | <-(plus_mult_distr_r _ _ _)].
-  now rew (plus_negate_r _), (mult_0_l _).
+Proof. rew (injective_iff_simp (x·y +) _ _).
+  rew <-(plus_mult_distr_r _ _ _).
+  now simplify.
 Qed.
 
 Lemma negate_mult_distr_r `{LeftNearRng R} (x y : R) : -(x · y) = x · -y.
-Proof negate_mult_distr_l (R:=R ᵒᵖ) _ _.
+Proof. exact (negate_mult_distr_l (R:=R ᵒᵖ) _ _). Qed.
+
+Lemma simplify_mult_negate_l `{NearRng R} {x y x' y': R} `{!SimplifiesTo x x', !SimplifiesTo y y'}
+  : SimplifiesTo (-x · y) (-(x · y)).
+Proof. split. simplify. now rew (negate_mult_distr_l _ _). Qed.
+Global Hint Extern 4 (SimplifiesTo (-_ · _) _) => notypeclasses refine simplify_mult_negate_l : typeclass_instances.
+
+Lemma simplify_mult_negate_r `{LeftNearRng R} {x y x' y': R} `{!SimplifiesTo x x', !SimplifiesTo y y'}
+  : SimplifiesTo (x · -y) (-(x · y)).
+Proof. split. simplify. now rew (negate_mult_distr_r _ _). Qed.
+Global Hint Extern 4 (SimplifiesTo (_ · -_) _) => notypeclasses refine simplify_mult_negate_r : typeclass_instances.
 
 Lemma negate_mult_negate `{Rng R} (x y : R) : -x · -y = x · y.
-Proof. rew <-(negate_mult_distr_l _ _), <-(negate_mult_distr_r _ _).
-  exact (negate_involutive _).
-Qed.
+Proof. now simplify. Qed.
+
+Lemma simplify_mult_negate_both `{Rng R} {x y x' y': R} `{!SimplifiesTo x x', !SimplifiesTo y y'}
+  : SimplifiesTo (-x · -y) (x' · y').
+Proof. split. now simplify. Qed.
+Global Hint Extern 3 (SimplifiesTo (-_ · -_) _) => notypeclasses refine simplify_mult_negate_both : typeclass_instances.
 
 Lemma mult_minus_distr_l `{LeftNearRng R} (x y z : R) : x · (y - z) = x · y - x · z.
 Proof. rew (negate_mult_distr_r _ _). exact (plus_mult_distr_l _ _ _). Qed.
 
 Lemma mult_minus_distr_r `{NearRng R} (x y z : R) : (x - y) · z = x · z - y · z.
-Proof mult_minus_distr_l (R:=R ᵒᵖ) _ _ _.
+Proof. exact (mult_minus_distr_l (R:=R ᵒᵖ) _ _ _). Qed.
 
 Lemma negate_zero_prod_l `{NearRng R} (x y : R) : -x · y = 0 ⧟ x · y = 0.
 Proof.
-  rew (injective_iff (-) (x · y) _), (negate_mult_distr_l _ _).
-  now let E := constr:(negate_0) in rew E.
+  now rew (injective_iff_simp (-) (x · y) _), (negate_mult_distr_l _ _).
 Qed.
 
 Lemma negate_zero_prod_r `{LeftNearRng R} (x y : R) : x · -y = 0 ⧟ x · y = 0.
-Proof negate_zero_prod_l (R:=R ᵒᵖ) _ _.
+Proof. exact (negate_zero_prod_l (R:=R ᵒᵖ) _ _). Qed.
 
 Lemma negate_mult `{NearRing R} (x:R) : -x = -1 · x.
-Proof. now rew <-(negate_mult_distr_l _ _), (mult_1_l _). Qed.
+Proof. now simplify. Qed.
 
 Lemma negate_mult_r `{LeftNearRing R} (x:R) : -x = x · -1.
-Proof negate_mult (R:=R ᵒᵖ) _.
+Proof. exact (negate_mult (R:=R ᵒᵖ) _). Qed.
+
+(** Multiplicative cancellation *)
+
+Lemma mult_cancel_no_zero_divisors `{Rg (R:=R)} `{!NonZeroMultiplicativeCancellation R} : NoZeroDivisors R.
+Proof. intros x y. apply aimpl_split_dual.
++ intros E. apply apar_split_dual; intro; revert E.
+  * now rew (injective_iff_simp (x·) y 0).
+  * now rew (injective_iff_simp (·y) x 0).
++ intros [??]. now rew <-(injective_iff_simp (x·) y 0).
+Qed.
+
+Lemma no_zero_divisors_mult_cancel_left `{LeftNearRng (R:=R)} `{!NoZeroDivisors R} (z:R) `{z ≠ 0} : Injective (z·).
+Proof. intros x y. simplify.
+  rew [(injective_iff_simp (+ -(z·y)) (z·x) _)|(injective_iff_simp (+ -y) x _)].
+  rew <-(mult_minus_distr_l _ _ _).
+  rew (no_zero_divisors _ _).
+  apply by_contrapositive. now simplify.
+Qed.
+
+Lemma no_zero_divisors_mult_cancel_right `{NearRng (R:=R)} `{!NoZeroDivisors R} (z:R) `{z ≠ 0} : Injective (·z).
+Proof. exact (no_zero_divisors_mult_cancel_left (R:=R ᵒᵖ) _). Qed.
+
+Lemma no_zero_divisors_mult_cancel `{Rng (R:=R)} `{!NoZeroDivisors R} : NonZeroMultiplicativeCancellation R.
+Proof. split.
++ exact no_zero_divisors_mult_cancel_left.
++ exact no_zero_divisors_mult_cancel_right.
+Qed.
+
+Coercion intdomain_mult_cancel `{IntegralDomain R} : NonZeroMultiplicativeCancellation R := no_zero_divisors_mult_cancel.
 
 (** Morphisms *)
 
 Lemma Rg_Morphism_proper_impl {X Y pX pY mX mY zX zY} (f g : X ⇾ Y)
-  : f = g → impl (@Rg_Morphism X Y pX pY mX mY zX zY f) (Rg_Morphism g).
+  : f = g → impl (@Rg_Morphism X Y pX pY mX mY zX zY f, Rg_Morphism g).
 Proof. intros E H; split; now rew <-E. Qed.
 Canonical Structure Rg_Morphism_fun {X Y pX pY mX mY zX zY} :=
   make_weak_spred (@Rg_Morphism X Y pX pY mX mY zX zY) Rg_Morphism_proper_impl.
 
 Lemma Rig_Morphism_proper_impl {X Y pX pY mX mY zX zY oX oY} (f g : X ⇾ Y)
-  : f = g → impl (@Rig_Morphism X Y pX pY mX mY zX zY oX oY f) (Rig_Morphism g).
+  : f = g → impl (@Rig_Morphism X Y pX pY mX mY zX zY oX oY f, Rig_Morphism g).
 Proof. intros E H; split; now rew <-E. Qed.
 Canonical Structure Rig_Morphism_fun {X Y pX pY mX mY zX zY oX oY} :=
   make_weak_spred (@Rig_Morphism X Y pX pY mX mY zX zY oX oY) Rig_Morphism_proper_impl.
@@ -465,7 +529,7 @@ Canonical Structure Rig_Morphism_fun {X Y pX pY mX mY zX zY oX oY} :=
 Lemma rig_mor_rg_mor `{Rig_Morphism (f:=f)} : Rg_Morphism f.  Proof. now split. Qed.
 Coercion rig_mor_rg_mor : Rig_Morphism >-> Rg_Morphism.
 
-Lemma alt_Build_Rg_Morphism
+Lemma alt_Build_Rg_Morphism@{u} {X Y : set@{u}}
   `{AdditiveNonComMonoid X} {mX : Mult X} `{!MultiplicativeSemiGroup X}
   `{AdditiveNonComMonoid Y} {mY : Mult Y} `{!MultiplicativeSemiGroup Y}
   {f : X ⇾ Y} :
@@ -478,7 +542,7 @@ Proof. intros. split; try exact _.
 + now apply Build_MultiplicativeSemiGroup_Morphism.
 Qed.
 
-Lemma alt_Build_Rig_Morphism
+Lemma alt_Build_Rig_Morphism@{u} {X Y : set@{u}}
   `{AdditiveNonComMonoid X} {mX : Mult X} {oX : One X} `{!MultiplicativeMonoid X}
   `{AdditiveNonComMonoid Y} {mY : Mult Y} {oY : One Y} `{!MultiplicativeMonoid Y}
   {f : X ⇾ Y} :
@@ -492,7 +556,7 @@ Proof. intros. split; try exact _.
 + now apply alt_Build_MultiplicativeMonoid_Morphism.
 Qed.
 
-Lemma Build_Rng_Morphism `{NearRng X} `{NearRng Y} {f : X ⇾ Y} :
+Lemma Build_Rng_Morphism@{u} {X Y : set@{u}} `{NearRng X} `{NearRng Y} {f : X ⇾ Y} :
   (∀ x y : X, f (x + y) = f x + f y)
  → (∀ x y : X, f (x · y) = f x · f y)
  → Rg_Morphism f.
@@ -501,7 +565,7 @@ Proof. intros. split; try exact _.
 + now apply Build_MultiplicativeSemiGroup_Morphism.
 Qed.
 
-Lemma Build_Ring_Morphism `{NearRing X} `{NearRing Y} {f : X ⇾ Y} :
+Lemma Build_Ring_Morphism@{u} {X Y : set@{u}} `{NearRing X} `{NearRing Y} {f : X ⇾ Y} :
   (∀ x y : X, f (x + y) = f x + f y)
  → (∀ x y : X, f (x · y) = f x · f y)
  → f 1 = 1
@@ -514,24 +578,24 @@ Qed.
 Lemma id_rg_mor  `{AdditiveNonComMonoid R} `{Mult R} `{!MultiplicativeSemiGroup R} : Rg_Morphism  (id_fun R).  Proof. now split. Qed.
 Lemma id_rig_mor `{AdditiveNonComMonoid R} `{Mult R} `{One R} `{!MultiplicativeMonoid R} : Rig_Morphism (id_fun R).  Proof. now split. Qed.
 
-Lemma compose_rg_mor {X Y Z} {p₁ m₁ z₁} {p₂ m₂ z₂} {p₃ m₃ z₃} {g f} :
+Lemma compose_rg_mor@{u} {X Y Z : set@{u}} {p₁ m₁ z₁} {p₂ m₂ z₂} {p₃ m₃ z₃} {g f} :
   @Rg_Morphism X Y p₁ p₂ m₁ m₂ z₁ z₂ f
 → @Rg_Morphism Y Z p₂ p₃ m₂ m₃ z₂ z₃ g
 → Rg_Morphism (g ∘ f).
 Proof. now split. Qed.
 
-Lemma compose_rig_mor {X Y Z} {p₁ m₁ z₁ o₁} {p₂ m₂ z₂ o₂} {p₃ m₃ z₃ o₃} {g f} :
+Lemma compose_rig_mor@{u} {X Y Z : set@{u}} {p₁ m₁ z₁ o₁} {p₂ m₂ z₂ o₂} {p₃ m₃ z₃ o₃} {g f} :
   @Rig_Morphism X Y p₁ p₂ m₁ m₂ z₁ z₂ o₁ o₂ f
 → @Rig_Morphism Y Z p₂ p₃ m₂ m₃ z₂ z₃ o₂ o₃ g
 → Rig_Morphism (g ∘ f).
 Proof. now split. Qed.
 
 Local Open Scope fun_inv_scope.
-Lemma invert_rg_mor `{Rg_Morphism (f:=f)} `{!Inverse f} `{!Bijective f}
+Lemma invert_rg_mor `{Rg_Morphism (f:=f)} `{!Inverse f, !Bijective f}
   : Rg_Morphism f⁻¹.
 Proof. now split. Qed.
 
-Lemma invert_rig_mor `{Rig_Morphism (f:=f)} `{!Inverse f} `{!Bijective f}
+Lemma invert_rig_mor `{Rig_Morphism (f:=f)} `{!Inverse f, !Bijective f}
   : Rig_Morphism f⁻¹.
 Proof. now split. Qed.
 
@@ -543,8 +607,8 @@ Global Hint Extern 2 (Rig_Morphism (_ ∘ _)    ) => simple notypeclasses refine
 Global Hint Extern 2 (Rg_Morphism  (_⁻¹)      ) => simple notypeclasses refine invert_rg_mor  : typeclass_instances.
 Global Hint Extern 2 (Rig_Morphism (_⁻¹)      ) => simple notypeclasses refine invert_rig_mor : typeclass_instances.
 
-Lemma projected_near_rg
-  `{NearRg R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
+Lemma projected_near_rg@{u} {X R : set@{u}}
+  `{NearRg R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -559,8 +623,8 @@ Proof. intros plus_correct mult_correct zero_correct.
   + now apply left_absorb.
 Qed.
 
-Lemma projected_left_near_rg
-  `{LeftNearRg R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
+Lemma projected_left_near_rg@{u} {X R : set@{u}}
+  `{LeftNearRg R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -571,8 +635,8 @@ Proof. intros plus_correct mult_correct zero_correct.
   intros. apply mult_correct.
 Qed.
 
-Lemma projected_rg
-  `{Rg R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
+Lemma projected_rg@{u} {X R : set@{u}}
+  `{Rg R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -584,8 +648,8 @@ Proof. intros plus_correct mult_correct zero_correct.
   now split.
 Qed.
 
-Lemma projected_rig
-  `{Rig R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} :
+Lemma projected_rig@{u} {X R : set@{u}}
+  `{Rig R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -597,8 +661,8 @@ Proof. intros plus_correct mult_correct zero_correct one_correct.
   now split.
 Qed.
 
-Lemma projected_commutative_rig
-  `{CommutativeRig R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} :
+Lemma projected_commutative_rig@{u} {X R : set@{u}}
+  `{CommutativeRig R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -610,8 +674,8 @@ Proof. intros plus_correct mult_correct zero_correct one_correct.
   now split.
 Qed.
 
-Lemma projected_rng
-  `{Rng R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{Negate X} :
+Lemma projected_rng@{u} {X R : set@{u}}
+  `{Rng R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{Negate X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -623,8 +687,8 @@ Proof. intros plus_correct mult_correct zero_correct negate_correct.
   now split.
 Qed.
 
-Lemma projected_ring
-  `{Ring R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} `{Negate X} :
+Lemma projected_ring@{u} {X R : set@{u}}
+  `{Ring R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} `{Negate X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0
@@ -637,8 +701,8 @@ Proof. intros plus_correct mult_correct zero_correct one_correct negate_correct.
   now split.
 Qed.
 
-Lemma projected_commutative_ring
-  `{CommutativeRing R} `(f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} `{Negate X} :
+Lemma projected_commutative_ring@{u} {X R : set@{u}}
+  `{CommutativeRing R} (f:X ⇾ R) `{!Injective f} `{Plus X} `{Mult X} `{Zero X} `{One X} `{Negate X} :
    (∀ x y, f (x + y) = f x + f y)
  → (∀ x y, f (x · y) = f x · f y)
  → f 0 = 0

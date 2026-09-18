@@ -1,17 +1,17 @@
 Require Export interfaces.integers.
 Require Import abstract_algebra interfaces.bundled_algebra interfaces.naturals.
 Require Import interfaces.group_completion.
-Require Import interfaces.sprop logic.aprop theory.rings theory.bundled_rings.
-Require Import theory.naturals theory.group_completion.
+Require Import interfaces.sprop logic.aprop theory.rings theory.bundled_rings orders.rings.
+Require Import theory.naturals orders.naturals theory.group_completion.
 Require Import implementations.nat implementations.grothendieck_group.
-Require Import easy rewrite strip_coercions.
+Require Import easy rewrite strip_coercions simplify.
 
 
 Lemma integers_initial_alt `{Integers Z} `{AdditiveNonComGroup G} {oG:One G}
-  (f g : Z ⇾ G) `{!AdditiveMonoid_Morphism f} `{!AdditiveMonoid_Morphism g}
-  `{!One_Pointed_Morphism f} `{!One_Pointed_Morphism g}
+  (f g : Z ⇾ G) `{!AdditiveMonoid_Morphism f, !AdditiveMonoid_Morphism g}
+  `{!One_Pointed_Morphism f, !One_Pointed_Morphism g}
   : f = g.
-Proof. now rew [ (integers_initial f) | (integers_initial g) ]. Qed.
+Proof. now rew (integers_initial _). Qed.
 
 Local Open Scope fun_inv_scope.
 
@@ -53,7 +53,7 @@ Global Hint Extern 2 (Integers (GrothendieckPairs ?N))
 Section is_group_completion.
   Universes i.
   Context `{Integers@{i} Z} `{Naturals@{i} N}.
-  Local Notation i := (naturals_to_mon N Z).
+  Local Abbreviation i := (naturals_to_mon N Z).
 
   Instance integers_from_group_completion : FromGroupCompletion i := λ G f Hf, integers_to_group Z G (oG:=f 1).
 
@@ -71,11 +71,11 @@ Section is_group_completion.
   Qed.
 
   Instance naturals_to_integers_inj : Injective (naturals_to_mon N Z).
-  Proof to_group_completion_inj _.
+  Proof. exact (to_group_completion_inj _). Qed.
 
   Definition integers_split : Z → N ⊗ N := group_completion_split i.
 
-  Context (f:N ⇾ Z) `{!AdditiveMonoid_Morphism f} `{!One_Pointed_Morphism f}.
+  Context (f:N ⇾ Z) `{!AdditiveMonoid_Morphism f, !One_Pointed_Morphism f}.
 
   Instance naturals_to_integers_inj_alt : Injective f.
   Proof. now rew (naturals_initial f). Qed.
@@ -106,27 +106,22 @@ Global Hint Extern 2 (GroupCompletion (naturals_to_mon _ _)) => simple notypecla
 Section properties.
   Universes u.
   Context `{Integers@{u} Z}.
-  Local Notation i := (naturals_to_mon Nat Z).
+  Local Abbreviation i := (naturals_to_mon Nat Z).
 
-  Lemma integers_dec_eq : DecidableEquality Z.
-  Proof group_completion_dec_eq i.
+  Instance integers_dec_eq : DecidableEquality Z.
+  Proof. exact (group_completion_dec_eq i). Qed.
 
-  Lemma integers_com_ring : CommutativeRing Z.
-  Proof group_completion_is_com_ring (i:=i).
+  Lemma integers_int_domain : IntegralDomain Z.
+  Proof. exact (group_completion_int_domain (i:=i)). Qed.
 
-  (*
-  Local Open Scope mult_scope.
+  Let inst : IntegralDomain Z.  Proof. exact integers_int_domain. Qed.
 
-  Lemma integers_to_ring_mor `{Ring R} : Rig_Morphism (integers_to_group Z R).
-  Proof.
-    pose proof from_group_completion_rig_mor (i:=i) (f:=(naturals_to_mon Nat R)) as P.
-    enough ( integers_to_group Z R (oG:=1+0) = integers_to_group Z R ) as E by now rew <-E.
-    refine (integers_initial_alt _ _).
-  Qed.
-  *)
+  Lemma integers_strong_no_zero_divisors : StrongNoZeroDivisors Z.
+  Proof. exact dec_strong_no_zero_divisors. Qed.
 End properties.
 Coercion integers_dec_eq : Integers >-> DecidableEquality.
-Coercion integers_com_ring : Integers >-> CommutativeRing.
+Coercion integers_int_domain : Integers >-> IntegralDomain.
+Coercion integers_strong_no_zero_divisors : Integers >-> StrongNoZeroDivisors.
 
 Coercion integers_as_com_ring (Z:integers) := make_commutative_ring Z.
 Global Hint Extern 2 (StripCoercions (integers_as_com_ring ?X)) => strip_coercions_chain X : strip_coercions.
@@ -134,9 +129,9 @@ Global Hint Extern 2 (StripCoercions (integers_as_com_ring ?X)) => strip_coercio
 Section properties.
   Universes u.
   Context `{Integers@{u} Z} `{NearRing@{u} R}.
-  Local Notation i := (naturals_to_mon Nat Z).
-  Local Notation ϕ := (naturals_to_mon Nat R).
-  Local Notation ψ := (integers_to_group Z R).
+  Local Abbreviation i := (naturals_to_mon Nat Z).  (* i : Nat ⇾ Z *)
+  Local Abbreviation ϕ := (naturals_to_mon Nat R).  (* ϕ : Nat ⇾ R *)
+  Local Abbreviation ψ := (integers_to_group Z R).  (* ψ : Z ⇾ R *)
   Local Open Scope mult_scope.
 
   Lemma integers_to_near_ring_mor : Rig_Morphism ψ.
@@ -147,14 +142,14 @@ Section properties.
     2: rew <-(negate_mult_distr_r _ _).
     3: rew <-(negate_mult_distr_l _ _).
     4: rew (negate_mult_negate _ _).
-    2,3,4: rew [ (preserves_negate ψ _) | (preserves_negate ψ _) ].
+    2,3,4: rew (preserves_negate ψ _).
     all: rew <-(preserves_mult i _ _); change (ψ (i ?n)) with ((ψ ∘ i) n); rew (naturals_initial (ψ ∘ i)).
     + exact (preserves_mult ϕ _ _).
-    + rew [ (naturals_to_near_ring_negate_mult_r _) | (naturals_to_near_ring_negate_mult_r _) ].
+    + rew (naturals_to_near_ring_negate_mult_r _).
       rew (preserves_mult ϕ _ _). sym. now apply associativity.
     + rew (preserves_mult ϕ _ _). exact (negate_mult_distr_l _ _).
     + rew (naturals_to_near_ring_negate_mult_r n), <-(associativity (·) _ _ _).
-      rew <-(negate_mult _), (negate_involutive _).
+      rew <-(negate_mult _), (involutive_alt (-) _).
       exact (preserves_mult ϕ _ _).
   Qed.
 End properties.
@@ -169,8 +164,8 @@ Section retract_is_int.
   Local Open Scope fun_inv_scope.
   Context `{Integers Z} `{Ring R} (f:Z ⇾ R).
   Context `{!Surjective f (inv:=f_inv)}.
-  Context `{!AdditiveMonoid_Morphism f} `{!AdditiveMonoid_Morphism f⁻¹}.
-  Context `{!One_Pointed_Morphism f} `{!One_Pointed_Morphism f⁻¹}.
+  Context `{!AdditiveMonoid_Morphism f, !AdditiveMonoid_Morphism f⁻¹}.
+  Context `{!One_Pointed_Morphism f, !One_Pointed_Morphism f⁻¹}.
 
   Instance retract_is_int_to_group : IntegersToGroup R.
   Proof. intros G; intros. exact (integers_to_group Z G ∘ f⁻¹). Defined.
@@ -181,4 +176,3 @@ Section retract_is_int.
     exact (integers_initial_alt _ _).
   Qed.
 End retract_is_int.
-

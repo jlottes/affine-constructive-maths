@@ -9,16 +9,18 @@ Bind Scope function_scope with Funclass.
 Open Scope function_scope.
 Open Scope type_scope.
 
-Declare ML Module "ltac_plugin".
+Declare ML Module "rocq-runtime.plugins.ltac".
 Global Set Default Proof Mode "Classic".
 
-Declare ML Module "number_string_notation_plugin".
+Declare ML Module "rocq-runtime.plugins.number_string_notation".
 
-Declare ML Module "firstorder_plugin".
+Declare ML Module "rocq-runtime.plugins.firstorder".
 
 Create HintDb core.
 Global Hint Variables Opaque : core.
 Global Hint Constants Opaque : core.
+
+Create HintDb typeclass_instances discriminated.
 
 Global Set Primitive Projections.
 Global Set Universe Polymorphism.
@@ -27,11 +29,11 @@ Global Set Polymorphic Inductive Cumulativity.
 Global Set Keyed Unification.
 Global Generalizable All Variables.
 
-Definition id `(x:A) := x.
+Definition id@{s;u} {A:Type@{s;u}} (x:A) := x.
 
 Inductive empty : Set :=.
-Definition abort {A} (x:empty) : A := match x with end.
-Definition dep_abort {P:forall (_ : empty), Type} (x:empty) : P x := match x with end.
+Definition abort@{s;u} {A:Type@{s;u}} (x:empty) : A := match x with end.
+Definition dep_abort@{s;u} {P:forall (_ : empty), Type@{s;u}} (x:empty) : P x := match x with end.
 
 Inductive unit : Set := tt : unit.
 Existing Class unit.
@@ -40,7 +42,8 @@ Definition to_unit `(x:A) : unit := _.
 
 Inductive bool : Set := true : bool | false : bool.
 
-Record tprod A B := pair { proj1 : A ; proj2 : B }.
+Record tprod@{s; u v} (A : Type@{s;u}) (B : Type@{s;v}) : Type@{s; max(u,v)}
+  := pair { proj1 : A ; proj2 : B }.
 Arguments pair {A B} _ _.
 Arguments proj1 {_ _} _.
 Arguments proj2 {_ _} _.
@@ -54,10 +57,16 @@ Inductive tsum A B := inl : forall (_:A), tsum A B | inr : forall (_:B), tsum A 
 Arguments inl {A B} _.
 Arguments inr {A B} _.
 
+Record ssig@{u} {A:Type@{u}} (P:forall (_:A), SProp) := spair { pt : A ; #[canonical=no] pt_prop : P pt }.
+Arguments pt {A P} _.
+Arguments pt_prop {A P} _.
+Arguments spair {A} P _ _.
+
 Definition tcurry   `(f:forall _ : tprod A B, C) a b := f (pair a b).
 Definition tuncurry `(f:forall (_ : A) (_ : B), C) p := f (proj1 p) (proj2 p).
 
 Notation "exact:( x )" := ltac:(let t := constr:(x) in exact t) (only parsing).
-Notation eval_red tm := ltac:( let t := eval red in tm in exact t ) (only parsing).
-Notation eval_tuncurry tm := (eval_red (tuncurry tm)) (only parsing).
-Notation eval_tuncurry3 tm := (eval_tuncurry (eval_tuncurry tm)) (only parsing).
+Abbreviation eval_red tm := ltac:( let t := eval red in tm in exact t ) (only parsing).
+Abbreviation eval_tuncurry tm := (eval_red (tuncurry tm)) (only parsing).
+Abbreviation eval_tuncurry3 tm := (eval_tuncurry (eval_tuncurry tm)) (only parsing).
+

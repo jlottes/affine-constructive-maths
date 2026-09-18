@@ -26,7 +26,7 @@ Create HintDb quote discriminated.
 Ltac solve_quote := typeclasses eauto with quote nocore.
 
 Tactic Notation "quote_hint_strip" tactic(tac) :=
-  let f := lazymatch goal with |- quote ?f _ _ => strip_coercions f end in tac f.
+  let f := lazymatch goal with |- quote ?f _ _ => strip_coercions_or_self f end in tac f.
 Ltac quote_unwrap := change (quote_wrap _ ?P) with P.
 
 Global Hint Extern 100 (quote ?f _ _) => refine (quote_refl f _) : quote.
@@ -55,7 +55,8 @@ Ltac quote_wrap f P :=
 Ltac quote_injective f :=
   lazymatch goal with |- apos ?E =>
     let q := quote_wrap f uconstr:(apos (E ⧟ _)) in
-    simple notypeclasses refine (sprop.andr (aiff_iff_pos q) _)
+    simple notypeclasses refine (sprop.andr (aiff_iff_pos q) _);
+    try lazymatch goal with |- proj2 (_, ?b) => change b end
   end.
 
 Ltac quote_ne f :=
@@ -63,6 +64,3 @@ Ltac quote_ne f :=
     let q := quote_wrap f uconstr:(apos (_ ⊸ E)) in
     simple notypeclasses refine (aimpl_impl_pos q _)
   end.
-
-
-

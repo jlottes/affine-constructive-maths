@@ -1,9 +1,10 @@
+Require Import interfaces.sprop.
 Require Export theory.common_props theory.pointed.
 Require Import abstract_algebra theory.groups.
 Require Import easy rewrite.
-Require Import quote.base.
+Require Import quote.base simplify.
 
-Local Notation mul_ops := MultiplicativeGroupOps.
+Local Abbreviation mul_ops := MultiplicativeGroupOps.
 Local Notation "X 'ᵒᵖ'" := (ring_op X) (at level 1, format "X 'ᵒᵖ'").
 
 Local Open Scope mult_scope.
@@ -26,24 +27,39 @@ Definition alt_Build_MultiplicativeComMonoid : ∀ `{Mult M} `{One M},
  → MultiplicativeComMonoid M
 := @alt_Build_CommutativeMonoid.
 
+Coercion one_inhabited `{One M} : Inhabited M.  Proof. now exists 1. Defined.
+Coercion mult_mon_inhabited `{MultiplicativeMonoid M} : Inhabited M := _.
+
 Definition mult_monoid_semigroup `{H:MultiplicativeMonoid R} : MultiplicativeSemiGroup R := _ : SemiGroup (mul_ops R).
 Definition mult_commonoid_monoid `{H:MultiplicativeComMonoid R} : MultiplicativeMonoid R := H.
 Coercion mult_monoid_semigroup : MultiplicativeMonoid >-> MultiplicativeSemiGroup.
 Coercion mult_commonoid_monoid : MultiplicativeComMonoid >-> MultiplicativeMonoid.
 
-Lemma mult_ass    `{MultiplicativeSemiGroup R} : Associative   (X:=R) (·).  Proof _ : SemiGroup (mul_ops R).
-Lemma mult_com    `{MultiplicativeComMonoid R} : Commutative   (X:=R) (·).  Proof comsg_com (mul_ops R) _.
-Lemma mult_1_l    `{MultiplicativeMonoid    R} : LeftIdentity  (X:=R) (·) 1. Proof monoid_left_id  (mul_ops R) _.
-Lemma mult_1_r    `{MultiplicativeMonoid    R} : RightIdentity (X:=R) (·) 1. Proof monoid_right_id (mul_ops R) _.
+Lemma mult_ass    `{MultiplicativeSemiGroup R} : Associative   (X:=R) (·).  Proof. exact (_ : SemiGroup (mul_ops R)). Qed.
+Lemma mult_com    `{MultiplicativeComMonoid R} : Commutative   (X:=R) (·).  Proof. exact (comsg_com (mul_ops R) _). Qed.
+Lemma mult_1_l    `{MultiplicativeMonoid    R} : LeftIdentity  (X:=R) (·) 1. Proof. exact (monoid_left_id  (X:=mul_ops R)). Qed.
+Lemma mult_1_r    `{MultiplicativeMonoid    R} : RightIdentity (X:=R) (·) 1. Proof. exact (monoid_right_id (X:=mul_ops R)). Qed.
 
 Global Hint Extern 2 (Associative   (·)    ) => simple notypeclasses refine mult_ass   : typeclass_instances.
 Global Hint Extern 2 (Commutative   (·)    ) => simple notypeclasses refine mult_com   : typeclass_instances.
 Global Hint Extern 2 (LeftIdentity  (·) _  ) => notypeclasses refine mult_1_l          : typeclass_instances.
 Global Hint Extern 2 (RightIdentity (·) _  ) => notypeclasses refine mult_1_r          : typeclass_instances.
 
-Lemma MultiplicativeSemiGroup_op `{MultiplicativeSemiGroup G} : MultiplicativeSemiGroup (G ᵒᵖ).  Proof _ : SemiGroup (semigroup_op (mul_ops G)).
-Lemma MultiplicativeMonoid_op    `{MultiplicativeMonoid G}    : MultiplicativeMonoid    (G ᵒᵖ).  Proof _ : Monoid (semigroup_op (mul_ops G)).
-Lemma MultiplicativeComMonoid_op `{MultiplicativeComMonoid G} : MultiplicativeComMonoid (G ᵒᵖ).  Proof _ : CommutativeMonoid (semigroup_op (mul_ops G)).
+(** Simplification *)
+Local Ltac simplify_chain tm := match goal with |- SimplifiesTo ?x ?y => change (SimplifiesToR (x,y)); trans tm end.
+
+Lemma simplify_mult_1_l `{MultiplicativeMonoid M} {x x':M} `{!SimplifiesTo x x'} : SimplifiesTo (1 · x) x'.
+Proof. simplify_chain x; trivial; split. exact (mult_1_l _). Qed.
+Global Hint Extern 2 (SimplifiesTo (1 · _) _) => notypeclasses refine simplify_mult_1_l : typeclass_instances.
+
+Lemma simplify_mult_1_r `{MultiplicativeMonoid M} {x x':M} `{!SimplifiesTo x x'} : SimplifiesTo (x · 1) x'.
+Proof. simplify_chain x; trivial; split. exact (mult_1_r _). Qed.
+Global Hint Extern 2 (SimplifiesTo (_ · 1) _) => notypeclasses refine simplify_mult_1_r : typeclass_instances.
+
+
+Lemma MultiplicativeSemiGroup_op `{MultiplicativeSemiGroup G} : MultiplicativeSemiGroup (G ᵒᵖ).  Proof. exact (_ : SemiGroup (semigroup_op (mul_ops G))). Qed.
+Lemma MultiplicativeMonoid_op    `{MultiplicativeMonoid G}    : MultiplicativeMonoid    (G ᵒᵖ).  Proof. exact (_ : Monoid (semigroup_op (mul_ops G))). Qed.
+Lemma MultiplicativeComMonoid_op `{MultiplicativeComMonoid G} : MultiplicativeComMonoid (G ᵒᵖ).  Proof. exact (_ : CommutativeMonoid (semigroup_op (mul_ops G))). Qed.
 Global Hint Extern 2 (MultiplicativeSemiGroup (_ ᵒᵖ)) => simple notypeclasses refine MultiplicativeSemiGroup_op : typeclass_instances.
 Global Hint Extern 2 (MultiplicativeMonoid    (_ ᵒᵖ)) => simple notypeclasses refine MultiplicativeMonoid_op    : typeclass_instances.
 Global Hint Extern 2 (MultiplicativeComMonoid (_ ᵒᵖ)) => simple notypeclasses refine MultiplicativeComMonoid_op : typeclass_instances.
@@ -68,57 +84,57 @@ Global Hint Extern 2 (MultiplicativeSemiGroup_Morphism (id_fun _)) => simple not
 Definition id_mulmon_mor `{MultiplicativeMonoid M} : MultiplicativeMonoid_Morphism (id_fun M) := id_monoid_mor (M:=mul_ops M).
 Global Hint Extern 2 (MultiplicativeMonoid_Morphism (id_fun _)) => simple notypeclasses refine id_mulmon_mor : typeclass_instances.
 
-Definition compose_mulsg_mor : ∀ {X Y Z} {op₁ op₂ op₃} {g f},
+Definition compose_mulsg_mor@{u} : ∀ {X Y Z : set@{u}} {op₁ op₂ op₃} {g f},
   @MultiplicativeSemiGroup_Morphism X Y op₁ op₂ f → @MultiplicativeSemiGroup_Morphism Y Z op₂ op₃ g
   → MultiplicativeSemiGroup_Morphism (g ∘ f)
 := @compose_semigroup_mor.
 Global Hint Extern 2 (MultiplicativeSemiGroup_Morphism (_ ∘ _)) => simple notypeclasses refine (compose_mulsg_mor _ _) : typeclass_instances.
 
-Definition compose_mulmon_mor : ∀ {X Y Z} {op₁ e₁} {op₂ e₂} {op₃ e₃} {g f},
+Definition compose_mulmon_mor@{u} : ∀ {X Y Z : set@{u}} {op₁ e₁} {op₂ e₂} {op₃ e₃} {g f},
   @MultiplicativeMonoid_Morphism X Y op₁ e₁ op₂ e₂ f → @MultiplicativeMonoid_Morphism Y Z op₂ e₂ op₃ e₃ g
   → MultiplicativeMonoid_Morphism (g ∘ f)
 := @compose_monoid_mor.
 Global Hint Extern 2 (MultiplicativeMonoid_Morphism (_ ∘ _)) => simple notypeclasses refine (compose_mulmon_mor _ _) : typeclass_instances.
 
-Definition invert_mulsg_mor `{MultiplicativeSemiGroup_Morphism (f:=f)} `{!Inverse f} `{!Bijective f}
+Definition invert_mulsg_mor `{MultiplicativeSemiGroup_Morphism (f:=f)} `{!Inverse f, !Bijective f}
   : MultiplicativeSemiGroup_Morphism (inverse f)
 := invert_semigroup_mor.
 Global Hint Extern 2 (MultiplicativeSemiGroup_Morphism (inverse _)) => simple notypeclasses refine invert_mulsg_mor : typeclass_instances.
 
-Definition invert_mulmon_mor `{MultiplicativeMonoid_Morphism (f:=f)} `{!Inverse f} `{!Bijective f}
+Definition invert_mulmon_mor `{MultiplicativeMonoid_Morphism (f:=f)} `{!Inverse f, !Bijective f}
   : MultiplicativeMonoid_Morphism (inverse f)
 := invert_monoid_mor.
 Global Hint Extern 2 (MultiplicativeMonoid_Morphism (inverse _)) => simple notypeclasses refine invert_mulmon_mor : typeclass_instances.
 
 
-Definition Build_MultiplicativeSemiGroup_Morphism 
+Definition Build_MultiplicativeSemiGroup_Morphism@{u} {X Y : set@{u}}
   `{MultiplicativeSemiGroup X} `{MultiplicativeSemiGroup Y} {f : X ⇾ Y} :
   (∀ x y : X, f (x · y) = f x · f y)
  → MultiplicativeSemiGroup_Morphism f
 := Build_SemiGroup_Morphism (f:mul_ops X ⇾ mul_ops Y).
 
-Definition alt_Build_MultiplicativeMonoid_Morphism :
-  ∀ `{MultiplicativeMonoid X} `{MultiplicativeMonoid Y} {f : X ⇾ Y},
+Definition alt_Build_MultiplicativeMonoid_Morphism@{u} :
+  ∀ {X Y : set@{u}} `{MultiplicativeMonoid X} `{MultiplicativeMonoid Y} {f : X ⇾ Y},
   (∀ x y : X, f (x · y) = f x · f y)
  → f 1 = 1
  → MultiplicativeMonoid_Morphism f
 := @alt_Build_Monoid_Morphism.
 
-Definition projected_multiplicative_semigroup :
-  ∀ `{MultiplicativeSemiGroup S} `(f:X ⇾ S) `{!Injective f} `{Mult X},
+Definition projected_multiplicative_semigroup@{u} :
+  ∀ {X S : set@{u}} `{MultiplicativeSemiGroup S} (f:X ⇾ S) `{!Injective f} `{Mult X},
    (∀ x y, f (x · y) = f x · f y)
    → MultiplicativeSemiGroup X
   := @projected_semigroup.
 
-Definition projected_multiplicative_monoid :
-  ∀ `{MultiplicativeMonoid M} `(f:X ⇾ M) `{!Injective f} `{Mult X} `{One X},
+Definition projected_multiplicative_monoid@{u} :
+  ∀ {X M : set@{u}} `{MultiplicativeMonoid M} (f:X ⇾ M) `{!Injective f} `{Mult X} `{One X},
    (∀ x y, f (x · y) = f x · f y)
    → f 1 = 1
    → MultiplicativeMonoid X
   := @projected_monoid.
 
-Definition projected_multiplicative_com_monoid :
-  ∀ `{MultiplicativeComMonoid M} `(f:X ⇾ M) `{!Injective f} `{Mult X} `{One X},
+Definition projected_multiplicative_com_monoid@{u} :
+  ∀ {X M : set@{u}} `{MultiplicativeComMonoid M} (f:X ⇾ M) `{!Injective f} `{Mult X} `{One X},
    (∀ x y, f (x · y) = f x · f y)
    → f 1 = 1
    → MultiplicativeComMonoid X
@@ -129,7 +145,7 @@ Definition projected_multiplicative_com_monoid :
 
 Lemma quote_mult_alt `(f:X ⇾ Y) `{MultiplicativeSemiGroup_Morphism (X:=X) (Y:=Y) (f:=f)}
   {x₁ y₁ x₂ y₂} : quote f x₁ y₁ → quote f x₂ y₂ → quote f (x₁ · x₂) (y₁ · y₂).
-Proof quote_sg_op_alt (f:mul_ops _ ⇾ mul_ops _).
+Proof. exact (quote_sg_op_alt (f:mul_ops _ ⇾ mul_ops _)). Qed.
 
 Global Hint Extern 4 (quote _ (_ · _) _) => quote_hint_strip (fun f => refine (quote_mult_alt f _ _)) : quote.
 Global Hint Extern 4 (quote _ _ (_ · _)) => quote_hint_strip (fun f => refine (quote_mult_alt f _ _)) : quote.

@@ -1,10 +1,18 @@
-(** Implementations of [tauto] and [intuition] tactics, copy-pasted from [ Coq.Init.Tauto ],
-  with tiny edits to make the tactics work with SProp.
+(** Implementations of [tauto] and [intuition] tactics, rebased from
+    Corelib.Init.Tauto (Rocq 9.1), with edits to make the tactics work
+    with SProp:
+    - Use our own [not], [iff], [False] instead of Corelib.Init.Logic.*
+    - [change] instead of [unfold]/[red] for [not]
+    - Classical tauto removed (SProp is intuitionistic)
+    - [with_power_flags] for all entry points (recognizes record-style connectives)
+    - [flatten_contravariant_conj/disj] replaced with pure Ltac
+      to avoid the ML plugin's hardcoded [ERelevance.relevant] on arrow types,
+      which produces bad relevance marks for SProp binders.
 *)
 
 Require Import interfaces.notation sprop.
 
-Declare ML Module "tauto_plugin".
+Declare ML Module "rocq-runtime.plugins.tauto".
 
 Local Ltac not_dep_intros :=
   repeat match goal with
@@ -15,7 +23,7 @@ Local Ltac not_dep_intros :=
 Local Ltac axioms flags :=
   match reverse goal with
     | |- ?X1 => is_unit_or_eq flags X1; constructor 1
-    | _:?X1 |- _ => is_empty flags X1; elimtype X1; assumption
+    | H:?X1 |- _ => is_empty flags X1; elim H
     | _:?X1 |- ?X1 => assumption
   end.
 
@@ -24,14 +32,18 @@ Local Ltac simplif flags :=
   repeat
      (match reverse goal with
       | id: ?X1 |- _ => is_conj flags X1; elim id; do 2 intro; clear id
-      | id: (iff _ _) |- _ => elim id; do 2 intro; clear id
+      | id: (iff _) |- _ => elim id; do 2 intro; clear id
       | id: (not ?P) |- _ => change (P → False) in id
       | id: ?X1 |- _ => is_disj flags X1; elim id; intro; clear id
-      | id0: (forall (_: ?X1), ?X2), id1: ?X1|- _ =>
-    (* generalize (id0 id1); intro; clear id0 does not work
-       (see Marco Maggiesi's BZ#301)
-    so we instead use Assert and exact. *)
-    assert X2; [exact (id0 id1) | clear id0]
+      | _ =>
+        (* behaves as matching [ id0: ?X1 -> ?X2, id1: ?X1 |- _ ] with
+           universe-aware conversion *)
+        find_cut ltac:(fun id0 id1 X2 =>
+          (* generalize (id0 id1); intro; clear id0 does not work
+             (see Marco Maggiesi's BZ#301)
+          so we instead use Assert and exact. *)
+          assert X2; [exact (id0 id1) | clear id0]
+          )
       | id: forall (_ : ?X1), ?X2|- _ =>
         is_unit_or_eq flags X1; cut X2;
     [ intro; clear id
@@ -39,17 +51,38 @@ Local Ltac simplif flags :=
       cut X1; [exact id| constructor 1; fail]
     ]
       | id: forall (_ : ?X1), ?X2|- _ =>
-        flatten_contravariant_conj flags X1 X2 id
+        (* flatten_contravariant_conj: id:(?A/\?B)->?X2 ~~> ?A->?B->?X2
+           Pure Ltac replacement for the ML plugin version, which hardcodes
+           ERelevance.relevant and breaks SProp binders.
+           We match on the conjunction components and build the curried type
+           in Ltac so that Rocq infers correct relevance marks. *)
+        is_conj flags X1;
+        match X1 with
+        | ?C ?A ?B =>
+          assert (forall (_:A) (_:B), X2)
+            by (do 2 intro; apply id; split; assumption);
+          clear id
+        end
   (* moved from "id:(?A/\?B)->?X2|-" to "?A->?B->?X2|-" *)
-      | id: forall (_: iff ?X1 ?X2), ?X3|- _ =>
+      | id: forall (_: iff (?X1, ?X2)), ?X3|- _ =>
         assert (forall (_: forall _:X1, X2), forall (_: forall _: X2, X1), X3)
     by (do 2 intro; apply id; split; assumption);
           clear id
       | id: forall (_:?X1), ?X2|- _ =>
-        flatten_contravariant_disj flags X1 X2 id
+        (* flatten_contravariant_disj: id:(?A\/?B)->?X2 ~~> ?A->?X2, ?B->?X2
+           Pure Ltac replacement for the ML plugin version. *)
+        is_disj flags X1;
+        match X1 with
+        | ?C ?A ?B =>
+          assert (forall (_:A), X2)
+            by (intro; apply id; constructor 1; assumption);
+          assert (forall (_:B), X2)
+            by (intro; apply id; constructor 2; assumption);
+          clear id
+        end
   (* moved from "id:(?A\/?B)->?X2|-" to "?A->?X2,?B->?X2|-" *)
       | |- ?X1 => is_conj flags X1; split
-      | |- (iff _ _) => split
+      | |- (iff _) => split
       | |- (not ?P) => change (P → False)
       end;
       not_dep_intros).
@@ -62,9 +95,9 @@ Local Ltac tauto_intuit flags t_reduce t_solver :=
   cut X3;
     [ intro; clear id; t_tauto_intuit
     | cut (forall (_: X1), X2);
-        [ exact id
-        | generalize (fun y:X2 => id (fun x:X1 => y)); intro; clear id;
-          solve [ t_tauto_intuit ]]]
+	[ exact id
+	| generalize (fun y:X2 => id (fun x:X1 => y)); intro; clear id;
+	  solve [ t_tauto_intuit ]]]
     | id:forall (_:not ?X1), ?X3|- _ =>
   cut X3;
     [ intro; clear id; t_tauto_intuit
@@ -83,24 +116,7 @@ Local Ltac tauto_intuit flags t_reduce t_solver :=
 
 Local Ltac intuition_gen flags solver := tauto_intuit flags reduction_not_iff solver.
 Local Ltac tauto_intuitionistic flags := intuition_gen flags fail || fail "tauto failed".
-(* Local Ltac tauto_classical flags :=
-  (apply_nnpp || fail "tauto failed"); (tauto_intuitionistic flags || fail "Classical tauto fail
-ed"). *)
-Local Ltac tauto_gen flags := tauto_intuitionistic flags (* || tauto_classical flags *).
-
-(*
-Ltac tauto := with_uniform_flags ltac:(fun flags => tauto_gen flags).
-Ltac dtauto := with_power_flags ltac:(fun flags => tauto_gen flags).
-
-Local Ltac intuition_then tac := with_uniform_flags ltac:(fun flags => intuition_gen flags tac).
-Local Ltac dintuition_then tac := with_power_flags ltac:(fun flags => intuition_gen flags tac).
-
-Tactic Notation "intuition" := intuition_then ltac:(trivial).
-Tactic Notation "intuition" tactic(t) := intuition_then t.
-
-Tactic Notation "dintuition" := dintuition_then ltac:(trivial).
-Tactic Notation "dintuition" tactic(t) := dintuition_then t.
-*)
+Local Ltac tauto_gen flags := tauto_intuitionistic flags.
 
 Ltac tauto := with_power_flags ltac:(fun flags => tauto_gen flags).
 Local Ltac intuition_then tac := with_power_flags ltac:(fun flags => intuition_gen flags tac).

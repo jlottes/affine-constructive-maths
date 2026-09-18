@@ -18,7 +18,7 @@ Record > has_negate   X := HasNegate  { op_negate   : Negate  X }.
 Record > has_meet     X := HasMeet    { op_meet     : Meet    X }.
 Record > has_join     X := HasJoin    { op_join     : Join    X }.
 
-Record has_dec_eq (X:set) := HasDecEq { op_dec_eq : Dec (A:=X) (=) }.
+Record has_dec_eq (X:set) := HasDecEq { op_dec_eq : Dec (A:=X∗X) (=) }.
 Unset Implicit Arguments.
 
 Global Hint Extern 4 (Le      ?T) => let t := strip_coercions T in refine (op_le       t) : typeclass_instances.
@@ -35,7 +35,7 @@ Global Hint Extern 4 (Negate  ?X) => let t := strip_coercions X in refine (op_ne
 Global Hint Extern 4 (Meet    ?X) => let t := strip_coercions X in refine (op_meet     t) : typeclass_instances.
 Global Hint Extern 4 (Join    ?X) => let t := strip_coercions X in refine (op_join     t) : typeclass_instances.
 
-Global Hint Extern 4 (Dec (A:=set_T ?X) (=)) => let t := strip_coercions X in refine (op_dec_eq t) : typeclass_instances.
+Global Hint Extern 4 (Dec (A:=set_T ?X ∗ _) (=)) => let t := strip_coercions X in refine (op_dec_eq t) : typeclass_instances.
 
 Module definition_hints.
   Local Ltac find h o := lazymatch goal with H : h ?X |- _ ?X => exact (o _ H) end.
@@ -48,6 +48,6 @@ Module definition_hints.
   #[export] Hint Extern 8 (Negate  _) => find has_negate   op_negate   : typeclass_instances.
   #[export] Hint Extern 8 (Mult    _) => find has_mult     op_mult     : typeclass_instances.
 
-  #[export] Hint Extern 8 (Dec (A:=set_T ?X) (=)) => lazymatch goal with H : has_dec_eq X |- _ => exact (op_dec_eq H) end : typeclass_instances.
+  #[export] Hint Extern 8 (Dec (A:=set_T ?X ∗ _) (=)) => lazymatch goal with H : has_dec_eq X |- _ => exact (op_dec_eq H) end : typeclass_instances.
 End definition_hints.
 

@@ -6,10 +6,10 @@ Require Import easy rewrite.
 Local Open Scope grp_scope.
 
 Section type.
-  Universes i.
-  Context {X:set@{i}}.
+  Universes u.
+  Context {X:set@{u}}.
 
-  Inductive list : Type@{i} :=
+  Inductive list : Type@{u} :=
   | nil : list
   | cons : X → list → list.
 
@@ -19,7 +19,7 @@ Section type.
   | cons x l' => f₁ x l' (F l')
   end.
 
-  Definition fold_right {Y:set@{i}} (f: X * Y → Y) : list → Y → Y := fix F x y₀ :=
+  Definition fold_right {Y:set@{u}} (f: X ∗ Y → Y) : list → Y → Y := fix F x y₀ :=
   match x with
   | nil => y₀
   | cons x₀ x' => f (x₀, F x' y₀)
@@ -28,7 +28,7 @@ Section type.
   Lemma list_induction (P : list → Ω) : (∏ x₀ x, P x ⊸ P (cons x₀ x)) → (P nil ⊸ all P).
   Proof. intros Ps. rew <-all_adj. simple notypeclasses refine (fix F x := match x with | nil => _ | cons x₀ x => _ end).
   + refl.
-  + specialize (F x). now rew <-(Ps x₀ x).
+  + specialize (F x). now rew <-(Ps x₀ x : _ ⊸ _).
   Qed.
 
   Definition list_sinduction (P:list → SProp) : P nil → (∀ x₀ x, P x → P (cons x₀ x)) → ∀ x, P x
@@ -59,7 +59,7 @@ Section type.
   | cons x₀ x' => cons x₀ (concat x' y)
   end. *)
 
-  Instance list_equiv (a:Ω → Ω → Ω) : Equiv list := fix F x y :=
+  Definition list_equiv_raw (a:Ω ∗ Ω → Ω) : list → list → Ω := fix F x y :=
   match x with
   | nil =>
     match y with
@@ -69,9 +69,10 @@ Section type.
   | cons x₀ x' =>
     match y with
     | nil => 𝐅
-    | cons y₀ y' => a (x₀ = y₀) (F x' y')
+    | cons y₀ y' => a (x₀ = y₀, F x' y')
     end
   end.
+  Definition list_equiv (a:Ω ∗ Ω → Ω) : Equiv list := tuncurry (list_equiv_raw a).
 
   (* Context {M:monoid@{i}} (f:X ⇾ M).
 
@@ -121,13 +122,13 @@ End nth.
 
 Global Hint Extern 10 (ListInBounds _ _) => exact I : typeclass_instances.
 
-Definition list_map {X Y:set} (f:X → Y) : list X → list Y := fix F l :=
+Definition list_map@{u} {X Y:set@{u}} (f:X → Y) : list X → list Y := fix F l :=
 match l with
 | nil => nil
 | cons x l' => cons (f x) (F l')
 end.
 
-Lemma list_map_in_bounds {X Y:set} (f:X → Y) : ∀ (l:list X) n,  ListInBounds l n → ListInBounds (list_map f l) n.
+Lemma list_map_in_bounds@{u} {X Y:set@{u}} (f:X → Y) : ∀ (l:list X) n,  ListInBounds l n → ListInBounds (list_map f l) n.
 Proof. refine (list_sinduction _ _ _).
 + intros ? [].
 + intros x Γ' IH [| m].

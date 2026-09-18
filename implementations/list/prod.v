@@ -2,10 +2,10 @@ Require Import interfaces.set abstract_algebra bundled_algebra interfaces.free_m
 Require Import interfaces.sprop relations theory.set theory.groups theory.bundled_groups.
 Require Import logic.aprop.
 Require Import list.base.
-Require Import easy rewrite tactics.misc.
+Require Import easy rewrite tactics.misc simplify.
 Require Import set_lambda.
 
-Local Open Scope grp_scope.
+Local Open Scope sg_op_scope.
 
 Definition prod_list X := list X.
 Global Hint Extern 1 (Equiv (prod_list _)) => refine (list_equiv aand) : typeclass_instances.
@@ -26,7 +26,7 @@ Proof. split; hnf; unfold equiv.
 Qed.
 
 Canonical Structure ProdList X := set_make (prod_list X).
-Local Notation "X *" := (ProdList X) (at level 1, format "X *").
+Local Notation "X *" := (ProdList X) (at level 1, left associativity, format "X *").
 
 Lemma ProdList_is_strong `{!StrongSet X} : StrongSet X*.
 Proof. hnf. induction x as [|x₀ x]; intros [|y₀ y][|z₀ z];
@@ -41,15 +41,15 @@ Qed.
 Global Hint Extern 2 (StrongSet _*) => simple notypeclasses refine ProdList_is_strong : typeclass_instances.
 
 Global Hint Extern 1 (MonUnit _*) => refine nil : typeclass_instances.
-Local Notation ε := (mon_unit (M:=_*)).
+Local Abbreviation ε := (mon_unit (M:=_*)).
 
-Lemma ProdList_cons_is_fun X : @IsFun (X × X*) X* (λ p, cons (proj1 p) (proj2 p)).
+Lemma ProdList_cons_is_fun X : @IsFun (X × X*) X* (λ '(x, xs), cons x xs).
 Proof. now intros [x₀ x][y₀ y]. Qed.
-Definition ProdCons {X} : X × X* ⇾ X* := @make_fun _ _ _ (ProdList_cons_is_fun X).
+Definition ProdCons {X} : X × X* ⇾ X* := @func_make _ _ _ (ProdList_cons_is_fun X).
 Local Notation "x :: y" := (func_op ProdCons (x, y)) (at level 60, right associativity).
 
 Definition ProdList_unit {X} : X ⇾ X* := ap2 (ProdCons ∘ tensor_to_prod _ _) ε.
-Local Notation η := ProdList_unit.
+Local Abbreviation η := ProdList_unit.
 Local Notation "[ x ]" := (func_op η x).
 Global Hint Extern 1 (Cast ?X (?X *)) => refine ProdList_unit : typeclass_instances.
 
@@ -58,7 +58,7 @@ Definition ProdList_sinduction {X} (P:X* → SProp) : P ε → (∀ x₀ x, P x 
 
 Local Ltac doit P := let x₀ := fresh "x₀" in let x := fresh "x" in let IHx := fresh "IHx" in
   let y₀ := fresh "y₀" in let y := fresh "y" in
-  hnf; refine (ProdList_sinduction _ _ _);
+  hnf; intros [x y]; revert x y; refine (ProdList_sinduction _ _ _);
   [| intros x₀ x IHx]; intros [|y₀ y];
   [ now change (P 𝐓) | now change (P 𝐅) .. |
     specialize (IHx y); now change (P (x₀ = y₀ ∧ x = y)) ].
@@ -69,48 +69,48 @@ Global Hint Extern 2 (RefutativeEquality  _*) => simple notypeclasses refine Pro
 
 Import projection_notation.
 
-Local Instance ProdList_match_is_fun {X Y} : @IsFun (Y × ((X × X* ) ⇾ Y) ⊗ X* ) Y
+Local Instance ProdList_match_is_fun@{u} {X Y:set@{u}} : @IsFun (Y × ((X × X* ) ⇾ Y) ⊗ X* ) Y
    (λ p, match π₂ p with
          | nil => π₁ (π₁ p)
          | cons x l => π₂ (π₁ p) (x, l)
          end).
 Proof. intros [p [|x l]][q [|y l']].
-+ change (p = q ⊠ atrue ⊸ π₁ p = π₁ q).
-  rew (aprod_unit_r _). exact (is_fun (prod_proj1 _ _) _ _).
-+ change (?P ⊸ ?Q) with (p = q ⊠ afalse ⊸ Q). now rew (aprod_false_r _).
-+ change (?P ⊸ ?Q) with (p = q ⊠ afalse ⊸ Q). now rew (aprod_false_r _).
-+ let f := constr:( set:( (λ '(p, q), π₂ p q) : tprod (Y × (X × X* ⇾ Y)) (X × X* ) → Y ) ) in
++ change (p = q ⊠ atrue ⊸ π₁ p = π₁ q). simplify.
+  exact (is_fun (prod_proj1 _ _) _ _).
++ change (?P ⊸ ?Q) with (p = q ⊠ afalse ⊸ Q). now simplify.
++ change (?P ⊸ ?Q) with (p = q ⊠ afalse ⊸ Q). now simplify.
++ let f := constr:( set:( (λ '((y, f), q) : (Y × (X × X* ⇾ Y)) ⊗ (X × X* ), f q)) ) in
   exact ( is_fun f (p, (x, l)) (q, (y, l')) ).
 Qed.
-Definition ProdList_match {X Y} := curry (@make_fun _ _ _ (@ProdList_match_is_fun X Y)).
+Definition ProdList_match@{u} {X Y:set@{u}} := curry (@func_make _ _ _ (@ProdList_match_is_fun X Y)).
 
 
 
-Definition ProdList_elim_op {X Y} (f: (X × X*) × Y ⇾ Y) (y:Y) : X* → Y := fix F l :=
+Definition ProdList_elim_op@{u} {X Y:set@{u}} (f: (X × X*) × Y ⇾ Y) (y:Y) : X* → Y := fix F l :=
 match l with
 | nil => y
 | cons x l => f (x, l, F l)
 end.
 
-Local Instance ProdList_elim_is_fun {X Y} (f: (X × X*) × Y ⇾ Y) : @IsFun (Y × X*) Y
+Local Instance ProdList_elim_is_fun@{u} {X Y:set@{u}} (f: (X × X*) × Y ⇾ Y) : @IsFun (Y × X*) Y
   (tuncurry (ProdList_elim_op f)).
 Proof. intros [y l][y' l']. unfold_pair_eq.
   unfold tuncurry, proj1, proj2. revert l l'.
   refine (list_sinduction _ _ _); [| intros x l IH ];
   (refine (list_sdestruct _ _ _); [| intros x' l' ]).
 + now change (y = y' ∧ ε = ε :> X* ⊸ y = y').
-+ change (ε = _) with afalse. now rew (aand_false_r _). 
-+ change (_ = ε) with afalse. now rew (aand_false_r _).
++ change (nil = _) with afalse. now simplify.
++ change (_ = nil) with afalse. now simplify.
 + change (ProdList_elim_op f ?y (cons ?x ?l)) with (f (x, l, ProdList_elim_op f y l)).
   rew <-(is_fun f _ _). apply aand_intro; [ exact (aandr _ _) |].
   rew <-(IH l'). change (y = y' ∧ (x = x' ∧ l = l' :> X*) ⊸ y = y' ∧ l = l' :> X*).
   now rew (aandr (x = x') _).
 Qed.
 
-Definition ProdList_elim {X Y} (f: (X × X*) × Y ⇾ Y) : Y × X* ⇾ Y := @make_fun _ _ _ (@ProdList_elim_is_fun X Y f).
+Definition ProdList_elim@{u} {X Y:set@{u}} (f: (X × X*) × Y ⇾ Y) : Y × X* ⇾ Y := @func_make _ _ _ (@ProdList_elim_is_fun X Y f).
 
-Definition ProdList_fold_right  {X Y} (f: X × Y ⇾ Y) : X* × Y ⇾ Y
-  := ProdList_elim set:(λ p : (X × X*) × Y, f (π₁ (π₁ p), π₂ p)) ∘ prod_swap _ _.
+Definition ProdList_fold_right@{u} {X Y:set@{u}} (f: X × Y ⇾ Y) : X* × Y ⇾ Y
+  := ProdList_elim set:(λ '((a, b), c) : (X × X*) × Y, f (a, c)) ∘ prod_swap _ _.
 
 (*
 Section fold_right.
@@ -169,12 +169,13 @@ Canonical Structure ProdList_str_mon (X:set) := make_strong_op_monoid X*.
 Global Hint Extern 1 (Cast ?X (strong_op_monoid_car (ProdList_str_mon ?X))) => refine ProdList_unit : typeclass_instances.
 
 Section to_monoid.
-  Universes i.
-  Context {X:set@{i}} {M:strong_op_monoid@{i}}.
-  Notation e := (mon_unit (M:=strong_op_monoid_car M)).
+  Universes u.
+  Context {X:set@{u}} {M:strong_op_monoid@{u}}.
+  Abbreviation e := (mon_unit (M:=strong_op_monoid_car M)).
 
-  Definition ProdList_to_monoid_op (f:X ⇾ M) : X* ⇾ M := set:(λ x, ProdList_fold_right (set:(λ p : X × M, f (π₁ p) ∙ (π₂ p))) (x, e)).
-  Local Notation ϕ := ProdList_to_monoid_op.
+  Definition ProdList_to_monoid_op (f:X ⇾ M) : X* ⇾ M :=
+    set:(λ x, ProdList_fold_right (set:(λ '(a, b) : X × M, f a ∙ b)) (x, e)).
+  Local Abbreviation ϕ := ProdList_to_monoid_op.
 
   Local Instance ProdList_to_monoid_is_fun : IsFun ϕ.
   Proof. intros f g. change (f = g ⊸ ∏ x, ϕ f x = ϕ g x). rew <-all_adj.
@@ -185,13 +186,13 @@ Section to_monoid.
     exact (all_lb _ a).
   Qed.
 
-  Definition ProdList_to_monoid := make_fun ϕ.
+  Definition ProdList_to_monoid : _ ⇾ _ := func_make ϕ.
 
   Local Notation "X ⟶ Y" := (strong_op_monoid_morphism X Y).
 
   Section with_f.
     Context (f: X ⇾ M).
-    Local Notation g := (ProdList_to_monoid_op f).
+    Local Abbreviation g := (ProdList_to_monoid_op f).
 
     Lemma ProdList_to_monoid_is_mon_mor : Monoid_Morphism g.
     Proof. apply alt_Build_Monoid_Morphism; [| refl].
@@ -207,14 +208,14 @@ Section to_monoid.
     Lemma ProdList_to_monoid_unique (h:X* ⟶ M) : f = h ∘ η → h = g :> (X* ⇾ M).
     Proof. pose proof ProdList_to_monoid_is_mon_mor.
       intros E. refine (ProdList_sinduction_alt _ _ _).
-    + now rew !2(preserves_unit _).
-    + intros x₀ x IH. rew !2(preserves_sg_op _ _ _).
+    + now rew (preserves_unit _).
+    + intros x₀ x IH. rew (preserves_sg_op _ _ _).
       now rew [ IH | <-(E x₀ : f x₀ = h (η x₀)) | <-(ProdList_to_monoid_spec x₀ : f x₀ = g (η x₀)) ].
     Qed.
   End with_f.
 
-  Definition ProdList_to_monoid_mon_mor : (X ⇾ M) ⇾ (X* ⟶ M).
-  Proof. simple refine (make_fun (λ f, make_monoid_morphism (ProdList_to_monoid_op f))).
+  Definition ProdList_to_monoid_mon_mor@{} : (X ⇾ M) ⇾ (X* ⟶ M).
+  Proof. simple refine (func_make (λ f, make_monoid_morphism (ProdList_to_monoid_op f))).
   + exact (ProdList_to_monoid_is_mon_mor f).
   + exact ProdList_to_monoid_is_fun.
   Defined.
@@ -237,7 +238,3 @@ Global Hint Extern 2 (FreeStrongMonoid ProdList_unit) => notypeclasses refine Pr
 Definition ProdList_map `(f:X ⇾ Y) := ProdList_to_monoid_mon_mor (ProdList_unit ∘ f).
 Definition ProdList_map_in_bounds `(f:X ⇾ Y) : ∀ (l:X*) n,  ListInBounds l n → ListInBounds (ProdList_map f l) n := list_map_in_bounds f.
 Global Hint Extern 2 (ListInBounds (func_op (monoid_morphism_fun (ProdList_map ?f)) ?l) ?n) => simple notypeclasses refine (ProdList_map_in_bounds f l n _) : typeclass_instances.
-
-
-
-

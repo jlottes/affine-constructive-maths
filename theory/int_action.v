@@ -51,33 +51,33 @@ Section add_int_act.
   Context (ℤ:integers@{i}).
   Context `{AdditiveNonComGroup@{i} X} `{!PointwiseOp (X:=X) (+) X} .
 
-  Local Notation ϕ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
+  Local Abbreviation ϕ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
 
   Definition add_int_act : ℤ ⊗ X ⇾ X := uncurry ϕ.
   Local Notation "x ∙ y" := (func_op add_int_act (x, y)).
 
   Lemma add_int_act_strong : StrongOp add_int_act.
-  Proof dec_strong_op_l _.
+  Proof. exact (dec_strong_op_l _). Qed.
 
   Lemma add_int_act_0_l : ∏ x, 0 ∙ x = 0 .
-  Proof preserves_0 ϕ .
+  Proof. exact (preserves_0 ϕ). Qed.
 
   Lemma add_int_act_1_l : ∏ x, 1 ∙ x = x .
-  Proof preserves_1 ϕ .
+  Proof. exact (preserves_1 ϕ). Qed.
 
   Lemma add_int_act_plus_l m n : ∏ x, (m + n) ∙ x = m ∙ x + n ∙ x.
-  Proof preserves_plus ϕ m n.
+  Proof. exact (preserves_plus ϕ m n). Qed.
 
   Lemma add_int_act_negate_l n : ∏ x, (-n) ∙ x = -(n ∙ x).
-  Proof preserves_negate ϕ n.
+  Proof. exact (preserves_negate ϕ n). Qed.
 
   Lemma add_int_act_minus_l m n : ∏ x, (m - n) ∙ x = m ∙ x - n ∙ x.
-  Proof preserves_minus ϕ m n.
+  Proof. exact (preserves_minus ϕ m n). Qed.
 
   Local Open Scope mult_scope.
 
   Lemma add_int_act_mult_l m n : ∏ x, (m · n) ∙ x = m ∙ (n ∙ x).
-  Proof preserves_mult ϕ m n.
+  Proof. exact (preserves_mult ϕ m n). Qed.
 
   Lemma add_int_act_add_mon2 {x} : AdditiveMonoid_Morphism (ap2 add_int_act x).
   Proof. apply alt_Build_AdditiveMonoid_Morphism.
@@ -85,7 +85,7 @@ Section add_int_act.
   + apply add_int_act_0_l.
   Qed.
 
-  Local Notation E₀ := (ZeroSymmetricPart (EndFun X)).
+  Local Abbreviation E₀ := (ZeroSymmetricPart (EndFun X)).
 
   Lemma add_int_act_0_r n : n ∙ 0 = 0 .
   Proof. change (ϕ n 0 = 0).
@@ -106,10 +106,10 @@ Section add_int_act.
 
   Local Notation "x ∙ y" := (func_op (add_int_act ℤ (X:=X)) (x, y)).
   Local Notation "( n ∙)" := (func_op2 ap1 (add_int_act ℤ (X:=X)) n).
-  Local Notation ϕ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
-  Local Notation ε := (of_course_counit (EndFun X)).
-  Local Notation i := (from_subset _).
-  Local Notation ψ := (integers_to_group ℤ (E₊ X)).
+  Local Abbreviation ϕ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
+  Local Abbreviation ε := (of_course_counit (EndFun X)).
+  Local Abbreviation i := (from_subset _).
+  Local Abbreviation ψ := (integers_to_group ℤ (E₊ X)).
 
   Lemma add_int_act_add_mon1 {n} : AdditiveMonoid_Morphism (n∙).
   Proof. change (AdditiveMonoid_Morphism (ϕ n)).
@@ -134,10 +134,10 @@ Section nat_to_int.
   Context {ℕ:naturals@{i}} {ℤ:integers@{i}} (f:ℕ ⇾ ℤ) `{!Rig_Morphism f}.
   Context `{AdditiveNonComGroup@{i} X} `{!PointwiseOp (X:=X) (+) X} .
 
-  Local Notation ϕ := (naturals_to_mon (near_rig_car (near_rig ℕ)) (EndFun X)).
-  Local Notation ψ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
+  Local Abbreviation ϕ := (naturals_to_mon (near_rig_car (near_rig ℕ)) (EndFun X)).
+  Local Abbreviation ψ := (integers_to_group (ring_car (ints_ring ℤ)) (EndFun X)).
 
   Lemma int_act_nat_act n x : add_int_act ℤ (f n, x) = add_nat_act ℕ (n, x) .
-  Proof naturals_initial (ψ ∘ f) n x.
+  Proof. exact (naturals_initial (ψ ∘ f) n x). Qed.
 End nat_to_int.
 

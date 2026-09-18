@@ -3,12 +3,13 @@ Require Export interfaces.naturals interfaces.bundled_algebra.
 Require Import interfaces.sprop logic.aprop logic.relations theory.rings.
 Require Import implementations.nat.
 Require Export theory.nno.
-Require Import easy rewrite rewrite_preserves tactics.misc change_quantifiers.
+Require Import theory.projected_set.
+Require Import easy rewrite rewrite_preserves tactics.misc change_quantifiers simplify.
 Require Import strip_coercions.
 
-Lemma naturals_initial_alt `{Naturals N} `{AdditiveNonComMonoid M} {oM:One M}
-  (f g : N ⇾ M) `{!AdditiveMonoid_Morphism f} `{!AdditiveMonoid_Morphism g}
-  `{!One_Pointed_Morphism f} `{!One_Pointed_Morphism g}
+Lemma naturals_initial_alt@{u} {N M:set@{u}} `{Naturals N} `{AdditiveNonComMonoid M} {oM:One M}
+  (f g : N ⇾ M) `{!AdditiveMonoid_Morphism f, !AdditiveMonoid_Morphism g}
+  `{!One_Pointed_Morphism f, !One_Pointed_Morphism g}
   : f = g.
 Proof. now rew [ (naturals_initial f) | (naturals_initial g) ]. Qed.
 
@@ -23,11 +24,12 @@ Global Hint Extern 10 (Injective (naturals_to_mon _ _)) => simple notypeclasses 
 Global Hint Extern 5 (Surjective (naturals_to_mon _ _)) => simple notypeclasses refine naturals_to_naturals_bijective : typeclass_instances.
 
 Section retract_is_nat.
+  Universes u.
   Local Open Scope fun_inv_scope.
-  Context `{Naturals N} `{NearRig R} (f:N ⇾ R).
+  Context `{Naturals@{u} N} `{NearRig@{u} R} (f:N ⇾ R).
   Context `{!Surjective f (inv:=f_inv)}.
-  Context `{!AdditiveMonoid_Morphism f} `{!AdditiveMonoid_Morphism f⁻¹}.
-  Context `{!One_Pointed_Morphism f} `{!One_Pointed_Morphism f⁻¹}.
+  Context `{!AdditiveMonoid_Morphism f, !AdditiveMonoid_Morphism f⁻¹}.
+  Context `{!One_Pointed_Morphism f, !One_Pointed_Morphism f⁻¹}.
 
   Instance retract_is_nat_to_mon : NaturalsToMon R
     := λ M pM zM oM, naturals_to_mon N M ∘ f⁻¹.
@@ -39,15 +41,15 @@ Section retract_is_nat.
 End retract_is_nat.
 
 Section is_nno.
-  Universes i.
-  Context `{Naturals@{i} N}.
-  Local Notation ψ := (naturals_to_mon N Nat).
-  Instance naturals_to_nno : FromNNO N := λ X _ _, nno_to_set Nat X ∘ ψ.
+  Universes u.
+  Context `{Naturals@{u} N}.
+  Local Abbreviation ψ := (naturals_to_mon@{u} N Nat).
+  Instance naturals_to_nno : FromNNO N := λ X _ _, nno_to_set@{u} Nat X ∘ ψ.
 
   Instance: MaybeAlgebra_Morphism ψ.
   Proof. split; [ exact _ |].
     intro n. change (suc ?x) with (1+x).
-    now rewrite_preserves constr:(ψ).
+    now rewrite_preserves ψ.
   Qed.
 
   Lemma naturals_nno : NaturalNumbersObject N.
@@ -56,22 +58,33 @@ Section is_nno.
   + intros f ?.
     apply (surjective_compose_cancel ψ⁻¹ _ _).
     change (?f ∘ ?g ∘ ?h) with (f ∘ (g ∘ h)).
-    rew (surjective ψ).
-    change (?f ∘ id_fun _) with f.
+    simplify.
     exact (nno_initial _).
   Qed.
 
-  Lemma naturals_add_mon : AdditiveMonoid N.
+  Lemma naturals_add_mon : AdditiveMonoid@{u} N.
   Proof. apply alt_Build_AdditiveMonoid; try exact _.
-    intros x y. quote_injective constr:(ψ). now apply commutativity.
+    intros x y. quote_injective constr:(ψ).
+    now apply commutativity.
+  Qed.
+
+  Lemma naturals_distance_alt `{Naturals N} (x y : N) : x = y ∨ ∐ z, z ≠ 0 ⊠ (x + z = y ∨ x = y + z).
+  Proof. generalize ( nat_subtract_spec (ψ x) (ψ y) ).
+    destruct (nat_subtract (ψ x, ψ y)) as [ z' | | z' ].
+  + intros [??]. right. exists (naturals_to_mon Nat N z').
+    split; [|left]; quote_injective constr:(ψ); change (ψ (?f z')) with ((ψ ∘ f) z');
+    now rew (naturals_initial_alt (ψ ∘ naturals_to_mon Nat N) id).
+  + intros E. left. now quote_injective constr:(ψ).
+  + intros [??]. right. exists (naturals_to_mon Nat N z').
+    split; [|right]; quote_injective constr:(ψ); change (ψ (?f z')) with ((ψ ∘ f) z');
+    now rew (naturals_initial_alt (ψ ∘ naturals_to_mon Nat N) id).
   Qed.
 
   Lemma naturals_distance `{Naturals N} (x y : N) : ∐ z, x + z = y ∨ x = y + z.
-  Proof. generalize ( nat_subtract_spec (ψ x) (ψ y) ).
-    destruct (nat_subtract (ψ x, ψ y)) as [ z' | z' ]; intros E;
-    exists (naturals_to_mon Nat N z'); [ left | right ]; quote_injective constr:(ψ);
-    change (ψ (?f z')) with ((ψ ∘ f) z');
-    now rew (naturals_initial_alt (ψ ∘ naturals_to_mon Nat N) id).
+  Proof. destruct (naturals_distance_alt x y) as [E | [z [_ [E|E]]]].
+  + exists 0. left. rew <-E. now simplify.
+  + exists z. now left.
+  + exists z. now right.
   Qed.
 End is_nno.
 Coercion naturals_nno : Naturals >-> NaturalNumbersObject.
@@ -79,23 +92,30 @@ Coercion naturals_add_mon : Naturals >-> AdditiveMonoid.
 Global Hint Extern 10 (FromNNO _) => notypeclasses refine naturals_to_nno : typeclass_instances.
 Global Hint Extern 10 (NaturalNumbersObject _) => notypeclasses refine naturals_nno : typeclass_instances.
 
+Coercion naturals_one_nonzero `{Naturals (N:=N)} : OneNonZero N.
+Proof. red. rew <-(plus_0_r 1). exact (nno_suc_nonzero 0). Qed.
+
+Global Hint Extern 2 (OneNonZero Nat) => simple notypeclasses refine naturals_one_nonzero : typeclass_instances.
+
 Local Open Scope mult_scope.
 
 Section preserves_mult.
-  Universes i.
-  Context `{Naturals@{i} N}.
-  Context `{NearRig@{i} R}.
+  Universes u.
+  Context `{Naturals@{u} N}.
+  Context `{NearRig@{u} R}.
 
-  Notation ϕ := (naturals_to_mon N R).
+  Abbreviation ϕ := (naturals_to_mon N R).
+
+  Local Hint Extern 2 (SimplifiesTo (func_op ϕ 0) _) => solve_simplify (preserves_0 ϕ) : typeclass_instances.
 
   Lemma naturals_to_mon_rig_mor : Rig_Morphism ϕ.
   Proof. split; try exact _. apply alt_Build_MultiplicativeMonoid_Morphism; [| exact (preserves_1 ϕ) ].
     nno_induction.
-  + intros y. now rew (mult_0_l _), (preserves_0 ϕ), (mult_0_l _).
+  + intros y. now simplify.
   + intros n IHn y. change (suc ?n) with (1+n).
-    rew (plus_mult_distr_r _ _ _), (mult_1_l _).
-    rewrite_preserves constr:(ϕ).
-    now rew (IHn y), (plus_mult_distr_r _ _ _), (mult_1_l _).
+    rew (plus_mult_distr_r _ _ _). simplify.
+    rewrite_preserves ϕ.
+    rew (IHn y), (plus_mult_distr_r _ _ _). now simplify.
   Qed.
 End preserves_mult.
 Global Hint Extern 2 (Rig_Morphism (naturals_to_mon _ _)) => simple notypeclasses refine naturals_to_mon_rig_mor : typeclass_instances.
@@ -137,9 +157,9 @@ Coercion naturals_add_cancel `{Naturals N} : AdditiveCancellation N.
 Proof. apply alt_Build_AdditiveCancellation.
   change (∏ z x y : N, z + x = z + y ⊸ x = y).
   naturals_induction.
-  + intros x y. now rew !2(plus_0_l _).
+  + intros x y. now simplify.
   + intros n IHn x y.
-    rew <-!2(associativity (+) _ _ _).
+    rew <-(associativity (+) _ _ _).
     rew <-(IHn x y).
     exact (injective (X:=N) suc _ _).
 Qed.
@@ -147,34 +167,40 @@ Qed.
 Lemma zero_sum `{Naturals N} : ∀ (x y : N), x + y = 0 ⧟ x = 0 ⊠ y = 0.
 Proof. intros x y; split.
 * revert x y. naturals_induction.
-  + intros n. rew (plus_0_l n). now rew (aprod_true_l (_ : 0 = 0)).
+  + intros n. now simplify.
   + intros n _ m. apply aimpl_by_contradiction.
     rew <-(associativity (+) _ _ _).
     exact (nno_suc_nonzero _).
-* apply affirmative_aimpl. intros [Ex Ey]. rew [Ex | Ey]. exact (plus_0_r _).
+* apply affirmative_aimpl. intros [Ex Ey]. rew [Ex | Ey]. now simplify.
 Qed.
 
-Coercion naturals_zero_product `{Naturals N} : ZeroProduct N.
+Coercion naturals_strong_no_zero_divisors `{Naturals N} : StrongNoZeroDivisors N.
 Proof. intros x y. pose proof nno_zero_or_suc x as [E|[n E]].
 + now rew (aor_is_true_l E).
 + change (suc n) with (1+n) in E; rew E; clear E x.
   rew <-(aorr _ _).
-  rew (plus_mult_distr_r _ _ _), (mult_1_l _).
+  rew (plus_mult_distr_r _ _ _). simplify.
   now rew (zero_sum _ _).
 Qed.
 
+Global Hint Extern 2 (StrongNoZeroDivisors Nat) => simple notypeclasses refine naturals_strong_no_zero_divisors : typeclass_instances.
+Global Hint Extern 2 (NoZeroDivisors Nat) => simple notypeclasses refine naturals_strong_no_zero_divisors : typeclass_instances.
+
+Global Hint Extern 2 (apos (anot (1 + ?a = 0 :> nat))) => refine (nno_suc_nonzero a) : typeclass_instances.
+Global Hint Extern 2 (apos (anot (1 + ?a = 0 :> set_T Nat))) => refine (nno_suc_nonzero a) : typeclass_instances.
+Global Hint Extern 2 (apos (anot (1 + ?a = 0 :> set_T (near_rig_car (nats_near_rig _))))) => refine (nno_suc_nonzero a) : typeclass_instances.
 
 Section with_a_near_ring.
-  Universes i.
-  Context `{Naturals@{i} N}.
-  Context `{NearRing@{i} R}.
+  Universes u.
+  Context `{Naturals@{u} N}.
+  Context `{NearRing@{u} R}.
 
-  Notation ϕ := (naturals_to_mon N R).
+  Abbreviation ϕ := (naturals_to_mon N R).
 
   Lemma naturals_to_near_ring_negate_mult_r : ∀ n, -(ϕ n) = ϕ n · (-1).
   Proof. enough (∀ n, -(ϕ n) = ϕ n · (-1) ∧ ϕ n · -1 - 1 = -1 + ϕ n · -1 : Ω) as P by (intro; now apply P).
-    naturals_induction; [| intros n [IH1 IH2]]; rewrite_preserves constr:(ϕ).
-  + rew (mult_0_l _). rew [ (plus_0_l _) | (plus_0_r _) ]. split; [ exact negate_0 | refl ].
+    naturals_induction; [| intros n [IH1 IH2]]; rewrite_preserves ϕ.
+  + now simplify.
   + split.
     * rew (negate_plus_distr_alt _ _), IH1.
       now rew (plus_mult_distr_r 1 (ϕ n) _), (mult_1_l _).
@@ -185,15 +211,14 @@ End with_a_near_ring.
 
 
 Section with_a_ring.
-  Universes i.
-  Context `{Naturals@{i} N} `{Ring@{i} R} (f:N ⇾ R) `{!Rig_Morphism f} `{!Injective f}.
+  Universes u.
+  Context `{Naturals@{u} N} `{Ring@{u} R} (f:N ⇾ R) `{!Rig_Morphism f, !Injective f}.
 
   Lemma to_ring_zero_sum x y : -(f x) = f y ⧟ x = 0 ⊠ y = 0.
   Proof.
     rew <-(zero_sum x y), (injective_iff f _ _).
     rewrite_preserves f.
-    rew (left_cancellation (+) (f x) (-f x) _).
-    rew (plus_negate_r _).
+    rew (injective_iff_simp (f x +) (-f x) (f y)).
     now apply symmetry_iff.
   Qed.
 
@@ -205,4 +230,21 @@ Section with_a_ring.
     intros [E1 E2]. now rew [E1|E2].
   Qed.
 End with_a_ring.
+
+
+Definition nat_subtract_alt `{sub:NatSubtract N} `{z:Zero N} : N ⊗ N ⇾ sum_set N N
+  := from_sum _ _ _ (const (inl 0), id_fun _) ∘ projected_set_project (natsubtract.T N) ∘ nat_subtract .
+Lemma nat_subtract_alt_spec `{Naturals N} `{NatSubtract N} `{!NatSubtractSpec N} (x y : N) :
+  match nat_subtract_alt (x, y) with
+  | inl z => x + z = y
+  | inr z => x = y + z
+  end.
+Proof.
+  change (nat_subtract_alt (x, y)) with
+    ( (from_sum _ _ _ (const (inl 0), id_fun _) ∘ projected_set_project (natsubtract.T N) ) (nat_subtract (x, y)) ).
+  generalize (nat_subtract_spec x y); destruct (nat_subtract (x, y)) as [z| |z].
+  * change (x + z = y ⊠ z ≠ 0 → x + z = y). now intros [??].
+  * change (x = y → x + 0 = y). intro E; now rew E, (plus_0_r _).
+  * change (x = y + z ⊠ z ≠ 0 → x = y + z). now intros [??].
+Qed.
 

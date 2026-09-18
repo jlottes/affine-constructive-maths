@@ -1,9 +1,35 @@
+# generated build system
+Makefile
+Makefile.conf
 .Makefile.d
-.coq-native
-*.aux
-*.glob
+# compiled objects and byproducts
 *.vo
 *.vok
 *.vos
+*.glob
+*.aux
+*.vo.prof.json
+*.vo.prof.json.gz
+*.v.timing
+*.v.before-timing
+*.v.after-timing
+*.v.timing.diff
+*.v.beautified
+*.v.old
+.coq-native
+.lia.cache
+.nia.cache
+META
+pretty-timed-success.ok
+# documentation targets
+html/
+mlihtml/
+*.g.tex
+*.ps
+all.pdf
+all-gal.pdf
+all-mli.tex
+# classical conservativity build tree
+.build/
+# editor droppings
 \#*
-

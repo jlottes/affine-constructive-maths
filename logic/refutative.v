@@ -19,7 +19,7 @@ Lemma refutative_apar_elim {P Q R} `{Refutative R} : (P ⊞ Q) → (P ⊸ R) →
 Proof. intros PorQ ??. apply (refutative_apar_aor PorQ). now apply aor_elim. Qed.
 
 Lemma refutative_apar_elim_alt_l {P Q R} {HP:Refutative P} {HR:Refutative R} : (P ⊞ Q) → (P → R) → (Q → R) → R.
-Proof. intros PorQ. assert (Affirmative (P ∨ Q)) by (clear R HR; tautological).
+Proof. intros PorQ. assert (Affirmative (P ∨ Q)) by (clear R HR; full_tautological).
   intros a b. apply (refutative_apar_aor (PorQ)), affirmative_aimpl.
   intros [?|?]; [ apply a | apply b ]; assumption.
 Qed.
@@ -29,17 +29,17 @@ Proof. rew (apar_com _ _); intros QorP ??. now apply (refutative_apar_elim_alt_l
 
 
 Lemma refutative_by_LEM (P:Ω) `{Refutative Q} : ((P ∨ P ᗮ) ⊸ Q) → Q.
-Proof refutative_apar_aor (apar_LEM P).
+Proof. exact (refutative_apar_aor (apar_LEM P)). Qed.
 
 Lemma refutative_by_cases P `{DeMorganDual P Pd} `{Refutative Q} : ((P ∨ Pd) ⊸ Q) → Q.
-Proof refutative_apar_aor (apar_LEM_dual P).
+Proof. exact (refutative_apar_aor (apar_LEM_dual P)). Qed.
 
 Lemma refutative_by_cases_alt P `{DeMorganDual P Pd} `{Refutative Q} : (P ⊸ Q) → (Pd ⊸ Q) → Q.
-Proof refutative_apar_elim (apar_LEM_dual P).
+Proof. exact (refutative_apar_elim (apar_LEM_dual P)). Qed.
 
 Lemma refutative_by_contradiction P `{DeMorganDual P Pd} `{DeMorganDual Q Qd} `{Refutative Q} : (Qd → (P ∧ Pd)) → Q.
-Proof. rew <-(demorgan_dual Q). rew <- exact:(demorgan_dual P). clear H H0. intro.
-  apply (refutative_by_LEM P). apply by_contrapositive. apply affirmative_aimpl. tautological.
+Proof. rew [ <-(demorgan_dual Q) | <-(demorgan_dual P)]. clear H H0. intro.
+  apply (refutative_by_LEM P). apply by_contrapositive. apply affirmative_aimpl. full_tautological.
 Qed.
 
 Definition Affirmative_Decidability (P : Ω) := Affirmative (P ∨ P ᗮ).
@@ -80,9 +80,9 @@ Lemma aor_affirmative_dec   `{Affirmative_Decidability P} `{Affirmative_Decidabi
 Lemma aprod_affirmative_dec `{Affirmative_Decidability P} `{Affirmative_Decidability Q} : Affirmative_Decidability (P ⊠ Q).  Proof. doit. Qed.
 Lemma apar_affirmative_dec  `{Affirmative_Decidability P} `{Affirmative_Decidability Q} : Affirmative_Decidability (P ⊞ Q).  Proof. doit. Qed.
 Global Hint Extern 2 (Affirmative_Decidability (_ ᗮ))      => simple notypeclasses refine anot_affirmative_dec  : typeclass_instances.
-Global Hint Extern 2 (Affirmative_Decidability (aand _ _)) => simple notypeclasses refine aand_affirmative_dec  : typeclass_instances.
-Global Hint Extern 2 (Affirmative_Decidability (aor _ _))  => simple notypeclasses refine aor_affirmative_dec   : typeclass_instances.
-Global Hint Extern 2 (Affirmative_Decidability (_ ⊠ _))    => simple notypeclasses refine aprod_affirmative_dec : typeclass_instances.
-Global Hint Extern 2 (Affirmative_Decidability (_ ⊞ _))    => simple notypeclasses refine apar_affirmative_dec  : typeclass_instances.
+Global Hint Extern 2 (Affirmative_Decidability (_ ∧ _)) => simple notypeclasses refine aand_affirmative_dec  : typeclass_instances.
+Global Hint Extern 2 (Affirmative_Decidability (_ ∨ _)) => simple notypeclasses refine aor_affirmative_dec   : typeclass_instances.
+Global Hint Extern 2 (Affirmative_Decidability (_ ⊠ _)) => simple notypeclasses refine aprod_affirmative_dec : typeclass_instances.
+Global Hint Extern 2 (Affirmative_Decidability (_ ⊞ _)) => simple notypeclasses refine apar_affirmative_dec  : typeclass_instances.
 
 

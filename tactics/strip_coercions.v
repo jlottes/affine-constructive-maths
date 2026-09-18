@@ -8,10 +8,15 @@ Tactic Notation "strip_coercions_chain" uconstr(term) := change (StripCoercions 
 
 Global Hint Extern 100 (StripCoercions ?x) => let t := fresh "t" in pose (t := x); constructor : strip_coercions.
 
-Ltac strip_coercions tm :=
+Ltac strip_coercions_or_self tm :=
   lazymatch constr:(ltac:(solve_strip_coercions) : StripCoercions tm) with
     (let _ := ?x in _) => x
   end.
+
+Ltac strip_coercions tm :=
+  let t := strip_coercions_or_self tm in
+  let _ := match goal with _ => assert_fails (constr_eq t tm) end in
+  t.
 
 Ltac exact_strip_coercions tm :=
   let t := strip_coercions tm in solve [ refine t ].

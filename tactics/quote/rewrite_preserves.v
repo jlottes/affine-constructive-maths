@@ -1,57 +1,55 @@
 Require Import abstract_algebra.
-Require Import prop_eq tactics.misc rewrite.
+Require Import tactics.misc rewrite.
 Require Export quote.base.
 
 Definition quote_tag `(f:X ⇾ Y) x := f x.
-Definition quote_tag_eq `(f:X ⇾ Y) x : quote_tag f x ≡ f x := eq_refl.
+Definition unfold_quote {X Y} {f : X ⇾ Y} {x y} (q : quote f x y) : f x = y := q.
 
-(** Returns the constr [t] with [lrewrite_tag_l] replaced by [lewrite_tag_r] *)
-Ltac quote_swap_tags t :=
-  lazymatch t with
-    | context C [ arewrite_tag_l ?E ] =>
-      let t' := context C [ arewrite_tag_r E ] in quote_swap_tags t'
-    | _ => t
-  end.
+(** Recursively walk the marks + tagged term from [match_tag_on_subterms],
+    replacing each [quote_tag f x] with [arewrite_tag_l (quote_source f x)]
+    when [quote_source] produces a non-trivial equation, or leaving the tag
+    as-is (with [skip_match]) for [quote_refl] results.
 
-(** Finds all "tagged" occurences in [tagged_tm] of [f ?x] ---
-   that is, subterms [quote_tag f x] --- quotes them with
-   quote_source, introducing equations [E : f x = _] into the context,
-   finally running the continuation [k], passing [tagged_tm] with
-   each subterm [quote_tag f x] replaced by [lrewrite_tag_l ?E] *)
-Ltac quote_tagged_subterms_then f tagged_tm k :=
-  lazymatch tagged_tm with
-  | context C [ @quote_tag ?X ?Y ?f ?x ] =>
-      let q := quote_source f x in
-      lazymatch q with
-      | quote_refl f _ =>
-          let t' := context C [ func_op f x ] in
-          quote_tagged_subterms_then f t' k
-      | _ =>
-        let E := fresh "E" in pose proof q as E;
-        unfold quote in E;
-        let t' := context C [ arewrite_tag_l E ] in
-        quote_tagged_subterms_then f t' k
+    Must be called inside [constr:(ltac:(...))] since it returns via [exact]. *)
+Ltac quote_replace_tags marks tm :=
+  lazymatch marks with
+  | found_match =>
+      exact (mark found_match tm)
+  | mark skip_match ?ms =>
+      lazymatch tm with
+      | (fun (binder : ?T) => ?body) (@quote_tag ?X ?Y ?ff ?x) =>
+          let q := quote_source ff x in
+          let inner := eval_under_binder
+            ltac:(fun _ b => quote_replace_tags ms b) binder T body in
+          lazymatch inner with (fun binder' : ?T => mark ?ms' ?body') =>
+            lazymatch q with
+            | quote_refl _ _ =>
+                exact (mark (mark skip_match ms')
+                  ((fun binder' : T => body') (quote_tag ff x)))
+            | _ =>
+                exact (mark (mark found_match ms')
+                  ((fun binder' : T => body') (arewrite_tag_l (unfold_quote q))))
+            end
+          end
       end
-  | _ => k tagged_tm
   end.
 
-(** Tags occurences of [f ?x] in [tm] and invokes [quote_tagged_subterms] *)
-Ltac tag_and_quote_then f tm k :=
-  let tagged_tm := run_tactic_on_term tm ltac:(rewrite <-?(quote_tag_eq f _)) in
-  quote_tagged_subterms_then f tagged_tm k.
+(** Tag tactic for [goal_rewrite]: finds all [f ?x] subterms via
+    [match_tag_on_subterms], expands structure-preserving properties
+    via [quote_source], and produces the swapped tag pair. *)
+Ltac quote_tag_tac f tm :=
+  let tagged := match_tag_on_subterms uconstr:(quote_tag f _) tag_done tm in
+  lazymatch tagged with mark ?m ?t =>
+    let r := constr:(ltac:(quote_replace_tags m t)) in
+    lazymatch r with mark ?m' ?t' =>
+      swap_tags uconstr:(quote_tag f _) m' t'
+    end
+  end.
 
-(** Rewrite occurences of [f ?x] in the goal, expanding any structure
-   preserving properties *)
-Ltac rewrite_preserves f :=
-  let g := lazymatch goal with |- ?G => G end in
-  notypeclasses refine (_ _); [
-    let clear_tags t := eval unfold arewrite_tag_l, arewrite_tag_r in t in
-    let with_tagged_term tagged_Q :=
-      let tagged_P := quote_swap_tags tagged_Q in
-      let pf := proper_solution (sprop.impl tagged_P tagged_Q) in
-      let P := clear_tags tagged_P in
-      let Q := clear_tags tagged_Q in
-      (echange (sprop.impl P Q)); refine pf
-    in
-    tag_and_quote_then f g with_tagged_term
-    | ].
+(** Rewrite occurrences of [f ?x] in the goal or a hypothesis, expanding
+    any structure preserving properties of [f] (e.g., [f(a+b) = f a + f b]). *)
+Tactic Notation "rewrite_preserves" uconstr(f) :=
+  goal_rewrite ltac:(quote_tag_tac f).
+Tactic Notation "rewrite_preserves" uconstr(f) "in" hyp(H) :=
+  hyp_rewrite H ltac:(quote_tag_tac f).
+

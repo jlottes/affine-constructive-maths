@@ -45,7 +45,6 @@ Global Hint Extern 2 (AdditiveSemiGroup (EndFun _)) => simple notypeclasses refi
 
 
 Import of_course_set_notation.
-
 Definition Additive_Monoid_EndFun `{AdditiveMonoid X} `{!PointwiseOp (X:=X) (+) X} := { f: !(EndFun X) | of_course (AdditiveMonoid_Morphism f) } .
 Arguments Additive_Monoid_EndFun X {_ _ _ _}.
 Local Notation "E₊" := Additive_Monoid_EndFun.
@@ -59,10 +58,10 @@ Proof. apply alt_Build_SubNearRig2.
   1, 2: intros [Hf Hg].
   2: now change (AdditiveMonoid_Morphism (f ∘ g)).
   all: apply alt_Build_AdditiveMonoid_Morphism; intros; simpl; unfold id;
-    rewrite_preserves g; rewrite_preserves f.
+    try rewrite_preserves g; try rewrite_preserves f.
   4,5,6: refl.
-  + rew ?(associativity (+) _ _ _). apply (is_fun (+ g y) _ _).
-    rew <-?(associativity (+) _ _ _). apply (is_fun (f x +) _ _).
+  + rew (associativity (+) _ _ _). apply (is_fun (+ g y) _ _).
+    rew <-(associativity (+) _ _ _). apply (is_fun (f x +) _ _).
     exact (commutativity (+) _ _).
   + exact (plus_0_l _).
   + sym. exact (plus_0_l _).
@@ -90,31 +89,31 @@ Global Hint Extern 1 (LeftNearRg (subset_to_set (E₊ _))) => simple notypeclass
 Global Hint Extern 1 (LeftNearRig (subset_to_set (E₊ _))) => simple notypeclasses refine Additive_Monoid_EndFun_Rig : typeclass_instances.
 
 Section add_nat_act.
-  Universes i.
-  Context (ℕ:naturals@{i}).
-  Context `{AdditiveNonComMonoid@{i} X} `{!PointwiseOp (X:=X) (+) X} .
+  Universes u.
+  Context (ℕ:naturals@{u}).
+  Context `{AdditiveNonComMonoid@{u} X} `{!PointwiseOp (X:=X) (+) X} .
 
-  Local Notation ϕ := (naturals_to_mon (near_rig_car (nats_near_rig ℕ)) (EndFun X)).
+  Local Abbreviation ϕ := (naturals_to_mon (near_rig_car (nats_near_rig ℕ)) (EndFun X)).
 
   Definition add_nat_act : ℕ ⊗ X ⇾ X := uncurry ϕ.
   Local Notation "x ∙ y" := (func_op add_nat_act (x, y)).
 
   Lemma add_nat_act_strong : StrongOp add_nat_act.
-  Proof dec_strong_op_l _.
+  Proof. exact (dec_strong_op_l _). Qed.
 
   Lemma add_nat_act_0_l : ∏ x, 0 ∙ x = 0 .
-  Proof preserves_0 ϕ .
+  Proof. exact (preserves_0 ϕ). Qed.
 
   Lemma add_nat_act_1_l : ∏ x, 1 ∙ x = x .
-  Proof preserves_1 ϕ .
+  Proof. exact (preserves_1 ϕ). Qed.
 
   Lemma add_nat_act_plus_l m n : ∏ x, (m + n) ∙ x = m ∙ x + n ∙ x.
-  Proof preserves_plus ϕ m n.
+  Proof. exact (preserves_plus ϕ m n). Qed.
 
   Local Open Scope mult_scope.
 
   Lemma add_nat_act_mult_l m n : ∏ x, (m · n) ∙ x = m ∙ (n ∙ x).
-  Proof preserves_mult ϕ m n.
+  Proof. exact (preserves_mult ϕ m n). Qed.
 
   Lemma add_nat_act_add_mon2 {x} : AdditiveMonoid_Morphism (ap2 add_nat_act x).
   Proof. apply alt_Build_AdditiveMonoid_Morphism.
@@ -122,7 +121,7 @@ Section add_nat_act.
   + apply add_nat_act_0_l.
   Qed.
 
-  Local Notation E₀ := (ZeroSymmetricPart (EndFun X)).
+  Local Abbreviation E₀ := (ZeroSymmetricPart (EndFun X)).
 
   Lemma add_nat_act_0_r n : n ∙ 0 = 0 .
   Proof. change (ϕ n 0 = 0).
@@ -137,15 +136,15 @@ Global Hint Extern 2 (AdditiveSemiGroup_Morphism (func_op (func_op ap2 (add_nat_
 Global Hint Extern 2 (Zero_Pointed_Morphism (func_op (func_op ap2 (add_nat_act _)) _) ) => simple notypeclasses refine add_nat_act_add_mon2 : typeclass_instances.
 
 Section add_nat_act.
-  Universes i.
-  Context {ℕ:naturals@{i}}.
+  Universes u.
+  Context {ℕ:naturals@{u}}.
   Context `{AdditiveMonoid X} `{!PointwiseOp (X:=X) (+) X} .
   Local Notation "x ∙ y" := (func_op (add_nat_act ℕ (X:=X)) (x, y)).
   Local Notation "( n ∙)" := (func_op2 ap1 (add_nat_act ℕ (X:=X)) n).
-  Local Notation ϕ := (naturals_to_mon (near_rig_car (nats_near_rig ℕ)) (EndFun X)).
-  Local Notation ε := (of_course_counit (EndFun X)).
-  Local Notation i := (from_subset _).
-  Local Notation ψ := (naturals_to_mon ℕ (E₊ X)).
+  Local Abbreviation ϕ := (naturals_to_mon (near_rig_car (nats_near_rig ℕ)) (EndFun X)).
+  Local Abbreviation ε := (of_course_counit (EndFun X)).
+  Local Abbreviation i := (from_subset _).
+  Local Abbreviation ψ := (naturals_to_mon ℕ (E₊ X)).
 
   Lemma add_nat_act_add_mon1 {n} : AdditiveMonoid_Morphism (n∙).
   Proof. change (AdditiveMonoid_Morphism (ϕ n)).

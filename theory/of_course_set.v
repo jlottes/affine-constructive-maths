@@ -10,7 +10,7 @@ Local Ltac doit := let H := fresh "H" in intro H; hnf; intros; apply H.
 Lemma of_course_set_associative       {X     f    } : @Associative      X     f     → @Associative      !X       (of_course_op  f).  Proof. doit. Qed.
 Lemma of_course_set_commutative       {X Y   f    } : @Commutative      X Y   f     → @Commutative      !X !Y    (of_course_op  f).  Proof. doit. Qed.
 Lemma of_course_set_binary_idempotent {X     f    } : @BinaryIdempotent X     f     → @BinaryIdempotent !X       (of_course_op  f).  Proof. doit. Qed.
-Lemma of_course_set_involutive        {X     f    } : @Involutive       X     f     → @Involutive       !X       (of_course_map f).  Proof. doit. Qed.
+(* Lemma of_course_set_involutive        {X     f    } : @Involutive       X     f     → @Involutive       !X       (of_course_map f).  Proof. doit. Qed. *)
 Lemma of_course_set_absorption        {X Y Z f g  } : @Absorption       X Y Z f g   → @Absorption       !X !Y !Z (of_course_op  f) (of_course_op g).  Proof. doit. Qed.
 Lemma of_course_set_left_distribute   {X     f g  } : @LeftDistribute   X     f g   → @LeftDistribute   !X       (of_course_op  f) (of_course_op g).  Proof. doit. Qed.
 Lemma of_course_set_right_distribute  {X     f g  } : @RightDistribute  X     f g   → @RightDistribute  !X       (of_course_op  f) (of_course_op g).  Proof. doit. Qed.
@@ -26,7 +26,7 @@ Lemma of_course_set_right_inverse     {X Y Z f g x} : @RightInverse     X Y Z f 
 Global Hint Extern 2 (Associative (of_course_op _)) => simple notypeclasses refine (of_course_set_associative _) : typeclass_instances.
 Global Hint Extern 2 (Commutative (of_course_op _)) => simple notypeclasses refine (of_course_set_commutative _) : typeclass_instances.
 Global Hint Extern 2 (BinaryIdempotent (of_course_op _)) => simple notypeclasses refine (of_course_set_binary_idempotent _) : typeclass_instances.
-Global Hint Extern 2 (Involutive (of_course_map _)) => simple notypeclasses refine (of_course_set_involutive _) : typeclass_instances.
+(* Global Hint Extern 2 (Involutive (of_course_map _)) => simple notypeclasses refine (of_course_set_involutive _) : typeclass_instances. *)
 Global Hint Extern 2 (Absorption (of_course_op _) _) => simple notypeclasses refine (of_course_set_absorption _) : typeclass_instances.
 Global Hint Extern 2 (LeftDistribute (of_course_op _) _) => simple notypeclasses refine (of_course_set_left_distribute _) : typeclass_instances.
 Global Hint Extern 2 (RightDistribute (of_course_op _) _) => simple notypeclasses refine (of_course_set_right_distribute _) : typeclass_instances.
@@ -82,10 +82,10 @@ Global Hint Extern 4 (Group !_) => simple notypeclasses refine (of_course_set_gr
 Global Hint Extern 4 (AbGroup !_) => simple notypeclasses refine (of_course_set_abgroup _) : typeclass_instances.
 
 
-Local Instance of_course_set_meet_sl         `{Meet X}             : MeetSemiLattice        X → MeetSemiLattice        !X.  Proof of_course_set_semilattice.
-Local Instance of_course_set_bounded_meet_sl `{Meet X} `{Top X}    : BoundedMeetSemiLattice X → BoundedMeetSemiLattice !X.  Proof of_course_set_bounded_sl.
-Local Instance of_course_set_join_sl         `{Join X}             : JoinSemiLattice        X → JoinSemiLattice        !X.  Proof of_course_set_semilattice.
-Local Instance of_course_set_bounded_join_sl `{Join X} `{Bottom X} : BoundedJoinSemiLattice X → BoundedJoinSemiLattice !X.  Proof of_course_set_bounded_sl.
+Local Instance of_course_set_meet_sl         `{Meet X}             : MeetSemiLattice        X → MeetSemiLattice        !X := of_course_set_semilattice.
+Local Instance of_course_set_bounded_meet_sl `{Meet X} `{Top X}    : BoundedMeetSemiLattice X → BoundedMeetSemiLattice !X := of_course_set_bounded_sl.
+Local Instance of_course_set_join_sl         `{Join X}             : JoinSemiLattice        X → JoinSemiLattice        !X := of_course_set_semilattice.
+Local Instance of_course_set_bounded_join_sl `{Join X} `{Bottom X} : BoundedJoinSemiLattice X → BoundedJoinSemiLattice !X := of_course_set_bounded_sl.
 
 Local Instance of_course_set_lattice       `{Meet X} `{Join X} : Lattice             X → Lattice             !X.  Proof. doit3. Qed.
 Local Instance of_course_set_distr_lattice `{Meet X} `{Join X} : DistributiveLattice X → DistributiveLattice !X.  Proof. doit3. Qed.
@@ -99,16 +99,16 @@ Global Hint Extern 4 (DistributiveLattice !_) => simple notypeclasses refine (of
 
 
 
-Local Instance of_course_set_add_nc_sg  `{Plus X}                       : AdditiveNonComSemiGroup X → AdditiveNonComSemiGroup !X.  Proof of_course_set_semigroup.
-Local Instance of_course_set_add_sg     `{Plus X}                       : AdditiveSemiGroup       X → AdditiveSemiGroup       !X.  Proof of_course_set_com_semigroup.
-Local Instance of_course_set_add_nc_mon `{Plus X} `{Zero X}             : AdditiveNonComMonoid    X → AdditiveNonComMonoid    !X.  Proof of_course_set_monoid.
-Local Instance of_course_set_add_mon    `{Plus X} `{Zero X}             : AdditiveMonoid          X → AdditiveMonoid          !X.  Proof of_course_set_com_monoid.
-Local Instance of_course_set_add_nc_grp `{Plus X} `{Zero X} `{Negate X} : AdditiveNonComGroup     X → AdditiveNonComGroup     !X.  Proof of_course_set_group.
-Local Instance of_course_set_add_grp    `{Plus X} `{Zero X} `{Negate X} : AdditiveGroup           X → AdditiveGroup           !X.  Proof of_course_set_abgroup.
+Local Instance of_course_set_add_nc_sg  `{Plus X}                       : AdditiveNonComSemiGroup X → AdditiveNonComSemiGroup !X := of_course_set_semigroup.
+Local Instance of_course_set_add_sg     `{Plus X}                       : AdditiveSemiGroup       X → AdditiveSemiGroup       !X := of_course_set_com_semigroup.
+Local Instance of_course_set_add_nc_mon `{Plus X} `{Zero X}             : AdditiveNonComMonoid    X → AdditiveNonComMonoid    !X := of_course_set_monoid.
+Local Instance of_course_set_add_mon    `{Plus X} `{Zero X}             : AdditiveMonoid          X → AdditiveMonoid          !X := of_course_set_com_monoid.
+Local Instance of_course_set_add_nc_grp `{Plus X} `{Zero X} `{Negate X} : AdditiveNonComGroup     X → AdditiveNonComGroup     !X := of_course_set_group.
+Local Instance of_course_set_add_grp    `{Plus X} `{Zero X} `{Negate X} : AdditiveGroup           X → AdditiveGroup           !X := of_course_set_abgroup.
 
-Local Instance of_course_set_mult_sg      `{Mult X}          : MultiplicativeSemiGroup X → MultiplicativeSemiGroup !X.  Proof of_course_set_semigroup.
-Local Instance of_course_set_mult_mon     `{Mult X} `{One X} : MultiplicativeMonoid    X → MultiplicativeMonoid    !X.  Proof of_course_set_monoid.
-Local Instance of_course_set_mult_com_mon `{Mult X} `{One X} : MultiplicativeComMonoid X → MultiplicativeComMonoid !X.  Proof of_course_set_com_monoid.
+Local Instance of_course_set_mult_sg      `{Mult X}          : MultiplicativeSemiGroup X → MultiplicativeSemiGroup !X := of_course_set_semigroup.
+Local Instance of_course_set_mult_mon     `{Mult X} `{One X} : MultiplicativeMonoid    X → MultiplicativeMonoid    !X := of_course_set_monoid.
+Local Instance of_course_set_mult_com_mon `{Mult X} `{One X} : MultiplicativeComMonoid X → MultiplicativeComMonoid !X := of_course_set_com_monoid.
 
 Global Hint Extern 4 (AdditiveNonComSemiGroup !_) => simple notypeclasses refine (of_course_set_add_nc_sg _) : typeclass_instances.
 Global Hint Extern 4 (AdditiveSemiGroup !_) => simple notypeclasses refine (of_course_set_add_sg _) : typeclass_instances.
@@ -156,23 +156,23 @@ Global Hint Extern 4 (Ring !_) => simple notypeclasses refine (of_course_set_rin
 Global Hint Extern 4 (CommutativeRig !_) => simple notypeclasses refine (of_course_set_com_rig _) : typeclass_instances.
 Global Hint Extern 4 (CommutativeRing !_) => simple notypeclasses refine (of_course_set_com_ring _) : typeclass_instances.
 
-Local Notation ε := of_course_counit.
+Local Abbreviation ε := of_course_counit.
 
 Local Instance of_course_counit_pointed {X:set} {x:X} : @Pointed_Morphism !X X x x (ε X).  Proof. now change (x = x). Qed.
-Local Instance of_course_counit_unit_pointed   `{MonUnit X} : MonUnit_Pointed_Morphism (ε X).  Proof of_course_counit_pointed.
-Local Instance of_course_counit_top_pointed    `{Top     X} : Top_Pointed_Morphism     (ε X).  Proof of_course_counit_pointed.
-Local Instance of_course_counit_bottom_pointed `{Bottom  X} : Bottom_Pointed_Morphism  (ε X).  Proof of_course_counit_pointed.
-Local Instance of_course_counit_zero_pointed   `{Zero    X} : Zero_Pointed_Morphism    (ε X).  Proof of_course_counit_pointed.
-Local Instance of_course_counit_one_pointed    `{One     X} : One_Pointed_Morphism     (ε X).  Proof of_course_counit_pointed.
+Local Instance of_course_counit_unit_pointed   `{MonUnit X} : MonUnit_Pointed_Morphism (ε X) := of_course_counit_pointed.
+Local Instance of_course_counit_top_pointed    `{Top     X} : Top_Pointed_Morphism     (ε X) := of_course_counit_pointed.
+Local Instance of_course_counit_bottom_pointed `{Bottom  X} : Bottom_Pointed_Morphism  (ε X) := of_course_counit_pointed.
+Local Instance of_course_counit_zero_pointed   `{Zero    X} : Zero_Pointed_Morphism    (ε X) := of_course_counit_pointed.
+Local Instance of_course_counit_one_pointed    `{One     X} : One_Pointed_Morphism     (ε X) := of_course_counit_pointed.
 
 Local Instance of_course_counit_sg_mor `{SemiGroup X} : SemiGroup_Morphism (ε X).  Proof. split; try exact _. now intros. Qed.
 Local Instance of_course_counit_mon_mor `{Monoid X} : Monoid_Morphism (ε X).  Proof. now split. Qed.
 
-Local Instance of_course_counit_add_sg_mor `{AdditiveNonComSemiGroup X} : AdditiveSemiGroup_Morphism (ε X).  Proof of_course_counit_sg_mor.
-Local Instance of_course_counit_add_mon_mor `{AdditiveNonComMonoid X} : AdditiveMonoid_Morphism (ε X).  Proof of_course_counit_mon_mor.
+Local Instance of_course_counit_add_sg_mor `{AdditiveNonComSemiGroup X} : AdditiveSemiGroup_Morphism (ε X) := of_course_counit_sg_mor.
+Local Instance of_course_counit_add_mon_mor `{AdditiveNonComMonoid X} : AdditiveMonoid_Morphism (ε X) := of_course_counit_mon_mor.
 
-Local Instance of_course_counit_mul_sg_mor `{MultiplicativeSemiGroup X} : MultiplicativeSemiGroup_Morphism (ε X).  Proof of_course_counit_sg_mor.
-Local Instance of_course_counit_mul_mon_mor `{MultiplicativeMonoid X} : MultiplicativeMonoid_Morphism (ε X).  Proof of_course_counit_mon_mor.
+Local Instance of_course_counit_mul_sg_mor `{MultiplicativeSemiGroup X} : MultiplicativeSemiGroup_Morphism (ε X) := of_course_counit_sg_mor.
+Local Instance of_course_counit_mul_mon_mor `{MultiplicativeMonoid X} : MultiplicativeMonoid_Morphism (ε X) := of_course_counit_mon_mor.
 
 Local Instance of_course_counit_rg_mor `{AdditiveNonComMonoid X} `{MultiplicativeSemiGroup X} : Rg_Morphism (ε X).  Proof. now split. Qed.
 Local Instance of_course_counit_rig_mor `{AdditiveNonComMonoid X} `{MultiplicativeMonoid X} : Rig_Morphism (ε X).  Proof. now split. Qed.

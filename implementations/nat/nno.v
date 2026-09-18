@@ -11,7 +11,7 @@ Bind Scope nat_scope with nat.
 
 Global Hint Extern 0 (Equiv nat) => exact leq : typeclass_instances.
 
-Canonical Structure Nat : set := default_set_make nat.
+Canonical Structure Nat@{u} : set@{u} := default_set_make@{u} nat.
 Global Hint Extern 2 (DefaultEquality Nat) => simple notypeclasses refine default_set_make_prop : typeclass_instances.
 Global Hint Extern 2 (AffirmativeEquality Nat) => simple notypeclasses refine default_set_make_prop : typeclass_instances.
 
@@ -20,21 +20,21 @@ Global Hint Extern 0 (Zero Nat) => exact nat_0 : typeclass_instances.
 Global Hint Extern 0 (Successor Nat) => exact Nat_S : typeclass_instances.
 
 Section NNO.
-  Universes i.
-  Instance Nat_rec : FromNNO (Nat : set@{i}) := λ (X:set@{i}) z s, default_eq_func@{i} (
-    fix F (x:(Nat:set@{i})) := match x with
+  Universes u.
+  Instance Nat_rec : FromNNO Nat@{u} := λ (X:set@{u}) z s, default_eq_func@{u} (
+    fix F (x:Nat@{u}) := match x with
     | nat_0 => z
     | nat_S y => s (F y)
     end).
 
-  Lemma Nat_NNO : NaturalNumbersObject (Nat:set@{i}).
+  Lemma Nat_NNO : NaturalNumbersObject Nat@{u}.
   Proof. split; intros X z s.
   + split; [ do 2 red |]; easy.
   + intros f ?.
     refine (fix IH (x:Nat) := match x with | nat_0 => _ | nat_S x' => _ end).
     * exact (preserves_0 f).
     * change (f (suc x') = suc (nno_to_set Nat X x')).
-      rew <-(IH x').
+      rew <-(IH x' : f x' = nno_to_set Nat X x').
       exact (preserves_suc _ _).
   Qed.
 End NNO.
@@ -59,9 +59,9 @@ Proof. intros P0 Ps. apply ( Nat_ind (λ n, ! (P n)) ); trivial.
 Qed.
 
 Definition Nat_destruct {X:set} : X × (Nat ⇾ X) → (Nat ⇾ X) :=
-  λ p, default_eq_func (λ n, match n with
-  | nat_0 => π₁ p
-  | nat_S m => π₂ p m
+  λ '(x, f), default_eq_func (λ n, match n with
+  | nat_0 => x
+  | nat_S m => f m
   end).
 
 Lemma Nat_destruct_is_fun {X:set} : IsFun (@Nat_destruct X).
@@ -71,7 +71,7 @@ Proof. intros [x f][y g]. change (x = y ∧ f = g ⊸ ∏ n, Nat_destruct (x, f)
   + rew (aandr _ _). exact (all_lb _ _).
 Qed.
 
-Canonical Structure Nat_destruct_fun {X:set} := @make_fun _ _ _ (@Nat_destruct_is_fun X).
+Canonical Structure Nat_destruct_fun {X:set} : _ ⇾ _ := @func_make _ _ _ (@Nat_destruct_is_fun X).
 
 Section dec.
   Local Open Scope set_scope.
@@ -105,7 +105,7 @@ Section dec.
 
   Definition Nat_S_nonzero (n:Nat) : suc n ≠ 0 := eq_encode _ _.
 
-  Instance Nat_eq_dec : Dec (A:=Nat) (=) := fix F (a b : Nat) :=
+  Definition nat_eq_dec := fix F (a b : nat) :=
     match a with
     | nat_0 => match b with
       | nat_0 => true
@@ -117,16 +117,17 @@ Section dec.
       end
     end.
 
+  Instance Nat_eq_dec : Dec (A:=Nat∗Nat) (=) := tuncurry nat_eq_dec.
+
   Instance Nat_eq_is_dec : IsDecEq Nat.
-  Proof. refine (fix IH (a b : Nat) := _).
-    destruct a as [| m], b as [| n]; unfold dec; cbn [ Nat_eq_dec ].
+  Proof. intros [x y]. change (if nat_eq_dec x y then x = y else x ≠ y).
+    refine ((fix IH (a b : nat) := _) x y); clear x y.
+    destruct a as [| m], b as [| n]; cbn [ nat_eq_dec ].
   + refl.
   + intro E; pose proof eq_encode _ _ E as [].
   + intro E; pose proof eq_encode _ _ E as [].
-  + change (set_T Nat) in m,n.
-    change (Nat_eq_dec m n) with (dec (=) m n).
-    specialize (IH m n). revert IH.
-    destruct (dec (=) m n) as [|].
+  + specialize (IH m n). revert IH.
+    destruct (nat_eq_dec m n) as [|].
     * apply (is_fun Nat_S m n).
     * apply (contrapositive (injective suc m n)).
   Qed.

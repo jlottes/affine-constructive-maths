@@ -12,18 +12,18 @@ Local Open Scope cat_scope.
 Global Hint Extern 1 (IsProjectedSet (set_T (near_rig_morphism _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom near_rig_cat_t _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 
-Canonical Structure near_rig_id (X : near_rig) := make_near_rig_morphism (id_fun X).
+Canonical Structure near_rig_id@{u} (X : near_rig@{u}) := make_near_rig_morphism (id_fun@{u} X).
 Global Hint Extern 2 (Id near_rig_cat_t) => refine near_rig_id : typeclass_instances.
 
-Local Notation make_compose_fun c := (@make_fun _ _ _ (projected_is_fun (tuncurry c) (∘) (λ _, reflexivity (=) _))).
+Local Abbreviation make_compose_fun c := (@func_make _ _ _ (projected_is_fun (tuncurry c) (∘) (λ _, reflexivity (=) _))).
 
-Canonical Structure near_rig_morphism_compose_op {X Y Z : near_rig}
+Canonical Structure near_rig_morphism_compose_op@{u} {X Y Z : near_rig@{u}}
   (g : near_rig_morphism Y Z) (f: near_rig_morphism X Y) : (near_rig_morphism X Z)
 := make_near_rig_morphism (g ∘ f).
-Definition near_rig_morphism_compose {X Y Z : near_rig} := make_compose_fun (@near_rig_morphism_compose_op X Y Z).
+Definition near_rig_morphism_compose@{u} {X Y Z : near_rig@{u}} := make_compose_fun (@near_rig_morphism_compose_op X Y Z).
 Global Hint Extern 2 (Compose near_rig_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
 
-Local Instance near_rig_is_cat : IsCat near_rig_cat_t.  Proof. now split. Qed.
+Local Instance near_rig_is_cat@{u} : IsCat near_rig_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐍𝐞𝐚𝐫𝐑𝐢𝐠 := Build_cat near_rig_cat_t.
 
 Canonical Structure near_rig_as_add_nc_mon (R:near_rig) : additive_non_com_monoid := make_additive_non_com_monoid R.
@@ -51,7 +51,7 @@ Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom rig_cat_t _ _))) => notype
 Global Hint Extern 2 (Id rig_cat_t) => refine near_rig_id : typeclass_instances.
 Global Hint Extern 2 (Compose rig_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
 
-Local Instance rig_is_cat : IsCat rig_cat_t.  Proof. now split. Qed.
+Local Instance rig_is_cat@{u} : IsCat rig_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐑𝐢𝐠 := Build_cat rig_cat_t.
 
 Canonical Structure rig_as_add_mon (R:rig) : additive_monoid := make_additive_monoid R.
@@ -63,7 +63,7 @@ Global Hint Extern 2 (StripCoercions (rig_as_add_mon ?X)) => strip_coercions_cha
 Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom commutative_rig_cat_t _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 Global Hint Extern 2 (Id commutative_rig_cat_t) => refine near_rig_id : typeclass_instances.
 Global Hint Extern 2 (Compose commutative_rig_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
-Local Instance commutative_rig_is_cat : IsCat commutative_rig_cat_t.  Proof. now split. Qed.
+Local Instance commutative_rig_is_cat@{u} : IsCat commutative_rig_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐂𝐑𝐢𝐠 := Build_cat commutative_rig_cat_t.
 
 (** Near-ring *)
@@ -71,7 +71,7 @@ Canonical Structure 𝐂𝐑𝐢𝐠 := Build_cat commutative_rig_cat_t.
 Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom near_ring_cat_t _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 Global Hint Extern 2 (Id near_ring_cat_t) => refine near_rig_id : typeclass_instances.
 Global Hint Extern 2 (Compose near_ring_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
-Local Instance near_ring_is_cat : IsCat near_ring_cat_t.  Proof. now split. Qed.
+Local Instance near_ring_is_cat@{u} : IsCat near_ring_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐍𝐞𝐚𝐫𝐑𝐢𝐧𝐠 := Build_cat near_ring_cat_t.
 
 Canonical Structure near_ring_as_add_nc_grp (R:near_ring) : additive_non_com_group := make_additive_non_com_group R.
@@ -83,7 +83,7 @@ Global Hint Extern 2 (StripCoercions (near_ring_as_add_nc_grp ?X)) => strip_coer
 Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom ring_cat_t _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 Global Hint Extern 2 (Id ring_cat_t) => refine near_rig_id : typeclass_instances.
 Global Hint Extern 2 (Compose ring_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
-Local Instance ring_is_cat : IsCat ring_cat_t.  Proof. now split. Qed.
+Local Instance ring_is_cat@{u} : IsCat ring_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐑𝐢𝐧𝐠 := Build_cat ring_cat_t.
 
 Canonical Structure ring_as_add_group (R:ring) : additive_group := make_additive_group R.
@@ -96,5 +96,6 @@ Global Hint Extern 2 (StripCoercions (ring_as_add_group ?X)) => strip_coercions_
 Global Hint Extern 1 (IsProjectedSet (set_T (@cat_hom commutative_ring_cat_t _ _))) => notypeclasses refine projected_set_IsProjectedSet : typeclass_instances.
 Global Hint Extern 2 (Id commutative_ring_cat_t) => refine near_rig_id : typeclass_instances.
 Global Hint Extern 2 (Compose commutative_ring_cat_t) => refine @near_rig_morphism_compose : typeclass_instances.
-Local Instance commutative_ring_is_cat : IsCat commutative_ring_cat_t.  Proof. now split. Qed.
+Local Instance commutative_ring_is_cat@{u} : IsCat commutative_ring_cat_t@{u} (Ident:=near_rig_id@{u}) (c:=@near_rig_morphism_compose@{u}).  Proof. now split. Qed.
 Canonical Structure 𝐂𝐑𝐢𝐧𝐠 := Build_cat commutative_ring_cat_t.
+

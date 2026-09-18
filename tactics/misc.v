@@ -16,37 +16,23 @@ Tactic Notation "echange" uconstr(t) := echange_tac t.
 Ltac get_instance T := constr_from_tac T ltac:(exact _).
 
 
-Local Ltac ecut_1 g := let T1 := fresh "T" in evar (T1:Type);
-                       unify_goal (T1 → g).
-Local Ltac ecut_2 g := let T1 := fresh "T" in evar (T1:Type);
-                       let T2 := fresh "T" in evar (T2:Type);
-                       unify_goal (T1 → T2 → g).
-Local Ltac ecut_3 g := let T1 := fresh "T" in evar (T1:Type);
-                       let T2 := fresh "T" in evar (T2:Type);
-                       let T3 := fresh "T" in evar (T3:Type);
-                       unify_goal (T1 → T2 → T3 → g).
-
-Local Ltac strip_let_1 t := lazymatch t with (let _ := _ in ?u) => u end.
-Local Ltac strip_let_2 t := lazymatch t with (let _ := _ in
-                                              let _ := _ in ?u) => u end.
-Local Ltac strip_let_3 t := lazymatch t with (let _ := _ in
-                                              let _ := _ in
-                                              let _ := _ in ?u) => u end.
-
-Local Ltac rapply_1 t := simple notypeclasses refine (t _).
-Local Ltac rapply_2 t := simple notypeclasses refine (t _ _).
-Local Ltac rapply_3 t := simple notypeclasses refine (t _ _ _).
-
-
-Local Ltac sapply_gen ecut strip_let rapply utm :=
+Ltac sapply_1_tac utm :=
   let g := get_goal in
-  let t := constr:(ltac:(ecut g; refine utm; exact _)) in
-  let p := strip_let t in
-  rapply p.
+  let t := constr:(ltac:(refine utm; exact _) : _ → g) in
+  let p := lazymatch t with ?t' => t' end in
+  simple notypeclasses refine (p _).
 
-Ltac sapply_1_tac := sapply_gen ecut_1 strip_let_1 rapply_1.
-Ltac sapply_2_tac := sapply_gen ecut_2 strip_let_2 rapply_2.
-Ltac sapply_3_tac := sapply_gen ecut_3 strip_let_3 rapply_3.
+Ltac sapply_2_tac utm :=
+  let g := get_goal in
+  let t := constr:(ltac:(refine utm; exact _) : _ → _ → g) in
+  let p := lazymatch t with ?t' => t' end in
+  simple notypeclasses refine (p _ _).
+
+Ltac sapply_3_tac utm :=
+  let g := get_goal in
+  let t := constr:(ltac:(refine utm; exact _) : _ → _ → _ → g) in
+  let p := lazymatch t with ?t' => t' end in
+  simple notypeclasses refine (p _ _ _).
 
 Tactic Notation "sapply_1" uconstr(term_to_apply) := sapply_1_tac term_to_apply.
 Tactic Notation "sapply_2" uconstr(term_to_apply) := sapply_2_tac term_to_apply.
@@ -60,6 +46,19 @@ Ltac normalize_proof tac :=
 
 Ltac learn tm :=
   let t := type of tm in lazymatch goal with H : t |- _ => fail | _ => pose proof tm end.
+
+
+(** [real_progress tac] runs [tac] and fails if the goal didn't change
+    syntactically (modulo universe instances). Stricter than the built-in
+    [progress], which is fooled by fresh universe metavariables — useful
+    around [change] or other tactics that re-elaborate the goal and refresh
+    its universes without changing its shape. *)
+Ltac real_progress tac :=
+  let G := lazymatch goal with |- ?G => G end in
+  tac tt;
+  lazymatch goal with
+  | |- ?G' => tryif constr_eq G G' then fail else idtac
+  end.
 
 
 (** Given a constr [body] under the given [binder] with type [T],
@@ -82,6 +81,41 @@ Ltac eval_under_binder tac binder T body :=
   lazymatch res with
   | λ var : ?T, let _ := ?body in ?result =>
     constr:(λ binder : T, match binder with var => result end)
+  end.
+
+
+Ltac eval_under_let tac binder T defn body :=
+  let var := fresh binder in
+  let body_var := fresh "body" in
+  let res := constr:(
+    let var : T := defn in let body_var := match var with binder => body end in
+    ltac:(
+      let b := eval red in body_var in clear body_var;
+      tac var b
+    )
+  ) in
+  lazymatch res with
+  | let var : ?T := ?defn in let _ := ?body in ?result =>
+    constr:(let binder : T := defn in match binder with var => result end)
+  end.
+
+
+Ltac eval_under_binder2 tac binder1 T1 binder2 T2 body :=
+  let var1 := fresh binder1 in
+  let var2 := fresh binder2 in
+  let body_var := fresh "body" in
+  let res := constr:(
+    λ (var1 : T1) (var2 : T2),
+    let body_var := match var1 with binder1 => match var2 with binder2 => body end end in
+    ltac:(
+      let b := eval red in body_var in clear body_var;
+      tac var1 var2 b
+    )
+  ) in
+  lazymatch res with
+  | λ (var1 : ?T1) (var2 : ?T2), let _ := ?body in ?result =>
+    constr:(λ (binder1 : T1) (binder2 : T2),
+      match binder1 with var1 => match binder2 with var2 => result end end)
   end.
 
 
