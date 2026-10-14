@@ -1,5 +1,10 @@
 # affine-constructive-maths
 
+> **Read the library online** at
+> [jlottes.github.io/affine-constructive-maths](https://jlottes.github.io/affine-constructive-maths/):
+> every file as a proof stepper, with the goals after each step, the constants each
+> step used, and a description in plain language beside each definition and each proof.
+
 A library of constructive mathematics in the [Rocq](https://rocq-prover.org) prover, written in affine logic
 following Michael Shulman's *Affine logic for constructive mathematics*.[^shulman]
 Its design owes much to the [Math Classes](https://github.com/coq-community/math-classes) library.
