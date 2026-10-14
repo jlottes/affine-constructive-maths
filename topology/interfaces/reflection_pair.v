@@ -25,7 +25,13 @@ Existing Class Hom.
 
 #[global] Hint Extern 2 (impl (@Hom ?C ?F ?H ?X ?Y ?FX ?FY ?f, _ ?g)) => change (impl (func_op (@Hom_fun C F H X Y FX FY) f, func_op (@Hom_fun C F H X Y FX FY) ?g)) : proper.
 #[global] Hint Extern 2 (iff  (@Hom ?C ?F ?H ?X ?Y ?FX ?FY ?f, _ ?g)) => change (iff  (func_op (@Hom_fun C F H X Y FX FY) f, func_op (@Hom_fun C F H X Y FX FY) ?g)) : proper.
-  
+
+(** A construct: a concrete category over [set], that is, a category
+    with a faithful functor to [set] (the terminology of Adámek, Herrlich
+    and Strecker). Its objects are the sets [X] carrying a structure
+    [Fib C X] that satisfies [Obj C X]; its morphisms are the functions
+    [X ⇾ Y] satisfying [Hom C f]. The axioms: identities are morphisms,
+    morphisms compose, and both ends of a morphism are objects. *)
 Class Construct@{u} C `{O:@ObjClass@{u} C F} {H:HomClass C} : SProp :=
 { construct_id {X:set@{u}} {FX:Fib C X} `{!Obj C X} : Hom C (id_fun X)
 ; construct_hom_X {X:set@{u}} {Y:set@{u}} {FX:Fib C X} {FY:Fib C Y} {f:X ⇾ Y} : Hom C f → Obj C X

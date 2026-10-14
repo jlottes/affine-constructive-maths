@@ -566,5 +566,14 @@ Section interior_entourage.
     rew (image_preimage_counit _ _).
     now rew (closure_subset_thicken W₁ W₁), EW, <-PW.
   Qed.
+
+  Lemma ufm_dense_initial_alt@{u} {X Y Z:set@{u}} (f:X ⇾ Y) (g:Y ⇾ Z)
+    `{@UniformlyInitial X Y Φ Ψ f, !Dense f, @UniformSpace Z Ξ, !Continuous g}
+    `{!UniformlyInitial (g ∘ f)}
+    : UniformlyInitial g.
+  Proof. split.
+  + exact (ufm_dense_continuous f g).
+  + exact (ufm_dense_reflecting f g).
+  Qed.
 End interior_entourage.
 

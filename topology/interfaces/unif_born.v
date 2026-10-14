@@ -116,10 +116,31 @@ Existing Class UnifBornEmbedding.
 
 Local Abbreviation π₁ := (tensor_proj1 _ _).
 
+(** Local uniform continuity: [f] is uniformly continuous *near* bounded
+    sets. For a bounded [K] and an entourage [W] of [Y] there is an
+    entourage [U] of [X] such that every [U]-close pair whose first point
+    lies in [K] is sent to a [W]-close pair; the second point ranges over
+    the [U]-thickening of [K], not over [K] itself. This is stronger than
+    uniform continuity *on* each bounded set (of the restriction of [f] to
+    [K]); the two agree only for a regular well-containment uniform space
+    ([RegularWCUnifSpace]: the thickening axiom together with regularity),
+    see [bounded_restrictions_local_uc]. Read contrapositively: if the
+    images [f x] and [f y] are [W]-apart, then either [x] and [y] are
+    [U]-apart or, additively, the first point [x] escapes [K] (is apart
+    from it). *)
 Class LocalUniformContinuity@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} (f:X ⇾ Y) : SProp :=
   local_uniform_continuity (K:𝒜) (W:Ψ) : ∐ U:Φ, π₁* K ⊓ powerset_pt U ⊆ ⟨f,f⟩* W.
 Arguments local_uniform_continuity {_ _ _ _ _} f {_} K W.
 
+(** The reflecting counterpart: [f] reflects the uniformity *near* bounded
+    sets of [Y]. For a bounded [L] of [Y] and an entourage [U] of [X] there
+    is an entourage [W] of [Y] such that [x] and [y] are [U]-close whenever
+    [f x] lies in [L] and [f x], [f y] are [W]-close. Again stronger than
+    reflecting on each bounded set; the two agree only for a regular
+    well-containment uniform space ([RegularWCUnifSpace]: the thickening
+    axiom together with regularity), see [bounded_restrictions_local_ur].
+    Read contrapositively: if [x] and [y] are [U]-apart, then either [f x]
+    and [f y] are [W]-apart or, additively, [f x] escapes [L]. *)
 Class LocalUniformReflection@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {ℬ:Bornology Y} (f:X ⇾ Y) : SProp :=
   local_uniform_reflection (L:ℬ) (U:Φ) : ∐ W:Ψ, ⟨f,f⟩* (π₁* L ⊓ powerset_pt W) ⊆ U.
 Arguments local_uniform_reflection {_ _ _ _ _} f {_} L U.

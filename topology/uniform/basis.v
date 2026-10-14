@@ -280,8 +280,8 @@ Section discrete_uniformity.
 
   (** Every map out of a discretely-uniform space is uniformly continuous. *)
   Lemma discrete_ufm_cont `{@UniformSpace@{u} Y Ψ} (f:X ⇾ Y) : UniformlyContinuous f.
-  Proof. apply uniformly_continuous_alt. intros V.
-    rew (filter_presentation Φ _ _). exists tt.
+  Proof. apply ufm_cont_by_basis_alt.
+    intros V. exists tt.
     rew <-(uniform_refl_alt V).
     intros [x y]. exact (is_fun f x y).
   Qed.
