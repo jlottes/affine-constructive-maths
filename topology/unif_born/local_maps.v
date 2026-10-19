@@ -135,6 +135,18 @@ Proof. now split. Qed.
 Coercion unif_born_emb_local@{u} `{@UnifBornEmbedding@{u} X Y Φ Ψ 𝒜 ℬ f} : LocallyUnifBornEmbedding f.
 Proof. now split. Qed.
 
+Coercion gbl_wcunif_mor_local@{u} `{@GlobalWCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifMorphism f.
+Proof. now split. Qed.
+
+Coercion gbl_wcunif_refl_local@{u} `{@GlobalWCUnifReflecting@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifReflecting f.
+Proof. now split. Qed.
+
+Coercion gbl_wcunif_initial_local@{u} `{@GlobalWCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifInitial f.
+Proof. now split. Qed.
+
+Coercion gbl_wcunif_emb_local@{u} `{@GlobalWCUnifEmbedding@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifEmbedding f.
+Proof. now split. Qed.
+
 (** * Identity *)
 
 Lemma id_locally_unif_born_emb `{@UnifBornSpace X Φ 𝒜} : LocallyUnifBornEmbedding (id_fun X).
@@ -654,6 +666,26 @@ Proof. esplit; try exact _.
 Qed.
 #[global] Hint Extern 0 (ReflectionPair 𝐖𝐂𝐔𝐧𝐢𝐟) => exact wcunif_rfl_pair : typeclass_instances.
 
+Local Open Scope fun_inv_scope.
+
+Lemma invert_wcunif_mor@{u} `{@WCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : WCUnifReflecting f⁻¹.
+Proof. exact (invert_hom (C:=𝐖𝐂𝐔𝐧𝐢𝐟) (f:=f)). Qed.
+#[global] Hint Extern 4 (WCUnifReflecting _⁻¹) => simple notypeclasses refine invert_wcunif_mor : typeclass_instances.
+
+Lemma invert_wcunif_reflecting@{u} `{@WCUnifReflecting@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : WCUnifMorphism f⁻¹.
+Proof. exact (invert_rfl (C:=𝐖𝐂𝐔𝐧𝐢𝐟) (f:=f)). Qed.
+#[global] Hint Extern 4 (WCUnifMorphism _⁻¹) => simple notypeclasses refine invert_wcunif_reflecting : typeclass_instances.
+
+Lemma invert_wcunif_initial@{u} `{@WCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : WCUnifEmbedding f⁻¹.
+Proof. exact (invert_ini (C:=𝐖𝐂𝐔𝐧𝐢𝐟) (f:=f)). Qed.
+#[global] Hint Extern 4 (WCUnifEmbedding _⁻¹) => simple notypeclasses refine invert_wcunif_initial : typeclass_instances.
+#[global] Hint Extern 4 (WCUnifInitial _⁻¹) => simple notypeclasses refine invert_wcunif_initial : typeclass_instances.
+
+Local Close Scope fun_inv_scope.
+
 #[global] Hint Extern 0 (FiberMap 𝐖𝐂𝐔𝐧𝐢𝐟 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧_loc) => exact (λ X FX, FX) : typeclass_instances.
 
 Lemma wcunif_unifborn_loc_pair_map : PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧_loc.
@@ -670,4 +702,15 @@ Qed.
 Lemma wcunif_atop_pair_map : PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟 𝐀𝐓𝐨𝐩.
 Proof. exact (PairMorphism_compose 𝐖𝐂𝐔𝐧𝐢𝐟 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧_loc 𝐀𝐓𝐨𝐩). Qed.
 #[global] Hint Extern 0 (PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟 𝐀𝐓𝐨𝐩) => exact wcunif_atop_pair_map : typeclass_instances.
+
+(** The global-to-local vertical (§2.2): identity on objects, the classes
+    weakening via [gbl_wcunif_mor_local] / [gbl_wcunif_refl_local]. *)
+#[global] Hint Extern 0 (FiberMap 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐖𝐂𝐔𝐧𝐢𝐟) => exact (λ X FX, FX) : typeclass_instances.
+
+Lemma gbl_wcunif_wcunif_pair_map : PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐖𝐂𝐔𝐧𝐢𝐟.
+Proof. split; try exact _.
++ intros X Y [Φ 𝒜] [Ψ ℬ] f. now change (GlobalWCUnifMorphism f → WCUnifMorphism f).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f. now change (GlobalWCUnifReflecting f → WCUnifReflecting f).
+Qed.
+#[global] Hint Extern 0 (PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐖𝐂𝐔𝐧𝐢𝐟) => exact gbl_wcunif_wcunif_pair_map : typeclass_instances.
 

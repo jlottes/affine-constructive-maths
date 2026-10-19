@@ -254,11 +254,18 @@ Proof. intros y. change ((∐ u:subset_to_set (singleton x), from_subset (single
 Qed.
 
 (** subset_to_set *)
-Lemma aex_subset {X:set} {S:𝒫 X} {P:X → Ω} : (∐ x:S, P x) ↔ (∐ x:X, x ∊ S ⊠ P x).
+Lemma aex_subset_aiff {X:set} {S:𝒫 X} {P:X → Ω} : (∐ x:S, P x) ⧟ (∐ x:X, of_course (x ∊ S) ⊠ P x).
 Proof. split.
-+ intros [x Hx]. now exists x.
-+ intros [x [Hx1 Hx2]]. now exists (to_subset x).
++ rew <-aex_adj; intros s. rew <-(aex_ub _ (subset_pt s)).
+  now rew (aprod_true_l (subset_pt_is_el s : of_course (subset_pt s ∊ S))).
++ rew <-aex_adj; intros x. rew (aprod_adj _ _ _). apply affirmative_aimpl. intros Hx. exact (aex_ub _ (to_subset x)).
 Qed.
+
+Lemma all_subset_aiff {X:set} {S:𝒫 X} {P:X → Ω} : (∏ x:S, P x) ⧟ (∏ x:X, of_course (x ∊ S) ⊸ P x).
+Proof. apply by_contrapositive_iff. exact aex_subset_aiff. Qed.
+
+Lemma aex_subset {X:set} {S:𝒫 X} {P:X → Ω} : (∐ x:S, P x) ↔ (∐ x:X, x ∊ S ⊠ P x).
+Proof. now rew aex_subset_aiff at 1. Qed.
 
 (** Congruence for quantifiers over a subset-as-type binder. In [rew]-generated
     properness goals both bodies are one context instantiated at [S] resp. [T],

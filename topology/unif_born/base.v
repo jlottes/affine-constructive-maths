@@ -177,6 +177,132 @@ Lemma unifborn_atop_pair_map : PairMorphism 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧 �
 Proof. exact (PairMorphism_compose 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧 𝐔𝐧𝐢𝐟 𝐀𝐓𝐨𝐩). Qed.
 #[global] Hint Extern 0 (PairMorphism 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧 𝐀𝐓𝐨𝐩) => exact unifborn_atop_pair_map : typeclass_instances.
 
+(** Global WCUnif morphism classes: function equality, identity, composition. *)
+
+Lemma GlobalWCUnifMorphism_proper_impl@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f g : X ⇾ Y)
+  : f = g → impl (GlobalWCUnifMorphism f, GlobalWCUnifMorphism g).
+Proof. intros E [HX HY P]; split; try exact _. now rew <-E. Qed.
+Canonical Structure GlobalWCUnifMorphism_fun {X Y} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} : !(X ⇾ Y) ⇾ SProp
+  := make_weak_spred (@GlobalWCUnifMorphism X Y Φ Ψ 𝒜 ℬ) GlobalWCUnifMorphism_proper_impl.
+
+Lemma GlobalWCUnifReflecting_proper_impl@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f g : X ⇾ Y)
+  : f = g → impl (GlobalWCUnifReflecting f, GlobalWCUnifReflecting g).
+Proof. intros E [HX HY P]; split; try exact _. now rew <-E. Qed.
+Canonical Structure GlobalWCUnifReflecting_fun {X Y} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} : !(X ⇾ Y) ⇾ SProp
+  := make_weak_spred (@GlobalWCUnifReflecting X Y Φ Ψ 𝒜 ℬ) GlobalWCUnifReflecting_proper_impl.
+
+Lemma GlobalWCUnifInitial_proper_impl@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f g : X ⇾ Y)
+  : f = g → impl (GlobalWCUnifInitial f, GlobalWCUnifInitial g).
+Proof. intros E [HM HR]; split; now rew <-E. Qed.
+Canonical Structure GlobalWCUnifInitial_fun {X Y} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} : !(X ⇾ Y) ⇾ SProp
+  := make_weak_spred (@GlobalWCUnifInitial X Y Φ Ψ 𝒜 ℬ) GlobalWCUnifInitial_proper_impl.
+
+Lemma GlobalWCUnifEmbedding_proper_impl@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f g : X ⇾ Y)
+  : f = g → impl (GlobalWCUnifEmbedding f, GlobalWCUnifEmbedding g).
+Proof. intros E [HI HJ]; split; now rew <-E. Qed.
+Canonical Structure GlobalWCUnifEmbedding_fun {X Y} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} : !(X ⇾ Y) ⇾ SProp
+  := make_weak_spred (@GlobalWCUnifEmbedding X Y Φ Ψ 𝒜 ℬ) GlobalWCUnifEmbedding_proper_impl.
+
+Lemma id_gbl_wcunif_emb `{@WCUnifSpace X Φ 𝒜} : GlobalWCUnifEmbedding (id_fun X).
+Proof. repeat (split; try exact _). Qed.
+#[global] Hint Extern 2 (GlobalWCUnifEmbedding (id_fun _)) => simple notypeclasses refine id_gbl_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (GlobalWCUnifInitial (id_fun _)) => simple notypeclasses refine id_gbl_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (GlobalWCUnifMorphism (id_fun _)) => simple notypeclasses refine id_gbl_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (GlobalWCUnifReflecting (id_fun _)) => simple notypeclasses refine id_gbl_wcunif_emb : typeclass_instances.
+
+Lemma compose_gbl_wcunif_morphism@{u} `{@GlobalWCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} `{@GlobalWCUnifMorphism@{u} Y Z Ψ Ξ ℬ 𝒞 g}
+  : GlobalWCUnifMorphism (g ∘ f).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifMorphism (_ ∘ _)) => simple notypeclasses refine compose_gbl_wcunif_morphism : typeclass_instances.
+
+Lemma compose_gbl_wcunif_reflecting@{u} `{@GlobalWCUnifReflecting@{u} X Y Φ Ψ 𝒜 ℬ f} `{@GlobalWCUnifReflecting@{u} Y Z Ψ Ξ ℬ 𝒞 g}
+  : GlobalWCUnifReflecting (g ∘ f).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifReflecting (_ ∘ _)) => simple notypeclasses refine compose_gbl_wcunif_reflecting : typeclass_instances.
+
+Lemma compose_gbl_wcunif_initial@{u} `{@GlobalWCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} `{@GlobalWCUnifInitial@{u} Y Z Ψ Ξ ℬ 𝒞 g}
+  : GlobalWCUnifInitial (g ∘ f).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifInitial (_ ∘ _)) => simple notypeclasses refine compose_gbl_wcunif_initial : typeclass_instances.
+
+Lemma compose_gbl_wcunif_embedding@{u} `{@GlobalWCUnifEmbedding@{u} X Y Φ Ψ 𝒜 ℬ f} `{@GlobalWCUnifEmbedding@{u} Y Z Ψ Ξ ℬ 𝒞 g}
+  : GlobalWCUnifEmbedding (g ∘ f).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifEmbedding (_ ∘ _)) => simple notypeclasses refine compose_gbl_wcunif_embedding : typeclass_instances.
+
+(** Abstract reflection pair instance: the restriction WCUnif_gbl of UnifBorn
+    to WCUnifSpace objects. *)
+
+Inductive 𝐖𝐂𝐔𝐧𝐢𝐟_gbl :=.
+#[global] Hint Extern 0 (Fiber 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X, Uniformity X ∗ Bornology X) : typeclass_instances.
+#[global] Hint Extern 0 (ObjClass 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X '(Φ,𝒜), @WCUnifSpace X Φ 𝒜) : typeclass_instances.
+#[global] Hint Extern 0 (HomClass 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X Y '(Φ,𝒜) '(Ψ,ℬ), @GlobalWCUnifMorphism_fun X Y Φ Ψ 𝒜 ℬ) : typeclass_instances.
+#[global] Hint Extern 0 (RflClass 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X Y '(Φ,𝒜) '(Ψ,ℬ), @GlobalWCUnifReflecting_fun X Y Φ Ψ 𝒜 ℬ) : typeclass_instances.
+#[global] Hint Extern 0 (IniClass 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X Y '(Φ,𝒜) '(Ψ,ℬ), @GlobalWCUnifInitial_fun X Y Φ Ψ 𝒜 ℬ) : typeclass_instances.
+#[global] Hint Extern 0 (EmbClass 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact (λ X Y '(Φ,𝒜) '(Ψ,ℬ), @GlobalWCUnifEmbedding_fun X Y Φ Ψ 𝒜 ℬ) : typeclass_instances.
+#[global] Hint Extern 2 (Fib 𝐖𝐂𝐔𝐧𝐢𝐟_gbl ?X) => split : typeclass_instances.
+
+Definition gbl_wcunif_classes@{u} : ReflectionPairClasses@{u} 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.  Proof. now esplit. Defined.
+#[global] Hint Extern 2 (ReflectionPairClasses 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_classes : typeclass_instances.
+
+Lemma gbl_wcunif_construct : Construct 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.
+Proof. split.
++ intros X [Φ 𝒜] HX. now change (@GlobalWCUnifMorphism X X Φ Φ 𝒜 𝒜 (id_fun X)).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f Hf. change (GlobalWCUnifMorphism f) in Hf.
+  now change (WCUnifSpace X).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f Hf. change (GlobalWCUnifMorphism f) in Hf.
+  now change (WCUnifSpace Y).
++ intros X Y Z [Φ 𝒜] [Ψ ℬ] [Ξ 𝒞] f g Hf Hg. now change (GlobalWCUnifMorphism (g ∘ f)).
+Qed.
+#[global] Hint Extern 0 (Construct 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_construct : typeclass_instances.
+
+Lemma gbl_wcunif_rfl_construct : RflConstruct 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.
+Proof. split.
++ intros X [Φ 𝒜] HX. now change (@GlobalWCUnifReflecting X X Φ Φ 𝒜 𝒜 (id_fun X)).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f Hf. change (GlobalWCUnifReflecting f) in Hf.
+  now change (WCUnifSpace X).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f Hf. change (GlobalWCUnifReflecting f) in Hf.
+  now change (WCUnifSpace Y).
++ intros X Y Z [Φ 𝒜] [Ψ ℬ] [Ξ 𝒞] f g Hf Hg. now change (GlobalWCUnifReflecting (g ∘ f)).
+Qed.
+#[global] Hint Extern 0 (RflConstruct 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_rfl_construct : typeclass_instances.
+
+Lemma gbl_wcunif_ini_spec : IniClassSpec 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.
+Proof. hnf; intros; split; intros [??]; now split. Qed.
+#[global] Hint Extern 0 (IniClassSpec 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_ini_spec : typeclass_instances.
+
+Lemma gbl_wcunif_emb_spec : EmbClassSpec 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.
+Proof. hnf; intros; split; intros [??]; now split. Qed.
+#[global] Hint Extern 0 (EmbClassSpec 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_emb_spec : typeclass_instances.
+
+Lemma gbl_wcunif_rfl_pair : ReflectionPair 𝐖𝐂𝐔𝐧𝐢𝐟_gbl.
+Proof. esplit; try exact _.
++ intros X Y Z [Φ 𝒜] [Ψ ℬ] [Ξ 𝒞] f g.
+  change (GlobalWCUnifReflecting g → GlobalWCUnifMorphism (g ∘ f) → GlobalWCUnifMorphism f).
+  intros ??. enough (UnifBornMorphism f) by now split.
+  now apply (unif_born_mor_factor f g).
++ intros X Y Z [Φ 𝒜] [Ψ ℬ] [Ξ 𝒞] f g.
+  change (GlobalWCUnifMorphism g → GlobalWCUnifReflecting (g ∘ f) → GlobalWCUnifReflecting f).
+  intros ??. enough (UnifBornReflecting f) by now split.
+  now apply (unif_born_refl_factor f g).
+Qed.
+#[global] Hint Extern 0 (ReflectionPair 𝐖𝐂𝐔𝐧𝐢𝐟_gbl) => exact gbl_wcunif_rfl_pair : typeclass_instances.
+
+#[global] Hint Extern 0 (FiberMap 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧) => exact (λ X FX, FX) : typeclass_instances.
+
+Lemma gbl_wcunif_unifborn_pair_map : PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧.
+Proof. split; try exact _.
++ intros X Y [Φ 𝒜] [Ψ ℬ] f. now change (GlobalWCUnifMorphism f → UnifBornMorphism f).
++ intros X Y [Φ 𝒜] [Ψ ℬ] f. now change (GlobalWCUnifReflecting f → UnifBornReflecting f).
+Qed.
+#[global] Hint Extern 0 (PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧) => exact gbl_wcunif_unifborn_pair_map : typeclass_instances.
+
+#[global] Hint Extern 0 (FiberMap 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐀𝐓𝐨𝐩) => exact (λ X '(Φ, 𝒜), @UniformNeighborhood X Φ) : typeclass_instances.
+
+Lemma gbl_wcunif_atop_pair_map : PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐀𝐓𝐨𝐩.
+Proof. exact (PairMorphism_compose 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧 𝐀𝐓𝐨𝐩). Qed.
+#[global] Hint Extern 0 (PairMorphism 𝐖𝐂𝐔𝐧𝐢𝐟_gbl 𝐀𝐓𝐨𝐩) => exact gbl_wcunif_atop_pair_map : typeclass_instances.
+
 
 (** Inverses flip classes *)
 Local Open Scope fun_inv_scope.
@@ -196,6 +322,22 @@ Lemma invert_unif_born_initial@{u} `{@UnifBornInitial@{u} X Y Φ Ψ 𝒜 ℬ f} 
 Proof. exact (invert_ini (C:=𝐔𝐧𝐢𝐟𝐁𝐨𝐫𝐧) (f:=f)). Qed.
 #[global] Hint Extern 4 (UnifBornEmbedding _⁻¹) => simple notypeclasses refine invert_unif_born_initial : typeclass_instances.
 #[global] Hint Extern 4 (UnifBornInitial _⁻¹) => simple notypeclasses refine invert_unif_born_initial : typeclass_instances.
+
+Lemma invert_gbl_wcunif_mor@{u} `{@GlobalWCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : GlobalWCUnifReflecting f⁻¹.
+Proof. exact (invert_hom (C:=𝐖𝐂𝐔𝐧𝐢𝐟_gbl) (f:=f)). Qed.
+#[global] Hint Extern 4 (GlobalWCUnifReflecting _⁻¹) => simple notypeclasses refine invert_gbl_wcunif_mor : typeclass_instances.
+
+Lemma invert_gbl_wcunif_reflecting@{u} `{@GlobalWCUnifReflecting@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : GlobalWCUnifMorphism f⁻¹.
+Proof. exact (invert_rfl (C:=𝐖𝐂𝐔𝐧𝐢𝐟_gbl) (f:=f)). Qed.
+#[global] Hint Extern 4 (GlobalWCUnifMorphism _⁻¹) => simple notypeclasses refine invert_gbl_wcunif_reflecting : typeclass_instances.
+
+Lemma invert_gbl_wcunif_initial@{u} `{@GlobalWCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} `{!Inverse f, !Bijective f}
+  : GlobalWCUnifEmbedding f⁻¹.
+Proof. exact (invert_ini (C:=𝐖𝐂𝐔𝐧𝐢𝐟_gbl) (f:=f)). Qed.
+#[global] Hint Extern 4 (GlobalWCUnifEmbedding _⁻¹) => simple notypeclasses refine invert_gbl_wcunif_initial : typeclass_instances.
+#[global] Hint Extern 4 (GlobalWCUnifInitial _⁻¹) => simple notypeclasses refine invert_gbl_wcunif_initial : typeclass_instances.
 
 Local Close Scope fun_inv_scope.
 

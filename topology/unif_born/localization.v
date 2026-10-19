@@ -8,7 +8,7 @@ Require Import theory.set orders.orders orders.maps orders.subset orders.closure
 Require Import orders.subset_images.
 Require Import theory.lattices orders.lattices theory.sublattices orders.sublattices.
 Require Import topology.topology uniform.base uniform.basis bornology.base bornology.basis.
-Require Import uniform.final uniform.subspace.
+Require Import uniform.final uniform.subspace uniform.cauchy_completion.
 Require Import topology.topology topology.interior topology.uniform.base uniform.basis uniform.product.
 Require Import unif_born.base unif_born.local_maps.
 Require Import uniform.cylinder.
@@ -98,6 +98,14 @@ Section filter.
   
   Lemma local_entourage (V:localized_uniformity X) (K:𝒜) : ∐ U:Φ, π₁* K ⊓ powerset_pt U ⊆ V.
   Proof. assert (powerset_pt V ∊ S) as P by now rew <-localized_uniformity_sub_semi. exact (P K). Qed.
+
+  Lemma local_entourage_tensor (V:localized_uniformity X) (K:𝒜)
+     : ∐ U:Φ, ∏ A B : 𝒫 X, A ⊗ B ⊆ U ⊸ (powerset_pt K ⊓ A) ⊗ B ⊆ V.
+  Proof. pose proof local_entourage V K as [U HU]. exists U. intros A B.
+    rew (cylinder_meet_tensor_subset K A B), <-HU.
+    rew (meet_le_meet_iff_l _ _ _).
+    now rew (meet_lb_r _ (A ⊗ B)).
+  Qed.
 End filter.
 #[global] Hint Extern 2 (Filter (localization_filter _)) => simple notypeclasses refine localization_filter_filter : typeclass_instances.
 #[global] Hint Extern 2 (UpSet (localization_filter _)) => simple notypeclasses refine localization_filter_filter : typeclass_instances.
@@ -116,6 +124,23 @@ End filter.
 #[global] Hint Extern 2 (@Topology _ (@UniformNeighborhood _ (@localized_uniformity ?X ?Φ ?𝒜))) =>
   simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
 
+(** ** Bounded Cauchy filters are ℒ-Cauchy.
+
+    A Cauchy filter with a bounded member K has [K ⊓ A] as a V-small member
+    for each ℒ-entourage V, with A small for the band entourage of
+    [local_entourage_tensor].  The boundedness premise is a genuine
+    condition: an ℒ-Cauchy filter need not be bounded (ω₁ with the finite
+    bornology). *)
+Lemma cauchy_bounded_locally_cauchy `{@UniformSpace X Φ} {𝒜:Bornology X}
+  (F:𝒫² X) `{!CauchyFilter (Φ:=Φ) F} (K:𝒜) {HK : powerset_pt K ∊ F}
+  : CauchyFilter (X:=ℒ X) F.
+Proof. apply alt_Build_CauchyFilter; [ exact (cauchy_proper (Φ:=Φ) F) |].
+  intros V. pose proof local_entourage_tensor V K as [U HU].
+  pose proof cauchy_alt F U as [A HA].
+  exists (to_subset _ (el:=HK) ⊓ A).
+  change ((powerset_pt K ⊓ (A:𝒫 X)) ⊗ (powerset_pt K ⊓ (A:𝒫 X)) ⊆ V).
+  rew (meet_lb_r (powerset_pt K) (A:𝒫 X)) at 2. now rew <-(HU _ _).
+Qed.
 
 Section universal.
   Universes u.
@@ -298,6 +323,29 @@ Proof. pose proof (_ : BornologyInitial (id_fun X)). exact (wcunif_transport (ε
   => simple notypeclasses refine (@localized_wcunif X Φ 𝒜 _) : typeclass_instances.
 #[global] Hint Extern 2 (WCUnifSpace (ℒ _)) => simple notypeclasses refine localized_wcunif : typeclass_instances.
 
+(** The localization maps as WCUnif maps. *)
+Lemma from_localization_gbl_mor `{@WCUnifSpace X Φ 𝒜} : GlobalWCUnifMorphism (ε X).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifMorphism (ε _)) => simple notypeclasses refine from_localization_gbl_mor : typeclass_instances.
+
+Lemma to_localization_gbl_refl `{@WCUnifSpace X Φ 𝒜} : GlobalWCUnifReflecting (η X).
+Proof. now split. Qed.
+#[global] Hint Extern 2 (GlobalWCUnifReflecting (η _)) => simple notypeclasses refine to_localization_gbl_refl : typeclass_instances.
+
+Lemma from_localization_wcunif_emb `{@WCUnifSpace X Φ 𝒜} : WCUnifEmbedding (ε X).
+Proof. repeat (split; try exact _). Qed.
+#[global] Hint Extern 2 (WCUnifEmbedding  (ε _)) => simple notypeclasses refine from_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial    (ε _)) => simple notypeclasses refine from_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism   (ε _)) => simple notypeclasses refine from_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting (ε _)) => simple notypeclasses refine from_localization_wcunif_emb : typeclass_instances.
+
+Lemma to_localization_wcunif_emb `{@WCUnifSpace X Φ 𝒜} : WCUnifEmbedding (η X).
+Proof. repeat (split; try exact _). Qed.
+#[global] Hint Extern 2 (WCUnifEmbedding  (η _)) => simple notypeclasses refine to_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial    (η _)) => simple notypeclasses refine to_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism   (η _)) => simple notypeclasses refine to_localization_wcunif_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting (η _)) => simple notypeclasses refine to_localization_wcunif_emb : typeclass_instances.
+
 
 Lemma localized_ur_conv@{u} `{@UniformSpace@{u} X Φ, @UniformSpace@{u} Y Ψ} {ℬ:Bornology Y} (f:X ⇾ Y)
   : UniformlyReflecting (η Y ∘ f) → LocalUniformReflection f.
@@ -332,6 +380,26 @@ Section unif_born_conv.
   + now apply localized_unif_born_refl_conv.
   Qed.
 End unif_born_conv.
+
+Section wcunif_conv.
+  Universes u.
+  Context `{@WCUnifSpace@{u} X Φ 𝒜, @WCUnifSpace@{u} Y Ψ ℬ} (f:X ⇾ Y).
+
+  Lemma localized_wcunif_conv : GlobalWCUnifMorphism (f ∘ ε X) → WCUnifMorphism f.
+  Proof. intros Hf. split; try exact _. now apply localized_unif_born_conv. Qed.
+
+  Lemma localized_wcunif_refl_conv : GlobalWCUnifReflecting (η Y ∘ f) → WCUnifReflecting f.
+  Proof. intros Hf. split; try exact _. now apply localized_unif_born_refl_conv. Qed.
+
+  Lemma localized_wcunif_initial_conv : GlobalWCUnifMorphism (f ∘ ε X) → GlobalWCUnifReflecting (η Y ∘ f) → WCUnifInitial f.
+  Proof. intros ??; split.
+  + now apply localized_wcunif_conv.
+  + now apply localized_wcunif_refl_conv.
+  Qed.
+
+  Lemma localized_wcunif_conv_alt : GlobalWCUnifMorphism (η Y ∘ f ∘ ε X) → WCUnifMorphism f.
+  Proof. intros Hf. apply localized_wcunif_conv. now change (f ∘ ε X) with (ε Y ∘ (η Y ∘ f ∘ ε X)). Qed.
+End wcunif_conv.
 
 
 #[local] Hint Extern 0 (Neighborhood _) => exact UniformNeighborhood : typeclass_instances.
@@ -483,6 +551,39 @@ Proof. split.
 + now apply localize_functorial_alt.
 + now apply localize_functorial_refl_alt.
 Qed.
+
+(** The same lifts for WCUnif maps: a local map becomes global between the localizations. *)
+Section wcunif_localize.
+  Universes u.
+  Context {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y).
+
+  Lemma wcunif_localize_domain `{!WCUnifMorphism f} : GlobalWCUnifMorphism (f ∘ ε X).
+  Proof. split; try exact _. split; try exact _. now apply localized_uc. Qed.
+
+  Lemma wcunif_localize_mor `{!WCUnifMorphism f} : GlobalWCUnifMorphism (η Y ∘ f ∘ ε X).
+  Proof. split; try exact _. now apply localize_functorial_alt. Qed.
+
+  Lemma wcunif_localize_codomain_refl `{!WCUnifReflecting f, !Dense f} : GlobalWCUnifReflecting (η Y ∘ f).
+  Proof. split; try exact _. split.
+  + now apply localized_ur.
+  + now change (η Y ∘ f) with f.
+  Qed.
+
+  Lemma wcunif_localize_refl `{!WCUnifReflecting f, !Dense f} : GlobalWCUnifReflecting (η Y ∘ f ∘ ε X).
+  Proof. split; try exact _. now apply localize_functorial_refl_alt. Qed.
+
+  Lemma wcunif_localize_initial `{!WCUnifInitial f, !Dense f} : GlobalWCUnifInitial (η Y ∘ f ∘ ε X).
+  Proof. split.
+  + now apply wcunif_localize_mor.
+  + now apply wcunif_localize_refl.
+  Qed.
+
+  Lemma wcunif_localize_emb `{!WCUnifEmbedding f, !Dense f} : GlobalWCUnifEmbedding (η Y ∘ f ∘ ε X).
+  Proof. split.
+  + now apply wcunif_localize_initial.
+  + now change (Injective f).
+  Qed.
+End wcunif_localize.
 
 
 (** * The intrinsic dense-initial descent

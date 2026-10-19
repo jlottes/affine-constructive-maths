@@ -268,12 +268,18 @@ Section thicken.
     rew (thicken_compose _ _ _), <-(order_preserving thicken _ _).
     change (V ∙ W ≤ U ⊸ V ∙ W ≤ U ⊠ A ≤ A). now simplify.
   Qed.
+  
+  Lemma near_sub_thicken (U:Φ) (A:𝒫 X) (x:X) : x ∊ A ⊸ near U x ⊆ U.[A].
+  Proof. change (x ∊ A ⊸ ∏ y, (x, y) ∊ U ⊸ ∐ z, z ∊ A ⊠ (z, y) ∊ U).
+    rew <-all_adj; intros y. rew <-(aex_ub _ x). tautological.
+  Qed.
 
   Lemma thicken_singleton (U:Φ) (x:X) : U.[singleton x] = near U x.
-  Proof. intros y. change ( (∐ x', x = x' ⊠ near U x' y) ⧟ near U x y). split.
-  + rew <-aex_adj; intros x'.
+  Proof. apply le_antisym; split.
+  + intros y. change ( (∐ x', x = x' ⊠ near U x' y) ⊸ near U x y).
+    rew <-aex_adj; intros x'.
     rew (is_fun set:(λ z, near U z y) x x' : x = x' ⊸ near U x y ⧟ near U x' y). tautological.
-  + rew <-(aex_ub _ x). now rew (aprod_true_l (ltac:(refl):x = x)).
+  + now rew <-(near_sub_thicken _ _ _).
   Qed.
 
   Lemma thicken_empty (U:Φ) : U.[∅] = ∅.

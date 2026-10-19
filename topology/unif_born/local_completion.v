@@ -34,7 +34,7 @@ Local Abbreviation 𝒞₁ := cauchy_map.
 
 Local Abbreviation 𝒯 := trapped_cauchy_filter_set.
 Local Abbreviation τ := to_trapped.
-Local Abbreviation ρ := from_trapped.
+Local Abbreviation β := from_trapped.
 Local Abbreviation 𝒯₁ := wc_trapped_map.
 Local Abbreviation R := wc_trapped_reflect.
 
@@ -402,8 +402,8 @@ Section complete_locally_complete.
   Local Open Scope fun_inv_scope.
   Context `{@WCUnifSpace X Φ 𝒜} `{!CompleteUniformSpace X (Ci:=Ci)}.
   
-  Lemma complete_locally_complete_spec : ((κ X)⁻¹ ∘ ρ X) ∘ τ X = id.
-  Proof. change ((κ X)⁻¹ ∘ (ρ X ∘ τ X) = id). rew (from_trapped_spec _). exact (bijective _). Qed.
+  Lemma complete_locally_complete_spec : ((κ X)⁻¹ ∘ β X) ∘ τ X = id.
+  Proof. change ((κ X)⁻¹ ∘ (β X ∘ τ X) = id). rew to_trapped_factor. exact (bijective _). Qed.
   Local Abbreviation Er := complete_locally_complete_spec.
   
   Local Instance complete_locally_inverse : LocalCompleteInverse X := to_trapped_retract_complete_inverse _ Er.

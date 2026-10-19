@@ -25,12 +25,6 @@ Lemma Build_LeastDownSet `{WeakPoset X} {U : 𝒫 X} :
   (∀ x : X, x ∊ U ⧟ ∐ a : U, x ≤ subset_pt a) → LeastDownSet U.
 Proof. intro; now split. Qed.
 
-Lemma Build_UpDirectedSubset {X:set} {Xle:Le X} `{PreOrder X} {U : 𝒫 X} :
-  (∐ x : X, x ∊ U)
- → (∀ x y : X, x ∊ U ⊠ y ∊ U ⊸ ∐ z : X, z ∊ U ⊠ x ≤ z ⊠ y ≤ z)
- → UpDirectedSubset U.
-Proof. now split. Qed.
-
 Lemma Build_DownDirectedSubset {X:set} {Xle:Le X} `{PreOrder X} {U : 𝒫 X} :
   (∐ x : X, x ∊ U)
  → (∀ x y : X, x ∊ U ⊠ y ∊ U ⊸ ∐ z : X, z ∊ U ⊠ z ≤ x ⊠ z ≤ y)
@@ -148,7 +142,7 @@ Arguments down_closed_alt {_ _} U {_} x y.
 
 (** top directed *)
 Lemma top_up_directed {X:set} `{@UpDirected X Xle} : UpDirectedSubset ⌈X⌉.
-Proof. apply Build_UpDirectedSubset.
+Proof. split; try exact _.
 + pose proof inhabited X as [x _]. now exists x.
 + intros x y. change (𝐓 ⊠ 𝐓 ⊸ ∐ z, 𝐓 ⊠ x ≤ z ⊠ y ≤ z). simplify.
   exact (up_directed x y).
@@ -163,7 +157,7 @@ Proof. exact (top_up_directed (X:=X ᵒᵖ)). Qed.
 
 (** Singletons *)
 Lemma singleton_up_directed `{WeakPoset X} {x:X} : UpDirectedSubset (singleton x).
-Proof. apply Build_UpDirectedSubset.
+Proof. split; try exact _.
 + now exists x.
 + intros a b. rew <-(aex_ub _ x). change (x = a ⊠ x = b ⊸ x = x ⊠ a ≤ x ⊠ b ≤ x). simplify.
   now rew (eq_le_flip _ _).
@@ -178,7 +172,7 @@ Definition singleton_down_directed `{WeakPoset X} {x:X} : DownDirectedSubset (si
 
 (** products *)
 Lemma up_directed_tensor_subset@{u} `{@UpDirectedSubset@{u} X Xle U} `{@UpDirectedSubset@{u} Y Yle V} : UpDirectedSubset (U ⊗ V).
-Proof. apply Build_UpDirectedSubset.
+Proof. split; try exact _.
 + pose proof up_directed_subset_inhabited U as [x elx].
   pose proof up_directed_subset_inhabited V as [y ely].
   now exists (x, y).
@@ -218,7 +212,7 @@ Proof. exact (up_directed_tensor_subset (X:=X ᵒᵖ) (Y:=Y ᵒᵖ)). Qed.
 (** image *)
 Lemma image_up_directed@{u} `{@OrderPreserving@{u} X Y Xle Yle f, U:𝒫 X, !UpDirectedSubset U}
   : UpDirectedSubset (f⁎ U).
-Proof. pose proof _ : WeakPoset Y. apply Build_UpDirectedSubset.
+Proof. pose proof _ : WeakPoset Y. split; try exact _.
 + pose proof (up_directed_subset_inhabited U) as [x ?]. now exists (f x).
 + intros y₁ y₂. change ((∐ x₁, f x₁ = y₁ ⊠ x₁ ∊ U) ⊠ (∐ x₂, f x₂ = y₂ ⊠ x₂ ∊ U) ⊸ ∐ z, z ∊ f⁎ U ⊠ y₁ ≤ z ⊠ y₂ ≤ z).
   rew <-aex_adj2; intros x₁ x₂. rew (aprod_medial _ _ _ _).

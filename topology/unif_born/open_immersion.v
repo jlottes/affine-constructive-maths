@@ -81,7 +81,7 @@ Section open_immersion.
     rew <-(aprod_adj _ _ _). apply aand_intro.
     * rew (aandl _ _). rew (aprod_adj _ _ _). exact (down_closed 𝒜 _ _).
     * rew (aandr _ _). exact (unif_below_le_l _ _ _).
-  + apply Build_UpDirectedSubset.
+  + split; try exact _.
     * exists ⊥. unfold_B. rew (preserves_bottom ι⁎). split.
       - exact sub_bot_closed.
       - exact (unif_below_empty S).

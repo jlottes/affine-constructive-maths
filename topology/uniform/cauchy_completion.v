@@ -371,8 +371,13 @@ Proof. rew principal_subset_filter_alt. now simplify. Qed.
 #[global] Hint Extern 2 (DownDirected (func_op principal_subset_filter _)) => simple notypeclasses refine principal_subset_filter_filter : typeclass_instances.
 #[global] Hint Extern 2 (UpSet (func_op principal_subset_filter _)) => simple notypeclasses refine principal_subset_filter_filter : typeclass_instances.
 
+(** The ball (near U x) as a member of the principal filter *)
 Definition principal_subset_filter_elt `{@UniformSpace X Φ} (U:Φ) (x:X)
   := @to_subset _ (principal_subset_filter x) (near U x) (near_refl U x).
+
+(** The singleton {x} as a member of the principal filter *)
+Definition principal_singleton_elt `{@UniformSpace X Φ} (x:X)
+  := @to_subset _ (principal_subset_filter x) (singleton x) (ltac:(refl) : x ∊ singleton x).
 
 Lemma principal_filter_cauchy_ufm_conty `{@UniformSpace X Φ}
    : CauchyUniformContinuity (principal_subset_filter (X:=X)).
@@ -410,20 +415,83 @@ Proof. now split. Qed.
 #[global] Hint Extern 2 (UniformlyContinuous (η _)) => simple notypeclasses refine to_cauchy_ufm_cont : typeclass_instances.
 #[global] Hint Extern 2 (Continuous (η _)) => simple notypeclasses refine to_cauchy_ufm_cont : typeclass_instances.
 
+Import thicken_notation.
+
+(** A Cauchy filter is basis-close to the principal filter of any point of a
+    small member — the "near-member" atom of η-density. *)
+Lemma cauchy_basis_near_member_r `{@UniformSpace X Φ} (F : 𝒞 X) (U:Φ) (A:F) {x:X}
+  (elx : x ∊ A) (PA : A ⊗ A ⊆ U)
+  : (F, η X x) ∊ C X U.
+Proof. intros V. exists A. exists (principal_subset_filter_elt V x).
+  change (A ⊗ near V x ⊆ powerset_pt (V⁻¹ ∙ U ∙ V)).
+  rew <-(near_singleton_compose_r_alt A x _ _).
+  replc (singleton (x:X)) with (A : 𝒫 X) using le by now rew (singleton_subset _ _).
+  now rew <-(ufm_compose_ub_r _ _).
+Qed.
+
+Lemma cauchy_basis_near_member_l `{@UniformSpace X Φ} (F : 𝒞 X) (U:Φ) (A:F) {x:X}
+  (elx : x ∊ A) (PA : A ⊗ A ⊆ U)
+  : (η X x, F) ∊ C X U.
+Proof. change ((F, η X x) ∊ (C X U)⁻¹). rew <-(cauchy_entourage_flip _).
+  refine (cauchy_basis_near_member_r F U⁻¹ A elx _).
+  now rew <-(order_reflecting flip _ _), (tensor_subset_flip _ _).
+Qed.
+
+Lemma cauchy_near_member_thicken `{@UniformSpace X Φ} (F : 𝒞 X) (A : F) (W S : Φ)
+  : (η X)* (near (C X W) F) ⊆ (S⁻¹ ∙ W ∙ S).[powerset_pt A].
+Proof. intros x.
+  change ((∏ S' : Φ, ∐ (A' : F) (B : η X x), A' ⊗ B ⊆ powerset_pt (S'⁻¹ ∙ W ∙ S'))
+          ⊸ ∐ y, y ∊ powerset_pt A ⊠ (y, x) ∊ S⁻¹ ∙ W ∙ S).
+  rew (all_lb _ S).
+  rew <-aex_adj; intros A'. rew <-aex_adj; intros B.
+  pose (Ax := A' ⊓ A : F).
+  pose proof inhabited Ax as [a _].
+  pose proof subset_pt_is_el a : subset_pt a ∊ A' ∧ subset_pt a ∊ A as [elA' elA].
+  rew <-(aex_ub _ (subset_pt a)), (aprod_true_l elA).
+  change (?a ≤ ?b) with (∏ p, p ∊ a ⊸ p ∊ b). rew (all_lb _ (subset_pt a, x)).
+  enough ((subset_pt a, x) ∊ A' ⊗ B) as P by now rew (aimpl_true_l P).
+  split; trivial. exact (subset_pt_is_el B).
+Qed.
+
+Lemma cauchy_small_member_near `{@UniformSpace X Φ} (F : 𝒞 X) (A : F) (W : Φ) (PA : A ⊗ A ⊆ W)
+  : A ⊆ W.[(η X)* (near (C X W) F)].
+Proof. pose proof inhabited A as [a _]. intros b.
+  change (b ∊ A ⊸ ∐ (a:X), (F, η X a) ∊ C X W ⊠ (a, b) ∊ W).
+  rew <-(aex_ub _ (subset_pt a)).
+  rew (aprod_true_l (cauchy_basis_near_member_r F W A _ PA)), <-PA.
+  change (b ∊ A ⊸ subset_pt a ∊ A ⊠ b ∊ A). now simplify.
+Qed.
+
+(** If [η X x = F], every neighborhood of [x] is a member of [F]. *)
+Lemma to_cauchy_eq_ball `{@UniformSpace X Φ} (x : X) (F : 𝒞 X) (E : η X x = F) (U : Φ)
+  : near U x ∊ F.
+Proof.
+  pose proof E U as [B [A P]]; change (apos (B ⊗ A ⊆ U)) in P.
+  pose proof subset_pt_is_el B : x ∊ B as elxB.
+  enough (A ⊆ near U x) as SA by (rew <-SA; exact (subset_pt_is_el A)).
+  intros a. change (a ∊ A ⊸ (x, a) ∊ U). rew <-P.
+  change (a ∊ A ⊸ x ∊ B ⊠ a ∊ A). now simplify.
+Qed.
+
+(** Such a point lies in the closure of every member of the filter. *)
+Lemma to_cauchy_eq_closure `{@UniformSpace X Φ} (x : X) (F : 𝒞 X) (E : η X x = F) (A : F)
+  : x ∊ closure (powerset_pt A : 𝒫 X).
+Proof. rew uniform_closure_applied2. intros U.
+  pose proof to_cauchy_eq_ball x F E U as elU.
+  pose (M := to_subset (U:=F) (near U x) ⊓ A : F).
+  change (∐ y, y ∊ M). pose proof (inhabited M) as [y _]. now exists (subset_pt y).
+Qed.
+
 (** Basis-closeness of two principal filters reflects to closeness of the
     points — the "points-reflect" atom of η-initiality. *)
 Lemma cauchy_basis_points `{@UniformSpace X Φ} (U V:Φ)
   (EV : V⁻¹ = V) (PV : V ∙ V ∙ V ≤ U)
   : (η X)♯ (C X V) ⊆ U.
 Proof. intros [x y].
-  change ((∏ W:Φ, ∐ (A:η X x) (B:η X y), A ⊗ B ⊆ powerset_pt (W⁻¹ ∙ V ∙ W)) ⊸ (x, y) ∊ U).
-  rew (all_lb _ V).
-  rew <-aex_adj; intros A. rew <-aex_adj; intros B.
-  rew EV, PV.
-  enough ((x, y) ∊ A ⊗ B) as Hp.
-  + change ((∏ p, p ∊ A ⊗ B ⊸ p ∊ U) ⊸ (x, y) ∊ U).
-    now rew (all_lb _ (x,y)), (aimpl_true_l Hp).
-  + split. exact (subset_pt_is_el A). exact (subset_pt_is_el B).
+  change (y ∊ (η X)* (near (C X V) (η X x)) ⊸ y ∊ near U x).
+  rew (cauchy_near_member_thicken (η X x) (principal_singleton_elt x) V V y).
+  change (y ∊ (V⁻¹ ∙ V ∙ V).[singleton x] ⊸ y ∊ near U x).
+  now rew (thicken_singleton _ _), EV, <-PV.
 Qed.
 
 Lemma cauchy_basis_points_alt `{@UniformSpace X Φ} (U V:Φ)
@@ -448,27 +516,6 @@ Proof. exact uniform_initial_embedding. Qed.
 #[global] Hint Extern 2 (UniformlyEmbedding (η _)) => simple notypeclasses refine to_cauchy_embedding : typeclass_instances.
 #[global] Hint Extern 2 (Injective (η _)) => simple notypeclasses refine to_cauchy_embedding : typeclass_instances.
 #[global] Hint Extern 2 (ContinuouslyEmbedding (η _)) => simple notypeclasses refine to_cauchy_embedding : typeclass_instances.
-
-
-(** A Cauchy filter is basis-close to the principal filter of any point of a
-    small member — the "near-member" atom of η-density. *)
-Lemma cauchy_basis_near_member_r `{@UniformSpace X Φ} (F : 𝒞 X) (U:Φ) (A:F) {x:X}
-  (elx : x ∊ A) (PA : A ⊗ A ⊆ U)
-  : (F, η X x) ∊ C X U.
-Proof. intros V. exists A. exists (principal_subset_filter_elt V x).
-  change (A ⊗ near V x ⊆ powerset_pt (V⁻¹ ∙ U ∙ V)).
-  rew <-(near_singleton_compose_r_alt A x _ _).
-  replc (singleton (x:X)) with (A : 𝒫 X) using le by now rew (singleton_subset _ _).
-  now rew <-(ufm_compose_ub_r _ _).
-Qed.
-
-Lemma cauchy_basis_near_member_l `{@UniformSpace X Φ} (F : 𝒞 X) (U:Φ) (A:F) {x:X}
-  (elx : x ∊ A) (PA : A ⊗ A ⊆ U)
-  : (η X x, F) ∊ C X U.
-Proof. change ((F, η X x) ∊ (C X U)⁻¹). rew <-(cauchy_entourage_flip _).
-  refine (cauchy_basis_near_member_r F U⁻¹ A elx _).
-  now rew <-(order_reflecting flip _ _), (tensor_subset_flip _ _).
-Qed.
 
 Lemma to_cauchy_dense@{u} `{@UniformSpace@{u} X Φ} : Dense (η X).
 Proof. rew uniform_basis_Dense_iff. intros F U.

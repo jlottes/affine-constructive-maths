@@ -35,7 +35,7 @@ Section pullback_bornology.
   Proof. apply Build_BornologicalSpace.
   + apply Build_Ideal.
     * apply Build_DownSet. intros K K'. unfold_A. rew (order_preserving f⁎ K K'). exact (down_closed ℬ (f⁎ K) (f⁎ K')).
-    * apply Build_UpDirectedSubset; try exact _.
+    * split; try exact _.
       - exists ⊥. unfold_A. rew (preserves_bottom f⁎). exact sub_bot_closed.
       - intros K K'. rew <-(aex_ub _ (K ⊔ K')). unfold_A. rew (preserves_join f⁎ K K').
         rew (aprod_true_r (join_ub_r K K')), (aprod_true_r (join_ub_l K K')).

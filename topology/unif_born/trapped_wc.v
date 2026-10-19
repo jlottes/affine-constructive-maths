@@ -14,7 +14,7 @@ Require Import interfaces.common_props theory.common_props.
 Require Import set_lambda.
 Require Import interfaces.orders interfaces.subset.
 Require Import interfaces.unif_born.
-Require Import theory.set orders.orders orders.maps orders.subset orders.closure orders.filters.
+Require Import theory.set orders.orders orders.maps orders.lattices orders.subset orders.closure orders.filters.
 Require Import theory.subgroups.
 Require Import topology.topology topology.uniform.base uniform.basis uniform.subspace.
 Require Import uniform.cauchy_completion uniform.completion.
@@ -35,136 +35,143 @@ Local Abbreviation 𝒞 := cauchy_filter_set.
 Local Abbreviation 𝒞₁ := cauchy_map.
 
 Local Abbreviation 𝒯 := trapped_cauchy_filter_set.
-Local Abbreviation τ₀ := trapped_unit.
-Local Abbreviation β := trapped_embedding.
+Local Abbreviation τ := to_trapped.
+Local Abbreviation β := from_trapped.
+Local Abbreviation 𝒯₁ := trapped_map.
+
+(** Local classes of [τ]: the global battery is in [trapped_cauchy], which does not see the
+    global-to-local coercions of [local_maps]. *)
+#[global] Hint Extern 2 (WCUnifInitial              (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism             (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+
+(** Local classes of [𝒯₁] and [trapped_reflect], likewise. *)
+#[global] Hint Extern 2 (WCUnifMorphism             (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifEmbedding            (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial              (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornEmbedding   (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+
+#[global] Hint Extern 2 (WCUnifMorphism             (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifEmbedding            (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_emb (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornEmbedding   (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_emb (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial              (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_initial (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_initial (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_initial (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_initial (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_initial (ι:=f)) : typeclass_instances.
 
 Local Open Scope topology_scope.
 Local Open Scope sg_op_scope.
 
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
-
-(** ** The unit. *)
-
-Definition to_trapped X `{@UnifBornSpace X Φ 𝒜} : X ⇾ 𝒯 X := τ₀ X ∘ η X.
-Arguments to_trapped X {_ _ _}.
-Local Abbreviation τ := to_trapped.
+Local Abbreviation π₁ := (tensor_proj1 _ _).
 
 #[local] Hint Extern 10 => match goal with
 |  |- context [ η ?X ∘ ε ?X ] => change (η X ∘ ε X) with (id_fun X)
 |  |- context [ ?f ∘ η ?X ∘ ε ?X ] => change (f ∘ η X ∘ ε X) with f
 end : typeclass_instances.
 
-Lemma to_trapped_ubr `{@WCUnifSpace X Φ 𝒜} : UnifBornReflecting (τ X).
-Proof. now unfold τ. Qed.
-#[global] Hint Extern 2 (UnifBornReflecting         (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
-#[global] Hint Extern 2 (UniformlyReflecting        (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
-#[global] Hint Extern 2 (BornologyReflecting        (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornReflecting  (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyReflecting (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyReflecting     (τ _)) => simple notypeclasses refine to_trapped_ubr : typeclass_instances.
 
-Lemma to_trapped_locally_initial `{@WCUnifSpace X Φ 𝒜} : WCUnifInitial (τ X).
-Proof. split; [| now split ]. split; try exact _. unfold τ. now apply localized_unif_born_conv. Qed.
-#[global] Hint Extern 2 (WCUnifInitial              (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifMorphism             (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifReflecting           (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornInitial     (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBorn            (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyContinuous (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (BornologyInitial           (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (Bornological               (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyInitial        (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
-#[global] Hint Extern 2 (Continuous                 (τ _)) => simple notypeclasses refine to_trapped_locally_initial : typeclass_instances.
+(** ** The inverse of [𝒯₁ (ε X)]: a trapped Cauchy filter is Cauchy for the localized uniformity. *)
 
-Lemma to_trapped_dense  `{@WCUnifSpace X Φ 𝒜} : Dense (τ X).
-Proof. now unfold τ. Qed.
-#[global] Hint Extern 2 (Dense (func_op (to_trapped _))) => simple notypeclasses refine to_trapped_dense : typeclass_instances.
-
-Lemma to_trapped_emb `{@WCUnifSpace X Φ 𝒜, !SeparatedUniformSpace X} : WCUnifEmbedding (τ X).
-Proof. split; try exact _. now unfold τ. Qed.
-#[global] Hint Extern 2 (WCUnifEmbedding          (τ _)) => simple notypeclasses refine to_trapped_emb : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornEmbedding (τ _)) => simple notypeclasses refine to_trapped_emb : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyEmbedding    (τ _)) => simple notypeclasses refine to_trapped_emb : typeclass_instances.
-#[global] Hint Extern 2 (Injective (τ _)) => simple notypeclasses refine to_trapped_emb : typeclass_instances.
-
-(** ** τ-equality as a ball law.
-
-    A trapped filter equal to [τ X x] contains every ambient ball at [x],
-    and hence has [x] in the closure of each of its members — the trapping
-    content of limits, in completeness-free form: completeness only ever
-    manufactures the equality [τ X x = G]. *)
-Section to_trapped_eq.
-  Context `{@UnifBornSpace X Φ 𝒜}.
+Section localize_trapped.
+  Universes u.
+  Context `{@UnifBornSpace@{u} X Φ 𝒜}.
+  
   Local Open Scope subset_scope.
 
-  Lemma to_trapped_eq_ball (x : X) (G : 𝒯 X) (E : τ X x = G) (U : Φ) : near U x ∊ trapped_filter G.
-  Proof.
-    pose proof E (ufm_preimage (ε X) U) as [B [A P]]; change (apos (B ⊗ A ⊆ U)) in P.
-    pose proof subset_pt_is_el B : x ∊ B as elxB.
-    enough (A ⊆ near U x) as SA by (rew <-SA; exact (subset_pt_is_el A)).
-    intros a. change (a ∊ A ⊸ (x, a) ∊ U). rew <-P.
-    change (a ∊ A ⊸ x ∊ B ⊠ a ∊ A). now simplify.
+  Lemma trapped_localized_cauchy (F:𝒯 X) : CauchyFilter (X:=ℒ X) (trapped_filter F : 𝒫² X).
+  Proof. pose proof trapped_prop F as [K HK]. exact (cauchy_bounded_locally_cauchy (trapped_filter F) K). Qed.
+
+  Definition trapped_localize_pt (F:𝒯 X) : 𝒯 (ℒ X)
+    := {| trapped_filter := Build_cauchy_filter (ℒ X) _ (trapped_filter F : 𝒫² X) (trapped_localized_cauchy F)
+        ; trapped_prop := trapped_prop F |}.
+
+  Lemma trapped_localize_pt_is_fun : IsFun trapped_localize_pt.
+  Proof. intros F G.
+    change ((∏ U:Φ, ∐ (A:trapped_filter F) (B:trapped_filter G), A ⊗ B ⊆ U)
+        ⊸ (∏ V:Λ X, ∐ (A:trapped_filter F) (B:trapped_filter G), A ⊗ B ⊆ V)).
+    rew <-all_adj; intros V. pose proof trapped_prop F as [K HK].
+    pose proof local_entourage_tensor V K as [U HU]. rew (all_lb _ U).
+    rew <-aex_adj; intros A. rew <-aex_adj; intros B.
+    rew <-(aex_ub _ (to_subset (powerset_pt K) ⊓ A)), <-(aex_ub _ B).
+    exact (HU A B).
   Qed.
 
-  Lemma to_trapped_eq_closure (x : X) (G : 𝒯 X) (E : τ X x = G) (A : trapped_filter G)
-    : x ∊ closure (powerset_pt A : 𝒫 X).
-  Proof. rew uniform_closure_applied2. intros U.
-    pose proof to_trapped_eq_ball x G E U as elU.
-    pose (M := to_subset (U:=trapped_filter G) (near U x) ⊓ A : trapped_filter G).
-    change (∐ y, y ∊ M). pose proof (inhabited M) as [y _]. now exists (subset_pt y).
-  Qed.
-End to_trapped_eq.
+  Definition trapped_localize : 𝒯 X ⇾ 𝒯 (ℒ X) := @func_make _ _ _ trapped_localize_pt_is_fun.
+End localize_trapped.
+Arguments trapped_localize X {_ _ _}.
 
-(** ** A "counit" with a twist.  *)
+Local Open Scope fun_inv_scope.
 
-Definition from_trapped X `{@UnifBornSpace X Φ 𝒜} : 𝒯 X ⇾ 𝒞 X := 𝒞₁ (ε X) ∘ β X.
-Arguments from_trapped X {_ _ _}.
-Local Abbreviation ρ := from_trapped.
+#[global] Hint Extern 2 (Inverse (trapped_map (@from_localization ?X ?Φ ?𝒜))) => exact (@trapped_localize X Φ 𝒜 _) : typeclass_instances.
+#[global] Hint Extern 2 (Inverse (@trapped_localize ?X ?Φ ?𝒜 _)) => exact (𝒯₁ (@from_localization X Φ 𝒜)) : typeclass_instances.
 
-Lemma from_trapped_uc `{@UnifBornSpace X Φ 𝒜} : UniformlyContinuous (ρ X).
-Proof. now unfold ρ. Qed.
-#[global] Hint Extern 2 (UniformlyContinuous        (ρ _)) => simple notypeclasses refine from_trapped_uc : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyContinuous (ρ _)) => simple notypeclasses refine from_trapped_uc : typeclass_instances.
-#[global] Hint Extern 2 (Continuous                 (ρ _)) => simple notypeclasses refine from_trapped_uc : typeclass_instances.
+Lemma trapped_localize_bijective `{@UnifBornSpace X Φ 𝒜} : Bijective (trapped_localize X).
+Proof. now apply alt_Build_Bijective. Qed.
+#[global] Hint Extern 2 (Bijective  (trapped_localize _)) => simple notypeclasses refine trapped_localize_bijective : typeclass_instances.
+#[global] Hint Extern 2 (Injective  (trapped_localize _)) => simple notypeclasses refine trapped_localize_bijective : typeclass_instances.
+#[global] Hint Extern 2 (Surjective (trapped_localize _)) => simple notypeclasses refine trapped_localize_bijective : typeclass_instances.
 
-Definition from_trapped_spec X `{@UnifBornSpace X Φ 𝒜} : ρ X ∘ τ X = κ X.
-Proof. change ((𝒞₁ (ε X) ∘ κ (ℒ X)) ∘ η X = κ X). now rew (cauchy_map_spec _). Qed.
+Lemma trapped_localize_bijective_back `{@UnifBornSpace X Φ 𝒜} : Bijective (𝒯₁ (ε X)).
+Proof. now change (Bijective (trapped_localize X)⁻¹). Qed.
+#[global] Hint Extern 2 (Bijective  (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_bijective_back : typeclass_instances.
+#[global] Hint Extern 2 (Injective  (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_bijective_back : typeclass_instances.
+#[global] Hint Extern 2 (Surjective (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_bijective_back : typeclass_instances.
 
-Section from_trapped.
-  Context `{@WCUnifSpace X Φ 𝒜}.
-  Local Open Scope subset_scope.
-  Local Open Scope grp_scope.
+Lemma trapped_localize_back_emb `{@WCUnifSpace X Φ 𝒜} : WCUnifEmbedding (𝒯₁ (ε X)).
+Proof.
+  enough (LocallyUnifBornInitial (𝒯₁ (ε X))) by (repeat (split; try exact _)).
+  refine (dense_locally_initial (τ (ℒ X)) (𝒯₁ (ε X))); try exact _.
+  now rew trapped_map_unit.
+Qed.
+#[global] Hint Extern 2 (WCUnifEmbedding  (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial    (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism   (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornEmbedding   (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyEmbedding      (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyInitial        (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyReflecting     (trapped_map (from_localization _))) => simple notypeclasses refine trapped_localize_back_emb : typeclass_instances.
 
-  Local Abbreviation C := cauchy_entourage.
+Lemma trapped_localize_emb `{@WCUnifSpace X Φ 𝒜} : WCUnifEmbedding (trapped_localize X).
+Proof. now change (WCUnifEmbedding (𝒯₁ (ε X))⁻¹). Qed.
+#[global] Hint Extern 2 (WCUnifEmbedding            (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial              (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism             (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornEmbedding   (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (Bornological               (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (BornologyInitial           (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (BornologyReflecting        (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyEmbedding      (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyInitial        (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyReflecting     (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
+#[global] Hint Extern 2 (Continuous                 (trapped_localize _)) => simple notypeclasses refine trapped_localize_emb : typeclass_instances.
 
-  (** The witnessed reflection: [ρ] reflects neighborhoods, the anchor
-      supplied per-point by [trapped_prop]. *)
-  Lemma from_trapped_cont_emb : ContinuouslyEmbedding (ρ X).
-  Proof. refine cont_initial_embedding. do 2 (split; try exact _).
-    intros F N. pose proof (trapped_prop F) as [K HK].
-    change ( (∐ E : pullback_uniformity (β X), near E F ⊆ N)
-             ⊸ ∐ M : 𝒫 (𝒞 X), (∐ W : cauchy_uniformity X, near W (ρ X F) ⊆ M) ⊠ (ρ X)* M ⊆ N ).
-    rew <-aex_adj; intros E.
-    pose proof (subset_pt_is_el E) as [D HD].
-    pose proof cauchy_entourage_basis D as [V PV].
-    pose proof trapped_transport (trapped_filter F) K HK V as [U P].
-    pose proof uniform_split_sym3 U as [W [EW PW]].
-    rew <-(aex_ub _ (near (C X W) (ρ X F))), <-(aex_ub _ (C X W)).
-    rew (aprod_true_l (ltac:(refl):near (C X W) (ρ X F) ⊆ near (C X W) (ρ X F))).
-    enough ((ρ X)* (near (C X W) (ρ X F)) ⊆ near E F) as Q by now rew Q.
-    intros G. change ((ρ X F, ρ X G) ∊ C X W ⊸ (F, G) ∊ subset_pt E).
-    rew <-HD, <-PV.
-    change ( (∏ S : Φ, ∐ (A : ρ X F) (B : ρ X G), A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ W ∙ S)) ⊸
-                ∏ S : Λ X, ∐ (A : trapped_filter F) (B : trapped_filter G), A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ V ∙ S )).
-    rew <-all_adj; intros S. rew <-(ufm_compose_ub_l _ _), <-(ufm_compose_ub_r _ _); clear S.
-    rew [(all_lb _ W) | <-(P _)].
-    now rew EW, PW.
-  Qed.
-End from_trapped.
-#[global] Hint Extern 2 (ContinuouslyEmbedding  (from_trapped _)) => simple notypeclasses refine from_trapped_cont_emb : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyInitial    (from_trapped _)) => simple notypeclasses refine from_trapped_cont_emb : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyReflecting (from_trapped _)) => simple notypeclasses refine from_trapped_cont_emb : typeclass_instances.
-#[global] Hint Extern 2 (Injective              (from_trapped _)) => simple notypeclasses refine from_trapped_cont_emb : typeclass_instances.
 
     
 (** ** The functor action. *)
@@ -172,42 +179,50 @@ End from_trapped.
 Section map.
   Universes u.
   Context `{@WCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f}.
+
+  Local Existing Instance wcunif_localize_domain.
+  #[local] Hint Extern 2 (UnifBornMorphism (_ ∘ ε _)) => simple notypeclasses refine (wcunif_localize_domain _) : typeclass_instances.
+
+  Definition wc_trapped_map : 𝒯 X ⇾ 𝒯 Y := 𝒯₁ (f ∘ ε X) ∘ (𝒯₁ (ε X))⁻¹ .
   
-  Local Existing Instance localize_functorial_alt.
-
-  Definition wc_trapped_map : 𝒯 X ⇾ 𝒯 Y := trapped_map (η Y ∘ f ∘ ε X).
-
-  Lemma wc_trapped_map_unit : wc_trapped_map ∘ to_trapped X = to_trapped Y ∘ f.
-  Proof. exact (trapped_map_unit (η Y ∘ f ∘ ε X)). Qed.
-
   Lemma wc_trapped_map_mor : WCUnifMorphism wc_trapped_map.
-  Proof. split; try exact _. apply localized_unif_born_conv. now unfold wc_trapped_map. Qed.
+  Proof. now unfold wc_trapped_map. Qed.
+
+  Lemma wc_trapped_map_unit : wc_trapped_map ∘ τ X = τ Y ∘ f.
+  Proof. change (𝒯₁ (f ∘ ε X) ∘ τ (ℒ X) ∘ η X = τ Y ∘ f). 
+    now rew trapped_map_unit.
+  Qed.
 
   Lemma wc_trapped_map_dense `{!Dense f} : Dense wc_trapped_map.
-  Proof. now unfold wc_trapped_map. Qed.
+  Proof. apply (Dense_factor_right (τ X)). now rew wc_trapped_map_unit. Qed. 
 End map.
 Arguments wc_trapped_map {_ _ _ _ _ _} f {_}.
 Arguments wc_trapped_map_unit {_ _ _ _ _ _} f {_}.
-Local Abbreviation 𝒯₁ := wc_trapped_map.
-#[global] Hint Extern 2 (WCUnifMorphism             (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBorn            (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyContinuous (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
-#[global] Hint Extern 2 (Bornological               (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
-#[global] Hint Extern 2 (Continuous                 (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
-#[global] Hint Extern 2 (Dense (func_op (𝒯₁ _))) => simple notypeclasses refine wc_trapped_map_dense : typeclass_instances.
+Local Abbreviation 𝒯ₗ := wc_trapped_map.
+#[global] Hint Extern 2 (WCUnifMorphism             (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBorn            (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
+#[global] Hint Extern 2 (Bornological               (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
+#[global] Hint Extern 2 (Continuous                 (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_mor : typeclass_instances.
+#[global] Hint Extern 2 (Dense (func_op (𝒯ₗ _))) => simple notypeclasses refine wc_trapped_map_dense : typeclass_instances.
 
-Lemma wc_trapped_map_initial@{u} `{@WCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifInitial (𝒯₁ f).
-Proof. enough (LocallyUnifBornInitial (𝒯₁ f)) by now split.
-    refine (dense_locally_initial (τ X) (𝒯₁ f)); try exact _.
+Lemma wc_trapped_map_initial@{u} `{@WCUnifInitial@{u} X Y Φ Ψ 𝒜 ℬ f} : WCUnifInitial (𝒯ₗ f).
+Proof. enough (LocallyUnifBornInitial (𝒯ₗ f)) by now split.
+    refine (dense_locally_initial (τ X) (𝒯ₗ f)); try exact _.
     now rew (wc_trapped_map_unit f).
 Qed.
-#[global] Hint Extern 2 (WCUnifInitial             (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornInitial    (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornReflecting (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (BornologyInitial          (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (BornologyReflecting       (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyInitial       (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
-#[global] Hint Extern 2 (ContinuouslyReflecting    (𝒯₁ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial             (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial    (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (BornologyInitial          (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (BornologyReflecting       (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyInitial       (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+#[global] Hint Extern 2 (ContinuouslyReflecting    (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
+
+Lemma wc_trapped_map_gbl@{u} `{@GlobalWCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} : 𝒯ₗ f = 𝒯₁ f.
+Proof. rew <-(cont_dense_epi (𝒯ₗ f) (𝒯₁ f) (τ X)).
+  now rew (wc_trapped_map_unit f), trapped_map_unit.
+Qed. 
 
 
 (** ** The reflection. *)
@@ -215,19 +230,17 @@ Qed.
 Section reflect.
   Universes u.
   Context `{@WCUnifReflecting@{u} X Z Φ Ξ 𝒜 𝒵 f, !Dense f}.
+  
+  Local Existing Instance  wcunif_localize_codomain_refl.
+  #[local] Hint Extern 2 (UnifBornReflecting (η _ ∘ _)) => simple notypeclasses refine (wcunif_localize_codomain_refl _) : typeclass_instances.
 
-  Local Existing Instance localize_functorial_refl_alt.
-
-  Local Instance wc_reflect_lift_dense : Dense (η Z ∘ f ∘ ε X).
-  Proof. now change (Dense (η Z ∘ (f ∘ ε X))). Qed.
-
-  Definition wc_trapped_reflect := trapped_reflect (η Z ∘ f ∘ ε X) ∘ η Z.
+  Definition wc_trapped_reflect : Z ⇾ 𝒯 X := trapped_reflect (Y:=ℒ Z) (η Z ∘ f) ∘ η Z.
 
   Lemma wc_trapped_reflect_spec : wc_trapped_reflect ∘ f = τ X.
-  Proof. exact (trapped_reflect_spec (η Z ∘ f ∘ ε X)). Qed.
+  Proof. exact (trapped_reflect_spec (η Z ∘ f)). Qed.
 
   Lemma wc_trapped_reflect_mor : WCUnifMorphism wc_trapped_reflect.
-  Proof. split; try exact _. unfold wc_trapped_reflect. now apply localized_unif_born_conv. Qed.
+  Proof. now unfold wc_trapped_reflect. Qed.
 
   Lemma wc_trapped_reflect_dense : Dense wc_trapped_reflect.
   Proof. now unfold wc_trapped_reflect. Qed.
@@ -241,17 +254,12 @@ Arguments wc_trapped_reflect_spec {_ _ _ _ _ _} f {_ _}.
 #[global] Hint Extern 2 (Continuous                 (wc_trapped_reflect _)) => simple notypeclasses refine wc_trapped_reflect_mor : typeclass_instances.
 #[global] Hint Extern 2 (Dense (func_op (wc_trapped_reflect ?f))) => simple notypeclasses refine wc_trapped_reflect_dense : typeclass_instances.
 
-Section reflect.
-  Universes u.
-  Context `{@WCUnifInitial@{u} X Z Φ Ξ 𝒜 𝒵 f, !Dense f}.
-
-  Local Existing Instance localize_functorial_initial_alt.
-
-  Lemma wc_trapped_reflect_initial : WCUnifInitial (wc_trapped_reflect f).
-  Proof. split; [exact _ |]. split; try exact _.
-    unfold wc_trapped_reflect. now apply localized_unif_born_refl_conv.
-  Qed. 
-End reflect.
+Lemma wc_trapped_reflect_initial@{u} `{@WCUnifInitial@{u} X Z Φ Ξ 𝒜 𝒵 f, !Dense f}
+  : WCUnifInitial (wc_trapped_reflect f).
+Proof. enough (LocallyUnifBornInitial (wc_trapped_reflect f)) by now split.
+  refine (dense_locally_initial f (wc_trapped_reflect f)); try exact _.
+  now rew (wc_trapped_reflect_spec f).
+Qed.
 #[global] Hint Extern 2 (WCUnifInitial             (wc_trapped_reflect _)) => simple notypeclasses refine wc_trapped_reflect_initial : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBornInitial    (wc_trapped_reflect _)) => simple notypeclasses refine wc_trapped_reflect_initial : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBornReflecting (wc_trapped_reflect _)) => simple notypeclasses refine wc_trapped_reflect_initial : typeclass_instances.
@@ -274,4 +282,5 @@ Proof. split; try exact _; intros Z Ξ 𝒵 f H₁ H₂.
 + exact (wc_trapped_reflect_spec f).
 Qed.
 #[global] Hint Extern 2 (LocalCompletion (τ _)) => simple notypeclasses refine trapped_local_completion : typeclass_instances.
+
 

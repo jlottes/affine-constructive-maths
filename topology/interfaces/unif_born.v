@@ -111,6 +111,42 @@ Record UnifBornEmbedding@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {
 }.
 Existing Class UnifBornEmbedding.
 
+Coercion unif_born_X `{Hf:@UnifBornMorphism X Y Φ Ψ 𝒜 ℬ f} : UnifBornSpace X.  Proof. now split. Qed.
+Coercion unif_born_refl_X `{Hf:@UnifBornReflecting X Y Φ Ψ 𝒜 ℬ f} : UnifBornSpace X.  Proof. now split. Qed.
+
+(** Restriction to WCUnifSpace objects *)
+Record GlobalWCUnifMorphism@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y) : SProp :=
+{ #[canonical=no, reversible=no] gbl_wcunif_mor_X :> WCUnifSpace X
+; #[canonical=no] gbl_wcunif_mor_Y : WCUnifSpace Y
+; #[canonical=no, reversible=no] gbl_wcunif_mor_ub :> UnifBornMorphism f
+}.
+Existing Class GlobalWCUnifMorphism.
+
+Record GlobalWCUnifReflecting@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y) : SProp :=
+{ #[canonical=no, reversible=no] gbl_wcunif_rfl_X :> WCUnifSpace X
+; #[canonical=no] gbl_wcunif_rfl_Y : WCUnifSpace Y
+; #[canonical=no, reversible=no] gbl_wcunif_rfl_ubr :> UnifBornReflecting f
+}.
+Existing Class GlobalWCUnifReflecting.
+
+Record GlobalWCUnifInitial@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y) : SProp :=
+{ #[canonical=no, reversible=no] gbl_wcunif_ini_mor :> GlobalWCUnifMorphism f
+; #[canonical=no, reversible=no] gbl_wcunif_ini_rfl :> GlobalWCUnifReflecting f
+}.
+Existing Class GlobalWCUnifInitial.
+
+Record GlobalWCUnifEmbedding@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y) : SProp :=
+{ #[canonical=no, reversible=no] gbl_wcunif_emb_ini :> GlobalWCUnifInitial f
+; #[canonical=no, reversible=no] gbl_wcunif_emb_inj :> Injective f
+}.
+Existing Class GlobalWCUnifEmbedding.  
+
+Coercion gbl_wcunif_ini_ub_ini  `{@GlobalWCUnifInitial X Y Φ Ψ 𝒜 ℬ f} : UnifBornInitial f.
+Proof. now split. Qed.
+
+Coercion gbl_wcunif_emb_ub_emb  `{@GlobalWCUnifEmbedding X Y Φ Ψ 𝒜 ℬ f} : UnifBornEmbedding f.
+Proof. now split. Qed.
+
 
 (** Locally uniformly continuous / reflecting. *)
 
@@ -187,10 +223,10 @@ Section locally_unif_born.
   }.
   Existing Class LocallyUnifBornEmbedding.
   
-  (** Restriction to WCUnifSpace domains *)
+  (** Restriction to WCUnifSpace objects *)
   Record WCUnifMorphism : SProp :=
   { #[canonical=no, reversible=no] wcunif_mor_X :> WCUnifSpace X
-  ; wcunif_mor_Y : WCUnifSpace Y
+  ; #[canonical=no] wcunif_mor_Y : WCUnifSpace Y
   ; #[canonical=no, reversible=no] wcunif_mor_lub :> LocallyUnifBorn
   }.
   Existing Class WCUnifMorphism.
@@ -278,6 +314,10 @@ Existing Class LocallyComplete.
   | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
   | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
   | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
   end : typeclass_instances.
 
 #[global] Hint Extern 10 (Topology ?Y) =>
@@ -296,6 +336,10 @@ Existing Class LocallyComplete.
   | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (unif_born_unif _ (locally_ur_Y _ H))
   | H : WCUnifInitial (Y:=Y) _ |- _ => exact (locally_uc_Y _ H)
   | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (locally_uc_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (ufm_cont_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (ufm_reflecting_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (ufm_cont_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (ufm_cont_Y _ H)
   end : typeclass_instances.
 
 #[global] Hint Extern 10 (BornologicalSpace ?Y) =>
@@ -313,10 +357,21 @@ Existing Class LocallyComplete.
   | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
   | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
   | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
   end : typeclass_instances.
+
+Lemma unif_born_Y `{Hf:@UnifBornMorphism X Y Φ Ψ 𝒜 ℬ f} : UnifBornSpace Y.  Proof. now split. Qed.
+Lemma unif_born_refl_Y `{Hf:@UnifBornReflecting X Y Φ Ψ 𝒜 ℬ f} : UnifBornSpace Y.  Proof. now split. Qed.
 
 #[global] Hint Extern 10 (UnifBornSpace ?Y) =>
   match goal with
+  | H : UnifBornMorphism (Y:=Y) _ |- _ => exact (unif_born_Y (Hf:=H))
+  | H : UnifBornInitial (Y:=Y) _ |- _ => exact (unif_born_Y (Hf:=H))
+  | H : UnifBornEmbedding (Y:=Y) _ |- _ => exact (unif_born_Y (Hf:=H))
+  | H : UnifBornReflecting (Y:=Y) _ |- _ => exact (unif_born_refl_Y (Hf:=H))
   | H : LocallyUnifBorn (Y:=Y) _ |- _ => exact (locally_ub_Y (H:=H))
   | H : LocallyUniformlyReflecting (Y:=Y) _ |- _ => exact (locally_ur_Y _ H)
   | H : LocallyUnifBornReflecting (Y:=Y) _ |- _ => exact (locally_ur_Y _ H)
@@ -326,6 +381,10 @@ Existing Class LocallyComplete.
   | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
   | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
   | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
   end : typeclass_instances.
 
 #[global] Hint Extern 10 (WCUnifSpace ?Y) =>
@@ -334,6 +393,23 @@ Existing Class LocallyComplete.
   | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
   | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
   | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : LocalCompletion (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  end : typeclass_instances.
+
+#[global] Hint Extern 10 (UniformlyOpenBornology ?Y) =>
+  match goal with
+  | H : WCUnifMorphism (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
+  | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
   | H : LocalCompletion (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
   end : typeclass_instances.
 

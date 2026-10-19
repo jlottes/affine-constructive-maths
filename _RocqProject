@@ -138,15 +138,12 @@ topology/uniform/base.v
 topology/uniform/completion.v
 topology/uniform/uniformly_below.v
 topology/uniform/basis.v
-topology/uniform/dense_collar.v
-# topology/uniform/dense_quotient.v
 topology/uniform/final.v
 topology/uniform/product.v
 topology/uniform/cylinder.v
 topology/uniform.v
 topology/uniform/induced.v
 topology/uniform/cauchy_completion.v
-# topology/uniform/completion_old.v
 topology/bornology/base.v
 topology/bornology/basis.v
 topology/bornology/product.v
@@ -158,13 +155,13 @@ topology/unif_born/open_immersion.v
 topology/unif_born/product.v
 topology/unif_born/localization.v
 topology/unif_born/bounded_subspace.v
-# topology/unif_born/local_completeness.v
 topology/unif_born/trapped_cauchy.v
 topology/unif_born/trapped_wc.v
-# topology/unif_born/local_completion_old.v
 topology/unif_born/open_immersion_complete.v
 counterexamples/cartesian_product.v
 topology/uniform/quotient.v
 topology/uniform/subspace.v
 topology/uniform/factorization.v
 topology/unif_born/subspace.v
+
+
