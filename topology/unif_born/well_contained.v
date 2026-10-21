@@ -13,7 +13,7 @@ Require Import theory.set orders.orders orders.maps orders.subset orders.closure
 Require Import orders.subset_images.
 Require Import theory.lattices theory.subgroups orders.lattices theory.sublattices orders.sublattices.
 Require Import topology.topology topology.uniform.base topology.uniform.uniformly_below.
-Require Import bornology.base.
+Require Import bornology.base unif_born.base.
 Require Import easy rewrite replc simplify tactics.misc.
 
 Local Open Scope topology_scope.
@@ -79,13 +79,6 @@ Section wcunif.
     change ((U ⊓ V).[powerset_pt K] ◁ S ⊸ powerset_pt K ◁  (U ⊓ V).[powerset_pt K] ⊠ (U ⊓ V).[powerset_pt K] ◁ S).
     now rew (aprod_true_l (unif_below_thicken _ K)).
   Qed.
-
-  Local Instance wcunif_closure_bounded (K:𝒜) : closure K ∊ 𝒜.
-  Proof. pose proof (wcunif_thicken X K) as [U HU].
-    now rew (closure_sub_thicken U K).
-  Qed.
-  
-  Definition born_closure (K:𝒜) : 𝒜 := to_subset (closure K).
 
   Lemma wc_closure (K:𝒜) (S : 𝒫 X) : K ⋐ S ⊸ born_closure K ⋐ S.
   Proof. exact (unif_below_closure K S). Qed.

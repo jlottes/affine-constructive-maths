@@ -106,9 +106,9 @@ Section canonical_completion.
   }.
   Existing Class CanonicalCompletion.
 
-  (** (K3) 𝓜-preservation — a separate kit item, deliberately not a field of
-      the record: the completion functor preserves initial maps with no
-      density side condition.  Enters as its own hypothesis where needed. *)
+  (** Preservation of initial maps, deliberately not a field of the record:
+      the completion functor preserves initial maps with no density side
+      condition.  Enters as its own hypothesis where needed. *)
   Class CanonicalCompletionMapInitial : SProp :=
   { canonical_completion_map_ini {X Y:set@{u}} {FX:Fib C X} {FY:Fib C Y} {HX:Obj C X} {HY:Obj C Y} (f:X ⇾ Y) `{!Ini C f}
       : Ini C (𝒞₁ f) }.
@@ -133,7 +133,7 @@ Arguments canonical_completion_map_ini C {_ _ _ _ _ X Y FX FY _ _} f {_}.
 
 #[global] Hint Extern 0 (Hom ?C (canonical_completion_reflect ?C (c:=?c) ?f)) => simple notypeclasses refine (canonical_completion_reflect_mor C (Ccomp:=c) f) : typeclass_instances.
 
-(** The instances' proof of (K3): a dense-initial descent law — the
+(** The instances' proof of initial-map preservation: a dense-initial descent law — the
     [ufm_dense_initial] / [dense_locally_initial] cancellation — applied to
     the naturality square of the unit yields 𝓜-preservation. *)
 Lemma dense_initial_descent_map_ini@{u} C `{Hc:CanonicalCompletion@{u} C (Ccomp:=Ccomp)}
@@ -271,8 +271,8 @@ Proof. apply (Dense_factor_right f). now rew (canonical_completion_reflect_spec 
 
 (** Firmness, μ-free: 𝒞 inverts tests, with inverse the reflect of the
     composite test [η Z ∘ f].  Initiality of [𝒞₁ f] and of the reflect then
-    follows by the inversion duality — no 𝓜-preservation kit item and no
-    dense-initial descent side condition.  (T6 for the canonical completion.) *)
+    follows by the inversion duality — no initial-map preservation hypothesis and no
+    dense-initial descent side condition. *)
 Section canonical_invert_tests.
   Universes u.
   Context C `{Hc:CanonicalCompletion@{u} C (Ccomp:=Ccomp)}.
@@ -365,9 +365,9 @@ Section unit_retract.
   Proof. exact (unit_bijective_complete C). Qed.
 End unit_retract.
 
-(** T5 (essential uniqueness): any completion of X is isomorphic to the
-    canonical one by an initial comparison iso, and T6 follows: reflects of
-    initial tests are initial. *)
+(** Essential uniqueness: any completion of X is isomorphic to the
+    canonical one by an initial comparison iso, and it follows that reflects
+    of initial tests are initial. *)
 Section completion_compare.
   Universes u.
   Context C `{Hc:CanonicalCompletion@{u} C (Ccomp:=Ccomp)}.
@@ -541,7 +541,7 @@ End complete_obj_theory.
     completeness.  Low priority, so the μ-form wins at η (𝒞 X). *)
 #[global] Hint Extern 8 (Inverse (canonical_completion_unit ?C (c:=?c) ?X)) => simple notypeclasses refine (complete_obj_inverse C (canonical_completion_unit C (c:=c) X)) : typeclass_instances.
 
-(** T11: the extension operator — extend a Hom morphism on a dense reflecting
+(** The extension operator: extend a Hom morphism on a dense reflecting
     subobject to a complete codomain; mirror of [ufm_cont_ext] / [wc_cont_ext]. *)
 Section canonical_completion_ext.
   Universes u.
@@ -584,7 +584,7 @@ Arguments canonical_completion_ext_spec C {CD U HM Ccomp Hc X Y FX FY} ι {Dense
 #[global] Hint Extern 2 (Hom ?C (canonical_completion_ext ?C ?ι ?f)) => simple notypeclasses refine (canonical_completion_ext_mor C ι f) : typeclass_instances.
 #[global] Hint Extern 2 (Dense (func_op (canonical_completion_ext ?C ?ι ?f))) => simple notypeclasses refine (canonical_completion_ext_dense C ι f) : typeclass_instances.
 
-(** With initial data and (K3), the extension is initial. *)
+(** With initial data and initial-map preservation, the extension is initial. *)
 Section canonical_completion_ext_initial.
   Universes u.
   Context C `{Hc:CanonicalCompletion@{u} C (Ccomp:=Ccomp)} `{Hk:!CanonicalCompletionMapInitial C}.
@@ -746,7 +746,7 @@ End canonical_completion_theory.
 #[global] Hint Extern 2 (Ini ?C (canonical_completion_multiply ?C (Ccomp:=?c) ?X)) => simple notypeclasses refine (emb_ini (Hf:=canonical_completion_multiply_emb C (Ccomp:=c))) : typeclass_instances.
 #[global] Hint Extern 2 (Rfl ?C (canonical_completion_multiply ?C (Ccomp:=?c) ?X)) => simple notypeclasses refine (initial_rfl (Hf:=emb_ini (Hf:=canonical_completion_multiply_emb C (Ccomp:=c)))) : typeclass_instances.
 
-(** (K3) is equivalent to the descent law: with 𝓜-preservation, initiality
+(** Initial-map preservation is equivalent to the descent law: with it, initiality
     descends along dense forward maps — the converse of
     [dense_initial_descent_map_ini].  Firmness makes 𝒞₁ f invertible for the
     dense initial f, so 𝒞₁ g = 𝒞₁ (g ∘ f) ∘ (𝒞₁ f)⁻¹ is initial, and the
@@ -781,7 +781,7 @@ Section map_ini_descent.
   Qed.
 End map_ini_descent.
 
-(** The two directions together: (K3) is exactly the descent law. *)
+(** The two directions together: initial-map preservation is exactly the descent law. *)
 Lemma map_ini_descent_iff@{u} C `{Hc:CanonicalCompletion@{u} C (Ccomp:=Ccomp)}
   : CanonicalCompletionMapInitial C (Ccomp:=Ccomp) ↔
     (∀ (S T V:set@{u}) (FS:Fib C S) (FT:Fib C T) (FV:Fib C V) (f:S ⇾ T) (g:T ⇾ V),

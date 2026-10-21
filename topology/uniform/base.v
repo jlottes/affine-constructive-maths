@@ -14,6 +14,10 @@ Require Import easy rewrite replc simplify tactics.misc.
 Local Open Scope topology_scope.
 Local Abbreviation id := (id_fun _).
 
+Import image_notation.
+Import tensor_map_notation.
+Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
+
 Coercion  uniformity_sub_lattice `{@UniformSpace X Φ} : SubLattice Φ.
 Proof. exact filter_sub_lattice. Qed.
 
@@ -468,29 +472,28 @@ Proof. intros x y. rew (uniform_separated_iff (f x) _), <-all_adj; intros V.
   pose proof (ufm_continuity f V) as [U PU]. rew <-(PU _ _). apply near_refl_alt.
 Qed.
 
-Import tensor_map_notation.
 Lemma uniformly_continuous_alt@{u} `{@UniformSpace@{u} X Φ} `{@UniformSpace@{u} Y Ψ} (f:X ⇾ Y)
-  : UniformlyContinuous f ↔ (∀ V:Ψ, ⟨f, f⟩* V ∊ Φ).
+  : UniformlyContinuous f ↔ (∀ V:Ψ, f♯ V ∊ Φ).
 Proof. split.
 + intros ? V. pose proof ufm_continuity f V as [U' PU'].
   apply (up_closed Φ U' _); try exact _.
   intros [x y]. apply PU'.
 + intros P. split; try exact _. intros V. specialize (P V).
-  now exists (to_subset (⟨f, f⟩* V)).
+  now exists (to_subset (f♯ V)).
 Qed.
 
 
-Local Instance ufm_preimage_maps_to `{H:@UniformlyContinuous X Y Φ Ψ f} : WeakMapsTo ⟨f, f⟩* Ψ Φ.
+Local Instance ufm_preimage_maps_to `{H:@UniformlyContinuous X Y Φ Ψ f} : WeakMapsTo f♯ Ψ Φ.
 Proof. intros V ?. rew (uniformly_continuous_alt f) in H. exact (H (to_subset V)). Qed.
 
-Definition ufm_preimage `{H:@UniformlyContinuous X Y Φ Ψ f} := restrict ⟨f, f⟩* Ψ Φ.
+Definition ufm_preimage `{H:@UniformlyContinuous X Y Φ Ψ f} := restrict f♯ Ψ Φ.
 Arguments ufm_preimage {_ _ _ _} f {_}.
 
-Lemma ufm_reflection_alt@{u} {X Y:set@{u}} (f:X ⇾ Y) `{H:@UniformReflection X Y Φ Ψ f} (U:Φ) : ∐ V:Ψ, ⟨f, f⟩* V ⊆ U.
+Lemma ufm_reflection_alt@{u} {X Y:set@{u}} (f:X ⇾ Y) `{H:@UniformReflection X Y Φ Ψ f} (U:Φ) : ∐ V:Ψ, f♯ V ⊆ U.
 Proof. pose proof (ufm_reflection f U) as [V PV]. exists V. intros [x y]. exact (PV x y). Qed.
 
 Lemma uniform_reflection_alt@{u} `{@UniformSpace@{u} X Φ} `{@UniformSpace@{u} Y Ψ} (f:X ⇾ Y)
-    : UniformReflection f ↔ (∀ U:Φ, ∐ V:Ψ, ⟨f, f⟩* V ⊆ U).
+    : UniformReflection f ↔ (∀ U:Φ, ∐ V:Ψ, f♯ V ⊆ U).
 Proof. split; [ apply ufm_reflection_alt |].
   intros P U. specialize (P U) as [V PV]. exists V. intros x y. exact (PV (x, y)).
 Qed.
@@ -786,7 +789,7 @@ Section image_thicken.
   Import thicken_notation.
 
   Lemma image_thicken_le@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} (f:X ⇾ Y)
-    (U:Φ) (V:Ψ) (K : 𝒫 X) : U ⊆ ⟨f,f⟩* V ⊸ f⁎ (U.[K]) ⊆ V.[f⁎ K].
+    (U:Φ) (V:Ψ) (K : 𝒫 X) : U ⊆ f♯ V ⊸ f⁎ (U.[K]) ⊆ V.[f⁎ K].
   Proof. change ( (∏ p, p ∊ U ⊸ ⟨f,f⟩ p ∊ V) ⊸
       ∏ z, (∐ y', f y' = z ⊠ (∐ k', k' ∊ K ⊠ (k', y') ∊ U)) ⊸ ∐ w, w ∊ f⁎ K ⊠ (w, z) ∊ V).
     rew <-all_adj; intros z. rew <-(aprod_adj _ _ _), aex_frob_l, <-aex_adj; intros y'.
@@ -803,7 +806,7 @@ Section image_thicken.
 
   (** Dually, thickened preimages land in preimages of thickenings. *)
   Lemma preimage_thicken_le@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} (f:X ⇾ Y)
-    (U:Φ) (V:Ψ) (B : 𝒫 Y) : U ⊆ ⟨f,f⟩* V ⊸ U.[f* B] ⊆ f* (V.[B]).
+    (U:Φ) (V:Ψ) (B : 𝒫 Y) : U ⊆ f♯ V ⊸ U.[f* B] ⊆ f* (V.[B]).
   Proof. change ( (∏ p, p ∊ U ⊸ ⟨f,f⟩ p ∊ V) ⊸
       ∏ y, (∐ x, f x ∊ B ⊠ (x, y) ∊ U) ⊸ ∐ w, w ∊ B ⊠ (w, f y) ∊ V).
     rew <-all_adj; intros y. rew <-(aprod_adj _ _ _), aex_frob_l, <-aex_adj; intros x.
@@ -820,7 +823,7 @@ Section image_thicken.
       land in thickenings ([ufm_reflection_alt] provides a certificate for
       every [U] when [f] is uniformly reflecting). *)
   Lemma preimage_thicken_image_le@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} (f:X ⇾ Y)
-    (U:Φ) (W:Ψ) (B : 𝒫 X) : ⟨f,f⟩* W ⊆ U ⊸ f* (W.[f⁎ B]) ⊆ U.[B].
+    (U:Φ) (W:Ψ) (B : 𝒫 X) : f♯ W ⊆ U ⊸ f* (W.[f⁎ B]) ⊆ U.[B].
   Proof. change ( (∏ p, ⟨f,f⟩ p ∊ W ⊸ p ∊ U) ⊸
       ∏ x, (∐ y', (∐ b, f b = y' ⊠ b ∊ B) ⊠ (y', f x) ∊ W) ⊸ ∐ b, b ∊ B ⊠ (b, x) ∊ U).
     rew <-all_adj; intros x. rew <-(aprod_adj _ _ _), aex_frob_l, <-aex_adj; intros y'.
@@ -881,6 +884,59 @@ Import thicken_notation.
 Lemma dense_image_preimage_unit@{u}  {X Y:set@{u}} `{@UniformSpace Y Ψ} (f:X ⇾ Y) `{!Dense f}
   (S:𝒫 Y) U : S ⊆ cl (f⁎ (f* U.[S])).
 Proof. now rew <-(dense_interior_closure_unit _ _), <-(thicken_sub_interior U _ _). Qed.
+
+(** The density unit, transported along a uniformly continuous map: a point
+    of [g* S] is a limit of points of the dense image whose [g]-values lie
+    near [S].  At [g = id] this is [dense_image_preimage_unit]. *)
+Lemma dense_image_preimage_unit_uc@{u} {X Y Z:set@{u}} `{@UniformSpace Y Ψ} {Ξ:Uniformity Z}
+  (ι:X ⇾ Y) `{!Dense ι} (g:Y ⇾ Z) `{!UniformlyContinuous g} (S:𝒫 Z) (V:Ξ)
+  : g* S ⊆ cl (ι⁎ ((g ∘ ι)* V.[S])).
+Proof. rew (dense_image_preimage_unit ι (g* S) (ufm_preimage g V)).
+  now rew (preimage_thicken_uc_le g V S).
+Qed.
+
+(** The reflection characterization [preimage_thicken_image_le], robust to
+    a closure on the image side: a small enough thickening of the closure
+    of an image pulls back into any prescribed thickening.  The uniform
+    counterpart of [reflection_preimage_closure]. *)
+Lemma ufm_reflection_thicken_closure@{u} {X Y:set@{u}} {Φ:Uniformity X} `{@UniformSpace Y Ψ}
+  (f:X ⇾ Y) `{!UniformReflection f} (A:𝒫 X) (W:Φ)
+  : ∐ V:Ψ, f* (V.[cl (f⁎ A)]) ⊆ W.[A].
+Proof. pose proof (ufm_reflection_alt f W) as [Z HZ].
+  pose proof (uniform_split_alt Z) as [V HV]. exists V.
+  rew (closure_sub_thicken V (f⁎ A)), (thicken_compose _ _ _), HV.
+  now rew <-(preimage_thicken_image_le f _ _ _).
+Qed.
+
+(** Along a dense, uniformly reflecting map, thickening the closure of an
+    image stays inside the closure of the image of a thickening:
+    [ufm_reflection_thicken_closure], pushed forward through the density
+    unit [dense_image_preimage_unit]. *)
+Lemma dense_ufm_reflection_thicken_closure@{u} {X Y:set@{u}} {Φ:Uniformity X} `{@UniformSpace Y Ψ}
+  (f:X ⇾ Y) `{!Dense f} `{!UniformReflection f} (A:𝒫 X) (W:Φ)
+  : ∐ V:Ψ, V.[cl (f⁎ A)] ⊆ cl (f⁎ W.[A]).
+Proof. pose proof (ufm_reflection_thicken_closure f A W) as [Z HZ].
+  pose proof (uniform_split_alt Z) as [V HV]. exists V.
+  rew (dense_image_preimage_unit f (V.[cl (f⁎ A)]) V).
+  rew (thicken_compose _ _ _), HV.
+  now rew HZ.
+Qed.
+
+(** For a commuting square [g ∘ ι = h ∘ k] with [ι] dense, [g] uniformly
+    continuous and [h] uniformly reflecting, the [g]-preimage of the closure
+    of an [h]-image is approximated from the dense image by points that [k]
+    sends near the original set: [dense_image_preimage_unit_uc] at the
+    witness of [ufm_reflection_thicken_closure]. *)
+Lemma dense_square_preimage_closure@{u} {X X' Y Z:set@{u}} {Φ':Uniformity X'}
+  `{@UniformSpace Y Ψ} `{@UniformSpace Z Ξ}
+  (ι:X ⇾ Y) `{!Dense ι} (g:Y ⇾ Z) `{!UniformlyContinuous g}
+  (h:X' ⇾ Z) `{!UniformReflection h} (k:X ⇾ X') (E : g ∘ ι = h ∘ k) (A:𝒫 X') (W:Φ')
+  : g* (cl (h⁎ A)) ⊆ cl (ι⁎ (k* W.[A])).
+Proof. pose proof (ufm_reflection_thicken_closure h A W) as [V HV].
+  rew (dense_image_preimage_unit_uc ι g (cl (h⁎ A)) V), E.
+  change (cl (ι⁎ (k* (h* V.[cl (h⁎ A)]))) ⊆ cl (ι⁎ (k* W.[A]))).
+  now rew HV.
+Qed.
 
 
 Lemma ufm_dense_image_closure_test@{u} {X Y:set@{u}} `{@UniformSpace Y Ψ} (f:X ⇾ Y) `{!Dense f}

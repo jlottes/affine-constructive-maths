@@ -117,7 +117,7 @@ Proof. split.
 Qed.
 #[global] Hint Extern 2 (CanonicalCompletion 𝐖𝐂𝐔𝐧𝐢𝐟) => simple notypeclasses refine wcunif_canonical_completion : typeclass_instances.
 
-(** (K3), by the dense-initial descent law. *)
+(** Preservation of initial maps, by the dense-initial descent law. *)
 Lemma wcunif_canonical_map_initial : CanonicalCompletionMapInitial 𝐖𝐂𝐔𝐧𝐢𝐟.
 Proof. apply (dense_initial_descent_map_ini 𝐖𝐂𝐔𝐧𝐢𝐟).
   intros S T V [??] [??] [??] f g HD Hf Hg HR.

@@ -274,27 +274,54 @@ Proof. intros [F G].
   now group_simplify.
 Qed.
 
-Lemma cauchy_entourage_split `{@UniformSpace X Φ} (U V:Φ) : V ∙ V ∙ V ≤ U ⊸ C X V ∙ C X V ≤ C X U.
-Proof. change (?a ≤ ?b) with (∏ p, p ∊ a ⊸ p ∊ b) at 2. rew <-all_adj; intros [F G].
-  change (V ∙ V ∙ V ≤ U ⊸ (∐ E:𝒞 X, (∏ (W:Φ), ∐ (A:F) (B:E), A ⊗ B ⊆ powerset_pt (W⁻¹ ∙ V ∙ W))
-                                  ⊠ (∏ (W:Φ), ∐ (A:E) (B:G), A ⊗ B ⊆ powerset_pt (W⁻¹ ∙ V ∙ W)) )
-     ⊸ ∏ (W:Φ), ∐ (A:F) (B:G), A ⊗ B ⊆ powerset_pt (W⁻¹ ∙ U ∙ W)).
-  rew <-(aprod_adj _ _ _), <-all_adj; intros W.
-  rew aex_frob_l, <-aex_adj; intros E.
-  pose proof uniform_split_sym V as [V'[EV' HV']].
-  pose (W' := V' ⊓ W). rew [(all_lb _ W')|(all_lb _ W')].
-  rew (cauchy_compose _ _ _ _ _).
-  rew aex_frob_l, <-aex_adj; intros A. rew aex_frob_l, <-aex_adj; intros B.
-  rew <-(aex_ub _ A), <-(aex_ub _ B).
-  enough (V ∙ V ∙ V ≤ U ⊸ W'⁻¹ ∙ V ∙ W' ∙ (W'⁻¹ ∙ V ∙ W') ≤ W⁻¹ ∙ U ∙ W ) as Q by
-    (rew Q, (aprod_com _ _); exact (transitivity (≤) _ _ _)).
-  pose proof meet_lb_l V' W : W' ≤ V' as H1. pose proof meet_lb_r V' W : W' ≤ W as H2.
-  rew H2 at 1 4. rew H1.
-  replc (W⁻¹ ∙ V ∙ V' ∙ (V'⁻¹ ∙ V ∙ W)) with (W⁻¹ ∙ (V ∙ (V' ∙ V'⁻¹) ∙ V) ∙ W) by now rew ?(associativity (∙) _ _ _).
-  rew EV', HV'.
-  let t := constr:(order_preserving (∙ W) (W⁻¹ ∙ (V∙V∙V)) (W⁻¹ ∙ U) : _ ⊸ W⁻¹ ∙ (V ∙ V ∙ V) ∙ W ≤ W⁻¹ ∙ U ∙ W ) in rew <-t.
-  let t := constr:(order_preserving (W⁻¹ ∙) (V∙V∙V) U) in exact t.
+(** Shared members put two Cauchy filters within the entourage. *)
+Lemma cauchy_entourage_members_aimpl `{@UniformSpace X Φ} (F G : 𝒞 X) (V:Φ) (A : F) (B : G)
+  : A ⊗ B ⊆ V ⊸ (F, G) ∊ C X V.
+Proof.
+  change (A ⊗ B ⊆ V ⊸ ∏ S : Φ, ∐ (A' : F) (B' : G), A' ⊗ B' ⊆ powerset_pt (S⁻¹ ∙ V ∙ S)).
+  rew <-all_adj; intros S. rew <-(aex_ub _ A), <-(aex_ub _ B).
+  now rew <-(ufm_compose_ub_l _ _), <-(ufm_compose_ub_r _ _).
 Qed.
+
+Lemma cauchy_entourage_members `{@UniformSpace X Φ} (F G : 𝒞 X) (V:Φ) (A : F) (B : G)
+  : A ⊗ B ⊆ V → (F, G) ∊ C X V.
+Proof. intros HAB. now rew <-(cauchy_entourage_members_aimpl F G V A B). Qed.
+
+(** Entourages compose up to an arbitrarily small fudge [W] in the middle. *)
+Lemma cauchy_entourage_compose_fudge `{@UniformSpace X Φ} (U V W : Φ)
+  : C X U ∙ C X V ≤ C X (U ∙ W ∙ V).
+Proof. intros [F G].
+  change ((∐ E:𝒞 X, (∏ (S:Φ), ∐ (A:F) (B:E), A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ U ∙ S))
+                   ⊠ (∏ (S:Φ), ∐ (A:E) (B:G), A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ V ∙ S)) )
+        ⊸ ∏ (S:Φ), ∐ (A:F) (B:G), A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ (U ∙ W ∙ V) ∙ S)).
+  rew <-all_adj; intros S.
+  rew <-aex_adj; intros E.
+  pose proof uniform_split_sym W as [W' [EW' HW']].
+  pose (S' := S ⊓ W'). rew [(all_lb _ S')|(all_lb _ S')].
+  rew (cauchy_compose _ _ _ _ _).
+  rew <-aex_adj; intros A. rew <-aex_adj; intros B.
+  rew <-(aex_ub _ A), <-(aex_ub _ B).
+  enough (S'⁻¹ ∙ U ∙ S' ∙ (S'⁻¹ ∙ V ∙ S') ≤ S⁻¹ ∙ (U ∙ W ∙ V) ∙ S) as Q by now rew <-Q.
+  pose proof meet_lb_l S W' : S' ≤ S as H1.
+  pose proof meet_lb_r S W' : S' ≤ W' as H2.
+  rew H1 at 1 4. rew H2, EW'.
+  replc (S⁻¹ ∙ U ∙ W' ∙ (W' ∙ V ∙ S)) with (S⁻¹ ∙ (U ∙ (W' ∙ W') ∙ V) ∙ S) by now rew ?(associativity (∙) _ _ _).
+  now rew HW'.
+Qed.
+
+Lemma cauchy_entourage_compose_gen_aimpl `{@UniformSpace X Φ} (U V W Z : Φ)
+  : U ∙ W ∙ V ≤ Z ⊸ C X U ∙ C X V ≤ C X Z.
+Proof. rew (order_preserving (C X) _ Z).
+  rew <-(transitivity (≤) (C X U ∙ C X V) (C X (U ∙ W ∙ V)) (C X Z)).
+  now rew (aprod_true_l (cauchy_entourage_compose_fudge U V W)).
+Qed.
+
+Lemma cauchy_entourage_compose_gen `{@UniformSpace X Φ} (U V W Z : Φ) (HZ : U ∙ W ∙ V ≤ Z)
+  : C X U ∙ C X V ≤ C X Z.
+Proof. now rew <-(cauchy_entourage_compose_gen_aimpl U V W Z). Qed.
+
+Lemma cauchy_entourage_split `{@UniformSpace X Φ} (U V:Φ) : V ∙ V ∙ V ≤ U ⊸ C X V ∙ C X V ≤ C X U.
+Proof. exact (cauchy_entourage_compose_gen_aimpl V V V U). Qed. 
 
 Lemma cauchy_entourage_split_alt `{@UniformSpace X Φ} (U:Φ) : ∐ (V:Φ), C X V ∙ C X V ≤ C X U.
 Proof. pose proof uniform_split_sym3 U as [V[EV HV]]. exists V. now rew <-(cauchy_entourage_split _ _). Qed.
@@ -480,6 +507,46 @@ Proof. rew uniform_closure_applied2. intros U.
   pose proof to_cauchy_eq_ball x F E U as elU.
   pose (M := to_subset (U:=F) (near U x) ⊓ A : F).
   change (∐ y, y ∊ M). pose proof (inhabited M) as [y _]. now exists (subset_pt y).
+Qed.
+
+(** The ball form: a Cauchy filter [V]-close to [η X x] contains every
+    [S]-fuzzed [V]-ball around [x]. *)
+Lemma to_cauchy_near_ball `{@UniformSpace X Φ} (x : X) (F : 𝒞 X) (V S : Φ)
+  : (η X x, F) ∊ C X V ⊸ near (S⁻¹ ∙ V ∙ S) x ∊ F.
+Proof.
+  change ((∏ S':Φ, ∐ (A : η X x) (B : F), A ⊗ B ⊆ powerset_pt (S'⁻¹ ∙ V ∙ S')) ⊸ near (S⁻¹ ∙ V ∙ S) x ∊ F).
+  rew (all_lb _ S). rew <-aex_adj; intros A. rew <-aex_adj; intros B.
+  pose proof subset_pt_is_el A : x ∊ A as elxA.
+  enough (A ⊗ B ⊆ powerset_pt (S⁻¹ ∙ V ∙ S) ⊸ B ⊆ near (S⁻¹ ∙ V ∙ S) x) as E by (rew E; now apply up_closed_alt).
+  change (?a ≤ ?b) with (∏ p, p ∊ a ⊸ p ∊ b). rew <-all_adj; intros b. rew (all_lb _ (x, b)).
+  change ( (x,b) ∊ A ⊗ B ) with (x ∊ A ⊠ b ∊ B).
+  now rew (aprod_true_l elxA).
+Qed.
+
+(** The set form: a Cauchy filter in the closure of the image of [A]
+    contains every thickening of [A]. *)
+Lemma to_cauchy_closure_thicken `{@UniformSpace X Φ} (A : 𝒫 X) (W : Φ) (F : 𝒞 X)
+  : F ∊ closure ((η X)⁎ A) ⊸ W.[A] ∊ F.
+Proof.
+  pose proof (uniform_split_sym3 W) as [V [EV HV]].
+  rew (closure_sub_thicken (C X V) _).
+  change ((∐ G, G ∊ (η X)⁎ A ⊠ (G, F) ∊ C X V) ⊸ W.[A] ∊ F).
+  rew (aex_image (η X) A set:(λ G : 𝒞 X, (G, F) ∊ C X V)).
+  rew <-aex_adj; intros x; change (x ∊ A ⊠ (η X x, F) ∊ C X V ⊸ W.[A] ∊ F).
+  rew (to_cauchy_near_ball x F V V), EV, HV.
+  rew (near_sub_thicken W A x), (aprod_adj _ _ _). exact (up_closed _ _ _).
+Qed.
+
+(** Conversely, a Cauchy filter lies in the closure of the image of each of
+    its members. *)
+Lemma to_cauchy_member_closure `{@UniformSpace X Φ} (F : 𝒞 X) (A : F)
+  : F ∊ closure ((η X)⁎ A).
+Proof. rew uniform_basis_closure_applied2. intros U.
+  pose proof cauchy_alt F U as [B PB].
+  pose proof inhabited (B ⊓ A : F) as [x _].
+  pose proof (subset_pt_is_el x : subset_pt x ∊ B ∧ subset_pt x ∊ A) as [HxB HxA].
+  exists (η X x). rew <-(image_el _ _ _). split; trivial.
+  exact (cauchy_basis_near_member_r F U B HxB PB).
 Qed.
 
 (** Basis-closeness of two principal filters reflects to closeness of the

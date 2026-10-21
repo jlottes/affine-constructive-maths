@@ -78,7 +78,7 @@ Proof. split.
 Qed.
 #[global] Hint Extern 2 (CanonicalCompletion 𝐔𝐧𝐢𝐟) => simple notypeclasses refine unif_canonical_completion : typeclass_instances.
 
-(** (K3), by the dense-initial descent law. *)
+(** Preservation of initial maps, by the dense-initial descent law. *)
 Lemma unif_canonical_map_initial : CanonicalCompletionMapInitial 𝐔𝐧𝐢𝐟.
 Proof. apply (dense_initial_descent_map_ini 𝐔𝐧𝐢𝐟).
   intros S T V FS FT FV f g HD Hf Hg HR. exact (ufm_dense_initial f g).

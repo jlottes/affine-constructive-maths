@@ -35,6 +35,13 @@ Class UniformlyOpenBornology X {Φ:Uniformity X} {𝒜:Bornology X} : SProp :=
   wcunif_thicken (A:𝒜) : ∐ (U:Φ), U.[powerset_pt A] ∊ 𝒜.
 Arguments wcunif_thicken X {_ _ _} A.
 
+(** Closures of bounded sets are bounded: the bornology has a base of
+    closed sets.  Topological; no uniformity involved. *)
+Class ClosedBornology X {N:Neighborhood X} {𝒜:Bornology X} : SProp :=
+  born_closure_bounded (A:𝒜) : closure (powerset_pt A) ∊ 𝒜.
+Arguments born_closure_bounded X {_ _ _} A.
+#[global] Hint Extern 4 (apos (func_op closure (powerset_pt _) ∊ _)) => simple notypeclasses refine (born_closure_bounded _ _) : typeclass_instances.
+
 Record WCUnifSpace  X {Φ:Uniformity X} {𝒜:Bornology X} : SProp :=
 { #[canonical=no, reversible=no] wcunif_unif_born :> UnifBornSpace X
 ; #[canonical=no, reversible=no] wcunif_unif_open_born :> UniformlyOpenBornology X

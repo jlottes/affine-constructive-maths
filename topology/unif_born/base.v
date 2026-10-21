@@ -6,7 +6,7 @@ Require Import interfaces.orders interfaces.subset.
 Require Import interfaces.unif_born interfaces.reflection_pair.
 Require Import theory.set orders.orders orders.maps orders.subset orders.closure orders.filters.
 Require Import orders.subset_images.
-Require Import topology.topology uniform.base uniform.basis bornology.base bornology.basis.
+Require Import topology.topology topology.interior uniform.base uniform.basis bornology.base bornology.basis.
 Require Import reflection_pair.base.
 Require Import easy rewrite simplify tactics.misc.
 
@@ -391,3 +391,44 @@ Proof. split; [ now split |]. intros A.
   now rew (aex_image f A set:(λ y, (y, f x') ∊ W)).
 Qed.
 
+
+(** ** Closed bornology.  The thickening axiom makes the bornology closed:
+    the closure of a set lies in each of its thickenings. *)
+Lemma unif_open_closed_born `{@UnifBornSpace X Φ 𝒜} `{!UniformlyOpenBornology X} : ClosedBornology X.
+Proof. intros K. pose proof (wcunif_thicken X K) as [U HU].
+  now rew (closure_sub_thicken U K).
+Qed.
+
+(** A bornology presented by closed sets is closed.  The converse, in basis
+    form, is [closed_born_basis]. *)
+Lemma closed_presentation_closed_born `{@Topology X NX} {𝒜:Bornology X} {Λ:Type} (β : Λ → 𝒫 X)
+  {HB:BornologyPresentation X β} (Hβ : ∀ i, closed (β i)) : ClosedBornology X.
+Proof. intros A. pose proof bornology_basis A as [i Hi]; change (apos (powerset_pt A ⊆ β i)) in Hi.
+  rew (ideal_presentation 𝒜 β _). exists i. now rew <-(Hβ i), Hi.
+Qed.
+
+Local Instance born_closure_mapsto `{@ClosedBornology X N 𝒜} : WeakMapsTo closure 𝒜 𝒜.
+Proof. intros A ?. exact (born_closure_bounded X (to_subset A)). Qed.
+
+Definition born_closure `{@ClosedBornology X N 𝒜} : 𝒜 ⇾ 𝒜 := restrict closure 𝒜 𝒜.
+Arguments born_closure {_ _ _ _}.
+
+(** The converse of [closed_presentation_closed_born]: the closures of the
+    bounded sets form a basis of a closed bornology. *)
+Lemma closed_born_basis `{@Topology X NX} {𝒜:Bornology X} `{!ClosedBornology X} : BornologyBasis (born_closure (X:=X)).
+Proof. apply Build_IdealBasis. intros A. exists A. exact (subset_closure _). Qed.
+
+Coercion wcunif_closed_born `{@WCUnifSpace X Φ 𝒜} : ClosedBornology X := unif_open_closed_born.
+
+#[global] Hint Extern 10 (ClosedBornology ?Y) =>
+  match goal with
+  | H : WCUnifMorphism (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : WCUnifReflecting (Y:=Y) _ |- _ => exact (wcunif_rfl_Y _ H)
+  | H : WCUnifInitial (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : WCUnifEmbedding (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  | H : GlobalWCUnifMorphism (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifReflecting (Y:=Y) _ |- _ => exact (gbl_wcunif_rfl_Y _ H)
+  | H : GlobalWCUnifInitial (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : GlobalWCUnifEmbedding (Y:=Y) _ |- _ => exact (gbl_wcunif_mor_Y _ H)
+  | H : LocalCompletion (Y:=Y) _ |- _ => exact (wcunif_mor_Y _ H)
+  end : typeclass_instances.

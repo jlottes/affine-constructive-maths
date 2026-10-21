@@ -40,29 +40,32 @@ Local Abbreviation β := from_trapped.
 Local Abbreviation 𝒯₁ := trapped_map.
 
 (** Local classes of [τ]: the global battery is in [trapped_cauchy], which does not see the
-    global-to-local coercions of [local_maps]. *)
-#[global] Hint Extern 2 (WCUnifInitial              (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifMorphism             (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifReflecting           (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornInitial     (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBorn            (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUnifBornReflecting  (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyContinuous (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
-#[global] Hint Extern 2 (LocallyUniformlyReflecting (τ _)) => simple notypeclasses refine to_trapped_initial : typeclass_instances.
+    global-to-local coercions of [local_maps].  The local morphism classes hold outright;
+    the reflecting side needs a closed bornology, and the WCUnif classes the WC objects,
+    both supplied by well containment. *)
+#[global] Hint Extern 2 (LocallyUnifBorn            (τ _)) => simple notypeclasses refine to_trapped_unif_born : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyContinuous (τ _)) => simple notypeclasses refine to_trapped_unif_born : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism             (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial              (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornInitial     (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUnifBornReflecting  (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
+#[global] Hint Extern 2 (LocallyUniformlyReflecting (τ _)) => simple notypeclasses refine to_trapped_wc_initial : typeclass_instances.
 
-(** Local classes of [𝒯₁] and [trapped_reflect], likewise. *)
-#[global] Hint Extern 2 (WCUnifMorphism             (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
+(** Local classes of [𝒯₁] and [trapped_reflect], likewise: the WCUnif classes from the
+    [GlobalWCUnif] lemmas, the local classes from the weaker-hypothesis ones. *)
+#[global] Hint Extern 2 (WCUnifMorphism             (trapped_map ?f)) => simple notypeclasses refine (trapped_map_wcunif_mor (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBorn            (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_map ?f)) => simple notypeclasses refine (trapped_map_unif_born (f:=f)) : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifEmbedding            (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifInitial              (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
-#[global] Hint Extern 2 (WCUnifReflecting           (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifEmbedding            (trapped_map ?f)) => simple notypeclasses refine (trapped_map_wc_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifInitial              (trapped_map ?f)) => simple notypeclasses refine (trapped_map_wc_emb (f:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifReflecting           (trapped_map ?f)) => simple notypeclasses refine (trapped_map_wc_emb (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBornEmbedding   (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBornInitial     (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBornReflecting  (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUniformlyReflecting (trapped_map ?f)) => simple notypeclasses refine (trapped_map_emb (f:=f)) : typeclass_instances.
 
-#[global] Hint Extern 2 (WCUnifMorphism             (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
+#[global] Hint Extern 2 (WCUnifMorphism             (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_wc_mor (ι:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUnifBorn            (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (LocallyUniformlyContinuous (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_bornological (ι:=f)) : typeclass_instances.
 #[global] Hint Extern 2 (WCUnifEmbedding            (trapped_reflect ?f)) => simple notypeclasses refine (trapped_reflect_emb (ι:=f)) : typeclass_instances.
