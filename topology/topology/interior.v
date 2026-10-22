@@ -82,8 +82,7 @@ Section closure.
 
   Definition subset_closure U : U ⊆ cl U.
   Proof. rew <-(order_reflecting_flip complement _ _).
-    change ((int (U ᗮ) ) ᗮ ᗮ ⊆ U ᗮ).
-    rew (involutive_alt complement _).
+    change (int (U ᗮ)  ⊆ U ᗮ).
     exact (interior_subset _).
   Qed.
 
@@ -98,8 +97,7 @@ Section closure.
 
   Lemma closure_union U V : cl (U ⊔ V) ⊆ mult_union (cl U, cl V).
   Proof. rew <-(order_reflecting_flip complement _ _).
-    change (cl ?U) with ( (int (U ᗮ) ) ᗮ ).
-    rew (involutive_alt complement _).
+    change ((mult_union ((int U ᗮ) ᗮ, (int V ᗮ) ᗮ)) ᗮ ⊆ int (U ⊔ V) ᗮ).
     rew (preserves_join_flip complement U V).
     rew <-(interior_intersection _ _).
     set (A := int U ᗮ). set (B := int V ᗮ).
@@ -107,8 +105,7 @@ Section closure.
   Qed.
 
   Lemma closure_idempotent : Idempotent cl.
-  Proof. change (complement ∘ int ∘ (complement ∘ complement) ∘ int ∘ complement = cl).
-    rew (involutive complement). change (complement ∘ (int ∘ int) ∘ complement = cl).
+  Proof. change (complement ∘ (int ∘ int) ∘ complement = cl).
     now rew (idempotent int).
   Qed.
 

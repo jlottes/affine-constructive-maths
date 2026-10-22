@@ -223,10 +223,7 @@ Qed.
 #[global] Hint Extern 2 (ContinuouslyReflecting    (𝒯ₗ _)) => simple notypeclasses refine wc_trapped_map_initial : typeclass_instances.
 
 Lemma wc_trapped_map_gbl@{u} `{@GlobalWCUnifMorphism@{u} X Y Φ Ψ 𝒜 ℬ f} : 𝒯ₗ f = 𝒯₁ f.
-Proof. rew <-(cont_dense_epi (𝒯ₗ f) (𝒯₁ f) (τ X)).
-  now rew (wc_trapped_map_unit f), trapped_map_unit.
-Qed. 
-
+Proof. refl. Qed.
 
 (** ** The reflection. *)
 
