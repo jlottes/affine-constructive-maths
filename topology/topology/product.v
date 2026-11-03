@@ -317,25 +317,15 @@ Section tensor_map.
   #[local] Hint Extern 2 (Continuous ⟨_, _⟩) => simple notypeclasses refine tensor_map_cont : typeclass_instances.
 
   Lemma tensor_map_reflecting `{!ContinuouslyReflecting f, !ContinuouslyReflecting g} : ContinuouslyReflecting ⟨f, g⟩.
-  Proof. apply refl_by_basis. intros [x₁ x₂] [A B].
-    change ( x₁ ⪽ A ⊠ x₂ ⪽ B ⊸ ∐ j : (𝒫 Y₁ ⊗ 𝒫 Y₂)%set, ⟨ f, g ⟩ (x₁, x₂) ∊ tsr_basis NY₁ NY₂ j ⊠ ⟨ f, g ⟩* (tsr_basis NY₁ NY₂ j) ⊆ tsr_basis NX₁ NX₂ (A, B) ).
+  Proof. apply refl_by_basis_dom. intros [x₁ x₂] [A B].
+    enough (tsr_basis NY₁ NY₂ (∀.[f] (interior A), ∀.[g] (interior B)) ⊆ ∀.[⟨f, g⟩] (tsr_basis NX₁ NX₂ (A, B))) as E.
+  + rew <-E, <-(neighborhood_basis_open (NB:=TPNY) (_, _) (⟨f, g⟩ (x₁, x₂))).
+    change (x₁ ⪽ A ⊠ x₂ ⪽ B ⊸ f x₁ ⪽ ∀.[f] (interior A) ⊠ g x₂ ⪽ ∀.[g] (interior B)).
     rew [(top_trans x₁ A)|(top_trans x₂ B)].
-    rew [(cont_reflection f x₁ { y₁ : X₁ | y₁ ⪽ A })|(cont_reflection g x₂ { y₂ : X₂ | y₂ ⪽ B })].
-    rew <-aex_adj2; intros V₁ V₂.
-    rew <-(aex_ub _ (V₁, V₂)).
-    enough ( f* V₁ ⊆ { y₁ : X₁ | y₁ ⪽ A } ⊠ g* V₂ ⊆ { y₂ : X₂ | y₂ ⪽ B } ⊸ ⟨ f, g ⟩* (tsr_basis NY₁ NY₂ (V₁, V₂)) ⊆ tsr_basis NX₁ NX₂ (A, B) ) as Einc.
-  + rew <-Einc.
-    change ( (f x₁ ⪽ V₁ ⊠ f* V₁ ⊆ { y₁ : X₁ | y₁ ⪽ A }) ⊠ (g x₂ ⪽ V₂ ⊠ g* V₂ ⊆ { y₂ : X₂ | y₂ ⪽ B }) ⊸ (f x₁ ⪽ V₁ ⊠ g x₂ ⪽ V₂) ⊠ (f* V₁ ⊆ { y₁ : X₁ | y₁ ⪽ A } ⊠ g* V₂ ⊆ { y₂ : X₂ | y₂ ⪽ B }) ).
-    now rew (aprod_medial _ _ _ _).
-  + clear x₁ x₂.
-    change ( f* V₁ ⊆ { y₁ : X₁ | y₁ ⪽ A } ⊠ g* V₂ ⊆ { y₂ : X₂ | y₂ ⪽ B } ⊸ ∏ p : (X₁ ⊗ X₂)%set, p ∊ ⟨ f, g ⟩* (tsr_basis NY₁ NY₂ (V₁, V₂)) ⊸ p ∊ tsr_basis NX₁ NX₂ (A, B) ).
-    rew <-all_adj; intros [x₁ x₂].
-    change ( f* V₁ ⊆ { y₁ : X₁ | y₁ ⪽ A } ⊠ g* V₂ ⊆ { y₂ : X₂ | y₂ ⪽ B } ⊸ (f x₁ ⪽ V₁ ⊠ g x₂ ⪽ V₂) ⊸ x₁ ⪽ A ⊠ x₂ ⪽ B ).
-    rew [(top_refl (f x₁) V₁)|(top_refl (g x₂) V₂)].
-    rew <-(aprod_adj _ _ _), (aprod_medial _ _ _ _).
-    apply aprod_proper_aimpl.
-    * rew (aprod_com _ _). exact (subset_apply x₁ (f* V₁) { y₁ : X₁ | y₁ ⪽ A }).
-    * rew (aprod_com _ _). exact (subset_apply x₂ (g* V₂) { y₂ : X₂ | y₂ ⪽ B }).
+    now rew [(cont_reflection f x₁ _)|(cont_reflection g x₂ _)].
+  + change (interior (∀.[f] (interior A)) ⊗ interior (∀.[g] (interior B)) ⊆ ∀.[⟨f, g⟩] (interior A ⊗ interior B)).
+    rew [(interior_subset (∀.[f] (interior A)))|(interior_subset (∀.[g] (interior B)))].
+    exact (universal_image_tensor_map f g _ _).
   Qed.
 
   #[local] Hint Extern 2 (ContinuouslyReflecting ⟨_, _⟩) => simple notypeclasses refine tensor_map_reflecting : typeclass_instances.
@@ -550,6 +540,68 @@ Section closure_compose_thicken.
     : id_rel Y ⊆ int S → cl A ⋄ cl B  ⊆  cl (A ⋄ S ⋄ B).
   Proof. now rew closure_compose_thicken. Qed.
 End closure_compose_thicken.
+
+(** The mirror image: interiors on the flanks and a band whose closure
+    contains the diagonal in the middle.  Where [closure_compose_thicken]
+    thickens the junction of two closures by an open band, here the junction
+    of two interiors is filled from a dense band: the midpoint can be moved
+    to a point of [S] without leaving the interiors.  The pointwise core is
+    fully affine.  The packaged forms take the band hypothesis either
+    affinely, mirroring [closure_compose_thicken], or positively, which is
+    all that density supplies: a dense map puts [(y, y)] in the closure of the
+    image of the diagonal, but refuting that membership does not refute
+    [y = y]. *)
+Section interior_compose_dense.
+  Universes u.
+  Context 
+   `{@Topology@{u} X NX, @Topology@{u} Y NY, @Topology@{u} Z NZ}
+   `{!TensorProductNeighborhood NX NY NXY}
+   `{!TensorProductNeighborhood NY NZ NYZ}
+   `{!TensorProductNeighborhood NX NZ NXZ}
+   `{!TensorProductNeighborhood NY NY NYY}
+   (A : 𝒫 (X ⊗ Y)) (S : 𝒫 (Y ⊗ Y)) (B : 𝒫 (Y ⊗ Z)).
+
+  Lemma interior_compose_dense_pt (a:X) (b:Y) (c:Z)
+    : (b, b) ∊ cl S ⊠ ((a, b) ⪽ A ⊠ (b, c) ⪽ B) ⊸ (a, c) ∊ A ⋄ S ⋄ B.
+  Proof.
+    rew [(neighborhood_basis_find (a, b) A) | (neighborhood_basis_find (b, c) B)].
+    rew aex_frob_l, aex_frob_l, <-aex_adj; intros [Q N₂].
+    rew aex_frob_r, aex_frob_l, <-aex_adj; intros [N₁ P].
+    change ((?a, ?b) ∊ τ (?A, ?B)) with (a ⪽ A ⊠ b ⪽ B).
+    enough ( ((b, b) ∊ closure S ⊠ (b ⪽ P ⊠ b ⪽ Q)) ⊠ (a ⪽ N₁ ⊠ τ (N₁, P) ⊆ A) ⊠ (c ⪽ N₂ ⊠ τ (Q, N₂) ⊆ B)
+             ⊸ (a, c) ∊ A ⋄ S ⋄ B ) as G by (revert G; tautological).
+    change (b ⪽ P ⊠ b ⪽ Q) with ((b, b) ∊ τ (P, Q)).
+    rew (neighborhood_basis_open (P, Q) (b, b) : (b, b) ∊ τ (P, Q) ⊸ (b, b) ⪽ τ (P, Q)).
+    rew (closure_meets S (τ (P, Q)) (b, b)).
+    rew aex_frob_r, <-aex_adj; intros [b' b''].
+    change ((b', b'') ∊ τ (P, Q)) with (b' ⪽ P ⊠ b'' ⪽ Q).
+    change ((a, c) ∊ A ⋄ S ⋄ B) with (∐ m, (a, m) ∊ A ⋄ S ⊠ (m, c) ∊ B). rew <-(aex_ub _ b'').
+    change ((a, b'') ∊ A ⋄ S) with (∐ m, (a, m) ∊ A ⊠ (m, b'') ∊ S). rew <-(aex_ub _ b').
+    rew [<-(subset_apply (a, b') (τ (N₁, P)) A) | <-(subset_apply (b'', c) (τ (Q, N₂)) B)].
+    change ((?a, ?b) ∊ τ (?A, ?B)) with (a ⪽ A ⊠ b ⪽ B).
+    tautological.
+  Qed.
+
+  Lemma interior_compose_dense
+    : id_rel Y ⊆ cl S ⊸ int A ⋄ int B  ⊆  A ⋄ S ⋄ B.
+  Proof.
+    change (id_rel Y ⊆ closure S ⊸ ∏ p, p ∊ (interior A ⋄ interior B) ⊸ p ∊ A ⋄ S ⋄ B).
+    rew <-all_adj; intros [a c]. rew <-(aprod_adj _ _ _).
+    change ( id_rel Y ⊆ closure S ⊠ (∐ b, (a, b) ⪽ A ⊠ (b, c) ⪽ B) ⊸ (a, c) ∊ A ⋄ S ⋄ B ).
+    rew aex_frob_l, <-aex_adj; intros b.
+    change (id_rel Y ⊆ closure S) with (∏ p, p ∊ id_rel Y ⊸ p ∊ closure S); rew (all_lb _ (b, b)).
+    change ((b, b) ∊ id_rel Y) with (b = b); let t := constr:(ltac:(refl):b = b) in rew (aimpl_true_l t).
+    exact (interior_compose_dense_pt a b c).
+  Qed.
+
+  Lemma interior_compose_dense_pos (HS : ∀ y, (y, y) ∊ cl S)
+    : int A ⋄ int B  ⊆  A ⋄ S ⋄ B.
+  Proof. intros [a c].
+    change ((∐ b, (a, b) ⪽ A ⊠ (b, c) ⪽ B) ⊸ (a, c) ∊ A ⋄ S ⋄ B).
+    rew <-aex_adj; intros b.
+    pose proof (interior_compose_dense_pt a b c) as G. now rew (aprod_true_l (HS b)) in G.
+  Qed.
+End interior_compose_dense.
 
 
 (** The interior-side companion: relational composition is lax for interiors

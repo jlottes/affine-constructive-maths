@@ -17,6 +17,7 @@ Import image_notation.
 Import tensor_map_notation.
 
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
+Local Notation "f ♮" := (∀.[func_op ⟨f,f⟩]) (at level 1, left associativity, format "f ♮").
 
 Definition presented_uniformity@{u} {X:set@{u}} {Λ:Type@{u}} (β:Λ → 𝒫 (X ⊗ X)) : Uniformity@{u} X
   := presented_filter β.
@@ -328,11 +329,18 @@ Section indiscrete_uniformity.
   (** Every map into an indiscretely-uniform space is uniformly continuous. *)
   Lemma indiscrete_ufm_cont `{@UniformSpace@{u} Y Ψ} (f:Y ⇾ X) : UniformlyContinuous f.
   Proof. apply uniformly_continuous_alt. intros U. rew (indiscrete_entourage U).
-    change (⟨f,f⟩* ⊤ ∊ Ψ). now rew (preserves_top _).
+    change (f♯ ⊤ ∊ Ψ). now rew (preserves_top _).
+  Qed.
+
+  (** Dually, every map out of an indiscretely-uniform space is uniformly reflecting. *)
+  Lemma indiscrete_ufm_refl `{@UniformSpace@{u} Y Ψ} (f:X ⇾ Y) : UniformlyReflecting f.
+  Proof. apply uniformly_reflecting_alt. intros U. rew (indiscrete_entourage U).
+    change (f♮ ⊤ ∊ Ψ). now rew (preserves_top _).
   Qed.
 End indiscrete_uniformity.
 #[global] Hint Extern 2 (Indiscrete (UniformNeighborhood _)) => simple notypeclasses refine indiscrete_uniformity_nbrhood : typeclass_instances.
-#[global] Hint Extern 2 (UniformlyContinuous (Φ:=indiscrete_uniformity _) _) => simple notypeclasses refine (indiscrete_ufm_cont _) : typeclass_instances.
+#[global] Hint Extern 2 (UniformlyContinuous (Ψ:=indiscrete_uniformity _) _) => simple notypeclasses refine (indiscrete_ufm_cont _) : typeclass_instances.
+#[global] Hint Extern 2 (UniformlyReflecting (Φ:=indiscrete_uniformity _) _) => simple notypeclasses refine (indiscrete_ufm_refl _) : typeclass_instances.
 
 (** Initial object *)
 
@@ -358,10 +366,33 @@ Section unit.
     rew <-(equal_element _ ⊤ W), (aprod_true_r filter_top).
     rew (above_top _). now apply symmetry.
   Qed.
+
+  Local Instance unit_uniform_discrete : DiscreteUniformity Ψ.
+  Proof. split; try exact _. intros W. split.
+  + rew <-(aex_ub _ tt). now rew (uniform_refl W).
+  + rew <-aex_adj; intros []. change (⊤ ≤ W ⊸ W ∊ Ψ).
+    now apply up_closed_alt.
+  Qed.
+  
+  Lemma from_unit_emb `{@UniformSpace X Φ} (f:𝟏 ⇾ X) : UniformlyEmbedding f.
+  Proof. do 2 (split; try exact _).
+  + exact (discrete_ufm_cont _).
+  + exact (indiscrete_ufm_refl _).
+  Qed.
 End unit.
 #[global] Hint Extern 2 (@IndiscreteUniformity 𝟏 _) => simple notypeclasses refine unit_uniform_indiscrete : typeclass_instances.
 #[global] Hint Extern 2 (@UniformityBasis 𝟏 _ _ _) => simple notypeclasses refine indiscrete_ufm_basis_correct : typeclass_instances.
 #[global] Hint Extern 2 (UniformlyContinuous (Y:=𝟏) _) => simple notypeclasses refine (indiscrete_ufm_cont _) : typeclass_instances.
+(** Guarded against the syntactic [discrete_uniformity 𝟏], whose own hint
+    [discrete_uniformity_correct] applies; otherwise [UniformSpace 𝟏] and
+    [DiscreteUniformity (discrete_uniformity 𝟏)] would ask for each other. *)
+#[global] Hint Extern 2 (@DiscreteUniformity 𝟏 ?Ψ) =>
+  lazymatch Ψ with discrete_uniformity _ => fail | _ => simple notypeclasses refine unit_uniform_discrete end : typeclass_instances.
+(** Global points [𝟏 ⇾ X] are uniform embeddings, with the battery for each coercion target. *)
+#[global] Hint Extern 2 (UniformlyEmbedding (X:=𝟏) _) => simple notypeclasses refine (from_unit_emb _) : typeclass_instances.
+#[global] Hint Extern 2 (UniformlyInitial (X:=𝟏) _) => simple notypeclasses refine (from_unit_emb _) : typeclass_instances.
+#[global] Hint Extern 2 (UniformlyContinuous (X:=𝟏) _) => simple notypeclasses refine (from_unit_emb _) : typeclass_instances.
+#[global] Hint Extern 2 (UniformlyReflecting (X:=𝟏) _) => simple notypeclasses refine (from_unit_emb _) : typeclass_instances.
 
 (** Constant maps — in particular global points [𝟏 ⇾ X] — are uniformly continuous. *)
 

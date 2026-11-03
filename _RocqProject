@@ -60,6 +60,7 @@ tactics/rewrite/replc.v
 tactics/quote/base.v
 tactics/quote/rewrite_preserves.v
 tactics/quote/vars.v
+tactics/quote/onepass.v
 tactics/simplify/aprop.v
 tactics/simplify/base.v
 tactics/simplify/simplify.v
@@ -159,7 +160,6 @@ topology/unif_born/trapped_cauchy.v
 topology/unif_born/trapped_wc.v
 topology/unif_born/open_immersion_complete.v
 counterexamples/cartesian_product.v
-topology/uniform/quotient.v
 topology/uniform/subspace.v
 topology/uniform/factorization.v
 topology/unif_born/subspace.v

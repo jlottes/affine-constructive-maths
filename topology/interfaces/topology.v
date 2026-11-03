@@ -53,7 +53,7 @@ Existing Class Continuous.
 Arguments continuity {X Y _ _} f {_} x N.
 
 Class ContinuousReflection@{u} {X Y:set@{u}} {XN:Neighborhood X} {YN:Neighborhood Y} (f:X ⇾ Y) : SProp :=
-  cont_reflection x U : x ⪽ U ⊸ ∐ V, f x ⪽ V ⊠ f* V ⊆ U.
+  cont_reflection x U : x ⪽ U ⊸ f x ⪽ ∀.[f] U.
 Arguments cont_reflection {X Y _ _} f {_} x U.
 
 Record ContinuouslyReflecting@{u} {X Y:set@{u}} {XN:Neighborhood X} {YN:Neighborhood Y} (f:X ⇾ Y) : SProp :=

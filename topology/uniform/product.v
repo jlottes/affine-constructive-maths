@@ -28,6 +28,7 @@ Local Abbreviation π₂ := (prod_proj2 _ _).
 Local Abbreviation m := (tensor_medial _ _ _ _).
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
 Local Notation "f ♭" := ((func_op ⟨f,f⟩)⁎) (at level 1, left associativity, format "f ♭").
+Local Notation "f ♮" := (∀.[func_op ⟨f,f⟩]) (at level 1, left associativity, format "f ♮").
 
 (** Canonical product uniformities *)
 
@@ -199,12 +200,12 @@ Proof. now change (prod_map (f, g)) with (to_prod (f ∘ prod_proj1 X₁ X₂, g
 Lemma prod_map_ufm_refl@{u} `{@UniformlyReflecting@{u} X₁ Y₁ Φ₁ Ψ₁ f} `{@UniformlyReflecting@{u} X₂ Y₂ Φ₂ Ψ₂ g}
   `{@CartesianProductUniformity X₁ X₂ Φ₁ Φ₂ Φ} `{@CartesianProductUniformity Y₁ Y₂ Ψ₁ Ψ₂ Ψ}
   : UniformlyReflecting (prod_map (f, g)).
-Proof. apply ufm_refl_by_basis. intros [U₁ U₂].
-  pose proof ufm_reflection f U₁ as [V₁ PV₁].
-  pose proof ufm_reflection g U₂ as [V₂ PV₂].
-  exists (V₁, V₂). intros [x₁ x₂][y₁ y₂].
-  change ( near V₁ (f x₁) (f y₁) ∧ near V₂ (g x₂) (g y₂) ⊸ near U₁ x₁ y₁ ∧ near U₂ x₂ y₂ ).
-  now rew [(PV₁ _ _)|(PV₂ _ _)].
+Proof. apply ufm_refl_by_basis_alt. intros [U₁ U₂].
+  exists ((ufm_univ_image f U₁, ufm_univ_image g U₂)).
+  change ((prod_map (f, g))♯ (π₁♯ (f♮ U₁) ⊓ π₂♯ (g♮ U₂)) ⊆ π₁♯ U₁ ⊓ π₂♯ U₂).
+  rew (preserves_meet (prod_map (f, g))♯ _ _).
+  change (π₁♯ (f♯ (f♮ U₁)) ⊓ π₂♯ (g♯ (g♮ U₂)) ⊆ π₁♯ U₁ ⊓ π₂♯ U₂).
+  now rew (universal_image_counit _ _).
 Qed.
 #[global] Hint Extern 2 (UniformlyReflecting (func_op prod_map (_, _))) => simple notypeclasses refine prod_map_ufm_refl : typeclass_instances.
 
@@ -295,12 +296,10 @@ Qed.
 Lemma tensor_map_ufm_refl@{u} `{@UniformlyReflecting@{u} X₁ Y₁ Φ₁ Ψ₁ f} `{@UniformlyReflecting@{u} X₂ Y₂ Φ₂ Ψ₂ g}
   `{@TensorProductUniformity X₁ X₂ Φ₁ Φ₂ Φ} `{@TensorProductUniformity Y₁ Y₂ Ψ₁ Ψ₂ Ψ}
   : UniformlyReflecting ⟨f, g⟩.
-Proof. apply ufm_refl_by_basis. intros [U₁ U₂].
-  pose proof ufm_reflection f U₁ as [V₁ HV1].
-  pose proof ufm_reflection g U₂ as [V₂ HV2].
-  exists (V₁, V₂). intros [x₁ x₂][y₁ y₂].
-  change (near V₁ (f x₁) (f y₁) ⊠ near V₂ (g x₂) (g y₂) ⊸ near U₁ x₁ y₁ ⊠ near U₂ x₂ y₂).
-  now rew [ <-(HV1 _ _) | <-(HV2 _ _) ].
+Proof. apply ufm_refl_by_basis_alt. intros [U₁ U₂].
+  exists ((ufm_univ_image f U₁, ufm_univ_image g U₂)).
+  change ( m* (f♯ (f♮ U₁) ⊗ g♯ (g♮ U₂)) ⊆ m* (powerset_pt U₁ ⊗ powerset_pt U₂)).
+  now rew (universal_image_counit _ _).
 Qed.
 #[global] Hint Extern 2 (UniformlyReflecting ⟨_, _⟩) => simple notypeclasses refine tensor_map_ufm_refl : typeclass_instances.
 #[global] Hint Extern 2 (UniformlyReflecting (func_op tensor_map_fun _)) => simple notypeclasses refine tensor_map_ufm_refl : typeclass_instances.
@@ -525,19 +524,34 @@ Section interior_entourage.
     intros [??]. now apply Hy.
   Qed.
 
+  (** The diagonal of a dense map is dense in the diagonal of the codomain,
+      in the only polarity density supplies: a positive statement, since a
+      refuted approximation of [(y, y)] by range diagonal points does not
+      refute [y = y]. *)
+  Lemma dense_diagonal_closure@{u} {X Y:set@{u}} `{@UniformSpace Y Ψ} `{!TensorProductUniformity Ψ Ψ Ψ₂}
+    (f:X ⇾ Y) `{!Dense f} (y:Y) : (y, y) ∊ cl (f♭ (id_rel X)).
+  Proof. rew (uniform_basis_closure_applied2 (β:=tensor_product_uniform_basis (id_fun Ψ) (id_fun Ψ))).
+    intros [U₁ U₂].
+    pose proof (uniform_dense_range f y (U₁ ⊓ U₂)) as [x Hx].
+    exists (f x, f x). split.
+    + exact Hx.
+    + apply (aimpl_impl_pos (image_el ⟨f,f⟩ (x, x) (id_rel X))). change (apos (x = x)). refl.
+  Qed.
+
   Local Instance ufm_dense_reflecting@{u} {X Y Z:set@{u}} (f:X ⇾ Y) (g:Y ⇾ Z)
     `{@UniformlyContinuous X Y Φ Ψ f, !Dense f, @UniformSpace Z Ξ, !Continuous g}
     `{!UniformlyReflecting (g ∘ f)}
     : UniformlyReflecting g.
-  Proof. split; try exact _.
-    rew (uniform_reflection_alt _). intros U.
+  Proof. apply uniformly_reflecting_alt. intros U.
     pose proof uniform_split_sym3 U as [V [EV PV]].
-    pose proof ufm_reflection_alt (g ∘ f) (ufm_preimage f V) as [W PW];
-      change (apos (f♯ (g♯ W) ⊆ f♯ V)) in PW.
-    pose proof ufm_split_interior W as [W'[_ PW']]; exists W'; rew PW'; clear W' PW'.
-    rew (continuous_preimage_interior ⟨g,g⟩ _).
-    rew (dense_interior_closure_unit ⟨f,f⟩ _).
-    rew PW.
+    apply (up_closed Ξ (interior ((g ∘ f)♮ (f♯ V))));
+      [| exact (interior_entourage (ufm_univ_image (g ∘ f) (ufm_preimage f V))) ].
+    rew <-(preimage_universal_image_adj _ _ _).
+    change (g♯ (int (∀.[⟨g,g⟩ ∘ ⟨f,f⟩] (f♯ V))) ⊆ U).
+    rew (universal_image_compose_alt _ _ _).
+    rew (continuous_preimage_interior _ _).
+    rew (universal_image_counit _ _).
+    rew (dense_interior_universal_image _ _).
     rew (image_preimage_counit _ _).
     now rew (closure_subset_thicken V V), EV.
   Qed.

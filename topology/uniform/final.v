@@ -95,6 +95,21 @@ Section uniformity_of_filter.
   Local Ltac unfold_uniformity_of_filter :=
     change (?a ∊ Θ) with ( ∐ Ψ:PreUniformity Y, subset_pt Ψ ⊆ L ⊠ ∐ V, V ∊ Ψ ⊠ V ⊆ a ).
 
+  (** [Θ] is the greatest pre-uniformity below [L]: together with
+      [uniformity_of_filter_sub] below, every pre-uniformity contained in [L]
+      is contained in [Θ].  No filter hypothesis on [L] is needed. *)
+  Lemma uniformity_of_filter_ub (Ψ:Uniformity Y) `{!@PreUniformSpace Y Ψ} : Ψ ⊆ L ⊸ Ψ ⊆ Θ.
+  Proof. change (?x ≤ ?y) with (∏ U, U ∊ x ⊸ U ∊ y) at 2. rew <-all_adj; intros U.
+    unfold_uniformity_of_filter.
+    rew <-(aex_ub _ (@to_subset _ (PreUniformity Y) Ψ _)).
+    change (subset_pt (@to_subset _ (PreUniformity Y) Ψ _)) with Ψ.
+    rew <-(aex_ub _ U).
+    rew <-(aprod_adj _ _ _). now simplify.
+  Qed.
+
+  Lemma uniformity_of_filter_ub_alt (Ψ:Uniformity Y) `{!@PreUniformSpace Y Ψ} : Ψ ⊆ L → Ψ ⊆ Θ.
+  Proof. intro E. now rew <-(uniformity_of_filter_ub _). Qed.
+
   Context `{!Filter L}.
 
   Let inst2 : SubLattice L.  Proof. exact filter_sub_lattice. Qed.
@@ -177,11 +192,13 @@ Section uniformity_of_filter.
   Qed.
 End uniformity_of_filter.
 
+Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
+
 Section final.
   Universes u.
   Context {Λ:Type@{u}} {X:Λ → set@{u}} {Φ:∀ i, Uniformity (X i)} {Y:set@{u}} (f:∀ i, X i ⇾ Y).
 
-  Definition final_semiuniformity := { U : 𝒫 (Y ⊗ Y) | ∏ i, ⟨f i, f i⟩* U ∊ Φ i }.
+  Definition final_semiuniformity := { U : 𝒫 (Y ⊗ Y) | ∏ i, (f i)♯ U ∊ Φ i }.
   Local Abbreviation L := final_semiuniformity.
   
   Definition final_uniformity := uniformity_of_filter L.
@@ -190,15 +207,15 @@ Section final.
   #[local] Hint Extern 0 (Uniformity Y) => exact Θ : typeclass_instances.
 
   Local Ltac unfold_final_semiuniformity :=
-    change (?a ∊ L) with ( ∏ i, ⟨f i, f i⟩* a ∊ Φ i ).
+    change (?a ∊ L) with ( ∏ i, (f i)♯ a ∊ Φ i ).
 
-  Context `{∀ i, UniformSpace (X i)}.
+  Context {H:∀ i, UniformSpace (X i)}.
 
   Local Instance final_semiuniformity_filter : Filter L.
   Proof. split.
   + apply Build_UpSet. intros U V. unfold_final_semiuniformity.
     rew <-(aprod_adj _ _ _). rew <-all_adj. intros i. rew (aprod_adj _ _ _). 
-    rew (all_lb _ i). rew (order_preserving ⟨f i, f i⟩* U V).
+    rew (all_lb _ i). rew (order_preserving (f i)♯ U V).
     pose proof _ : UniformSpace (X i).
     exact (up_closed _ _ _).
   + apply Build_DownDirectedSubset.
@@ -207,7 +224,7 @@ Section final.
       rew (aprod_true_r (meet_lb_r _ _)), (aprod_true_r (meet_lb_l _ _)).
       unfold_final_semiuniformity. rew <-all_adj; intros i. pose proof _ : UniformSpace (X i).
       rew (all_lb _ i).
-      rew (preserves_meet ⟨f i, f i⟩* U V).
+      rew (preserves_meet (f i)♯ U V).
       apply sub_meet_closed.
   Qed.
   
@@ -222,7 +239,7 @@ Section final.
   Local Instance sink_map_ufm_cont i : UniformlyContinuous (f i).
   Proof. pose proof _ : UniformSpace (X i).
     apply (uniformly_continuous_alt _).
-    intros [V HV]. change (⟨f i, f i⟩* V ∊ Φ i).
+    intros [V HV]; change ((f i)♯ V ∊ Φ i).
     rew final_uniformity_sub_semi in HV. exact (HV i).
   Qed.
   
@@ -230,24 +247,23 @@ Section final.
   
   Context `{@UniformSpace@{u} Z Ξ} (g:Y ⇾ Z).
   Context (P:∀ i, UniformlyContinuous (g ∘ f i)).
+
+  Lemma final_uniformity_witness : pullback_uniformity g ⊆ Θ.
+  Proof. refine (uniformity_of_filter_ub_alt L _ _).
+    intros U. unfold_final_semiuniformity. rew <-all_adj; intros i.
+    specialize (H i).
+    change ((∐ W:Ξ, g♯ W ⊆ U) ⊸ (f i)♯ U ∊ Φ i).
+    rew <-aex_adj; intros W.
+    rew (order_preserving (f i)♯ _ U).
+    apply (up_closed_alt _).
+    change ((g ∘ f i)♯ W ∊ Φ i).
+    now apply uniformly_continuous_alt.
+  Qed.
   
   Lemma final_uniformity_final : UniformlyContinuous g.
-  Proof. pose proof _ : UniformSpace Z.
-    pose (Ψ := pullback_uniformity g).
-    assert (UniformSpace Y) as HΨ by now unfold Ψ.
+  Proof.
     apply uniformly_continuous_alt. intros V.
-    unshelve eexists; [ now exists Ψ |]; unfold subset_pt.
-    split.
-    + intros U. unfold_final_semiuniformity. rew <-all_adj; intros i.
-      pose proof _ : UniformSpace (X i).
-      change ((∐ W:Ξ, ⟨ g, g ⟩* W ⊆ U) ⊸ ⟨f i, f i⟩* U ∊ Φ i).
-      rew <-aex_adj; intros W.
-      rew (order_preserving ⟨f i, f i⟩* _ U).
-      change (⟨ g ∘ f i, g ∘ f i⟩* W ⊆ ⟨f i, f i⟩* U ⊸ ⟨f i, f i⟩* U ∊ Φ i).
-      rew (up_closed (Φ i) (⟨ g ∘ f i, g ∘ f i⟩* W) _).
-      enough (⟨ g ∘ f i, g ∘ f i⟩* W ∊ Φ i) by now simplify.
-      now apply uniformly_continuous_alt.
-    + exists (⟨g,g⟩* V). split; [| easy ]. now exists V.
+    rew <-final_uniformity_witness. now exists V.
   Qed.
 End final.
 

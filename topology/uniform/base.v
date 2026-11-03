@@ -17,6 +17,7 @@ Local Abbreviation id := (id_fun _).
 Import image_notation.
 Import tensor_map_notation.
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
+Local Notation "f ♮" := (∀.[func_op ⟨f,f⟩]) (at level 1, left associativity, format "f ♮").
 
 Coercion  uniformity_sub_lattice `{@UniformSpace X Φ} : SubLattice Φ.
 Proof. exact filter_sub_lattice. Qed.
@@ -482,12 +483,31 @@ Proof. split.
   now exists (to_subset (f♯ V)).
 Qed.
 
+Lemma uniformly_reflecting_alt@{u} `{@UniformSpace@{u} X Φ} `{@UniformSpace@{u} Y Ψ} (f:X ⇾ Y)
+  : UniformlyReflecting f ↔ (∀ U:Φ, f♮ U ∊ Ψ).
+Proof. split.
++ intros ? U. pose proof ufm_reflection f U as [V' PV'].
+  apply (up_closed Ψ V' _); try exact _.
+  rew <-(preimage_universal_image_adj _ _ _).
+  intros [x y]. apply PV'.
++ intros P. split; try exact _. intros U. specialize (P U).
+  exists (to_subset (f♮ U)).
+  intros x y. exact (universal_image_counit ⟨f,f⟩ U (x, y)).
+Qed.
 
 Local Instance ufm_preimage_maps_to `{H:@UniformlyContinuous X Y Φ Ψ f} : WeakMapsTo f♯ Ψ Φ.
 Proof. intros V ?. rew (uniformly_continuous_alt f) in H. exact (H (to_subset V)). Qed.
 
 Definition ufm_preimage `{H:@UniformlyContinuous X Y Φ Ψ f} := restrict f♯ Ψ Φ.
 Arguments ufm_preimage {_ _ _ _} f {_}.
+
+
+Local Instance ufm_universal_image_maps_to `{H:@UniformlyReflecting X Y Φ Ψ f} : WeakMapsTo f♮ Φ Ψ.
+Proof. intros U ?. rew (uniformly_reflecting_alt f) in H. exact (H (to_subset U)). Qed.
+
+Definition ufm_univ_image `{H:@UniformlyReflecting X Y Φ Ψ f} := restrict f♮ Φ Ψ.
+Arguments ufm_univ_image {_ _ _ _} f {_}.
+
 
 Lemma ufm_reflection_alt@{u} {X Y:set@{u}} (f:X ⇾ Y) `{H:@UniformReflection X Y Φ Ψ f} (U:Φ) : ∐ V:Ψ, f♯ V ⊆ U.
 Proof. pose proof (ufm_reflection f U) as [V PV]. exists V. intros [x y]. exact (PV x y). Qed.
@@ -519,15 +539,12 @@ Qed.
 
 Coercion uniformly_reflecting_continuously_reflecting
   `{H:@UniformlyReflecting X Y Φ Ψ f} : ContinuouslyReflecting f.
-Proof. split; try exact _. intros x U.
-  change (x ⪽ U) with (∐ (W:Φ), ∏ (y:X), near W x y ⊸ y ∊ U).
-  rew <-aex_adj; intros W.
-  pose proof ufm_reflection_alt f W as [W' PW'].
-  rew <-(aex_ub _ (near W' (f x))).
-  rew (aprod_true_l (near_nbrhood_refl (f x) W')).
-  change (f* (near W' (f x)) ⊆ U) with (∏ x', (x, x') ∊ ⟨f,f⟩* W' ⊸ x' ∊ U).
-  rew <-all_adj; intros x'. rew (all_lb _ x').
-  now rew PW'.
+Proof. split; try exact _. intros x N.
+  unfold_nh. rew <-aex_adj; intros U. rew <-(aex_ub _ (ufm_univ_image f U)).
+  change (near U x ⊆ N ⊸ near (ufm_univ_image f U) (f x) ⊆ ∀.[f] N).
+  rew <-(preimage_universal_image_adj _ _ _).
+  enough (f* (near (ufm_univ_image f U) (f x)) ⊆ near U x) as E by now rew E.
+  intros y. exact (universal_image_counit ⟨f,f⟩ U (x, y)).
 Qed.
 
 Coercion uniformly_initial_continuously_initial
@@ -572,19 +589,19 @@ Lemma ufm_refl_factor@{u} {X Y Z:set@{u}}
   {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z} (f: X ⇾ Y) (g: Y ⇾ Z)
   `{!UniformlyContinuous g}
   : UniformlyReflecting (g ∘ f) → UniformlyReflecting f.
-Proof. intros Hgf. split; try exact _. intros U.
-  pose proof (ufm_reflection (g ∘ f) U) as [W PW].
-  now exists (ufm_preimage g W).
+Proof. intros Hgf. apply uniformly_reflecting_alt. intros U.
+  apply (up_closed Ψ (ufm_preimage g (ufm_univ_image (g ∘ f) U)) _); try exact _.
+  change (g♯ ((g∘f)♮ U) ⊆ f♮ U). rew <-(preimage_universal_image_adj _ _ _).
+  exact (universal_image_counit ⟨g∘f,g∘f⟩ U).
 Qed.
 
 Lemma ufm_cont_factor@{u} {X Y Z:set@{u}}
   {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z} (f: X ⇾ Y) (g: Y ⇾ Z)
   `{!UniformlyReflecting g}
   : UniformlyContinuous (g ∘ f) → UniformlyContinuous f.
-Proof. intros Hgf. split; try exact _. intros V.
-  pose proof (ufm_reflection g V) as [W PW].
-  pose proof (ufm_continuity (g ∘ f) W) as [U PU].
-  exists U. intros x y. rew (PU x y). exact (PW (f x) (f y)).
+Proof. intros Hgf. apply uniformly_continuous_alt. intros V.
+  apply (up_closed Φ (ufm_preimage (g ∘ f) (ufm_univ_image g V)) _); try exact _.
+  change (f♯ (g♯ (g♮ V)) ⊆ f♯ V). now rew (universal_image_counit ⟨g,g⟩ V).
 Qed.
 
 Lemma compose_ufm_initial@{u} `{@UniformlyInitial@{u} X Y Φ Ψ f} `{@UniformlyInitial@{u} Y Z Ψ Ξ g}
@@ -686,8 +703,8 @@ Section ufm_preimage.
 
   Lemma ufm_preimage_lat_mor : Lattice_Morphism (ufm_preimage f).
   Proof. apply alt_Build_Lattice_Morphism; intros U V.
-  + exact (preserves_meet (preimage ⟨f, f⟩) _ _).
-  + exact (preserves_join (preimage ⟨f, f⟩) _ _).
+  + apply (preserves_meet (preimage ⟨f, f⟩)).
+  + apply (preserves_join (preimage ⟨f, f⟩)).
   Qed.
 
   Let inst2 : Lattice_Morphism (ufm_preimage f).  Proof. exact ufm_preimage_lat_mor. Qed.
@@ -711,6 +728,30 @@ Arguments ufm_preimage_compose {_ _ _ _} f {_} U V.
 #[global] Hint Extern 2 (JoinSemiLattice_Morphism (ufm_preimage _)) => simple notypeclasses refine ufm_preimage_lat_mor : typeclass_instances.
 #[global] Hint Extern 2 (MeetSemiLattice_Morphism (ufm_preimage _)) => simple notypeclasses refine ufm_preimage_lat_mor : typeclass_instances.
 #[global] Hint Extern 2 (OrderPreserving (ufm_preimage _)) => simple notypeclasses refine ufm_preimage_order_preserving : typeclass_instances.
+
+Section ufm_univ_image.
+  Context `{H:@UniformlyReflecting X Y Φ Ψ f}.
+
+  Let inst : UniformSpace Y.  Proof. exact _. Qed.
+
+  Local Instance ufm_univ_image_meet_sl_mor : MeetSemiLattice_Morphism (ufm_univ_image f).
+  Proof. apply Build_MeetSemiLattice_Morphism; try exact _.
+    intros U V. apply (preserves_meet f♮ (subset_pt U) (subset_pt V)).
+  Qed.
+  
+  Lemma ufm_univ_image_order_preserving : OrderPreserving (ufm_univ_image f).
+  Proof. exact (meet_sl_mor_preserving _). Qed.
+
+  Local Open Scope subset_scope.
+
+  Lemma ufm_univ_image_inv U : ufm_univ_image f (U⁻¹) = (ufm_univ_image f U)⁻¹.
+  Proof. change (f♮ (flip U) = flip (f♮ U)).
+    sym. exact (flip_universal_image_tensor_map_alt f f U).
+  Qed.
+End ufm_univ_image.
+Arguments ufm_univ_image_inv {_ _ _ _} f {_} U.
+#[global] Hint Extern 2 (MeetSemiLattice_Morphism (ufm_univ_image _)) => simple notypeclasses refine ufm_univ_image_meet_sl_mor : typeclass_instances.
+#[global] Hint Extern 2 (OrderPreserving (ufm_univ_image _)) => simple notypeclasses refine ufm_univ_image_order_preserving : typeclass_instances.
 
 
 (** Topological notions *)
@@ -833,19 +874,21 @@ Section image_thicken.
     tautological.
   Qed.
 
+  (** Transposed through [preimage_universal_image_adj]: a thickened image
+      lies in the universal image of the thickening. *)
+  Lemma image_thicken_universal_image_le@{u} {X Y:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} (f:X ⇾ Y)
+    (U:Φ) (W:Ψ) (B : 𝒫 X) : f♯ W ⊆ U ⊸ W.[f⁎ B] ⊆ ∀.[f] (U.[B]).
+  Proof. rew <-(preimage_universal_image_adj f _ _). exact (preimage_thicken_image_le f U W B). Qed.
+
   Local Open Scope subset_scope.
 
   (** Uniform reflection transports a margin along the image. *)
   Lemma image_reflect_apart@{u} `{@UniformlyReflecting@{u} X Y Φ Ψ f} (U : Φ) (K B : 𝒫 X)
     : U.[K] ⊆ B ᗮ ⊸ ∐ W:Ψ, W.[f⁎ K] ⊆ (f⁎ B)ᗮ.
   Proof.
-    pose proof ufm_reflection_alt f (U⁻¹) as [W PW].
-    rew <-(aex_ub _ (W⁻¹)).
-    rew [(thicken_apart_swap U K B) | (thicken_apart_swap_alt W _ _)].
-    rew (image_preimage_adj f K _).
-    change (K ⊆ U⁻¹.[B] ᗮ ⊸ K ⊆ (f* (W.[f⁎ B]))ᗮ).
-    rew (preimage_thicken_image_le f U⁻¹ W B) in PW.
-    now rew <-PW.
+    pose proof ufm_reflection_alt f U as [W PW]. rew <-(aex_ub _ W).
+    rew (image_thicken_universal_image_le f U W K) in PW. rew PW.
+    change ((f⁎ B)ᗮ) with (∀.[f] (B ᗮ)). exact (order_preserving ∀.[f] _ _).
   Qed.
 End image_thicken.
 Arguments image_thicken_uc_le {_ _ _ _} f {_} V K.
@@ -870,6 +913,17 @@ Proof. intros y. rew uniform_interior_applied2.
   now rew [<-(meet_lb_l U V)|<-(meet_lb_r U V)].
 Qed.
 
+(** The density bridge from the universal image to the image: the interior
+    of a universal image lies in the closure of the image. Equivalent to
+    [dense_interior_closure_unit] through the unit and counit of
+    [preimage_universal_image_adj], and at [B = ⊤] it is density itself.
+    Reflection lands in universal images ([image_thicken_universal_image_le]);
+    this is what moves the result to the closure of an image. *)
+Lemma dense_interior_universal_image@{u} {X Y:set@{u}}
+  `{@UniformSpace Y Ψ} (f:X ⇾ Y) `{!Dense f} (B:𝒫 X)
+  : int (∀.[f] B) ⊆ cl (f⁎ B).
+Proof. rew (dense_interior_closure_unit f (∀.[f] B)). now rew (universal_image_counit f B). Qed.
+
 Lemma dense_open_restriction@{u} {X Y:set@{u}} `{@UniformSpace Y Ψ} (f:X ⇾ Y) `{!Dense f}
   (S:𝒫 Y) {HS:open S} : cl (f⁎ (f* S)) = cl S.
 Proof. apply le_antisym; split.
@@ -883,7 +937,9 @@ Import thicken_notation.
 
 Lemma dense_image_preimage_unit@{u}  {X Y:set@{u}} `{@UniformSpace Y Ψ} (f:X ⇾ Y) `{!Dense f}
   (S:𝒫 Y) U : S ⊆ cl (f⁎ (f* U.[S])).
-Proof. now rew <-(dense_interior_closure_unit _ _), <-(thicken_sub_interior U _ _). Qed.
+Proof. rew <-(dense_interior_universal_image f _), <-(universal_image_unit f _).
+  now rew <-(thicken_sub_interior U _ _).
+Qed. 
 
 (** The density unit, transported along a uniformly continuous map: a point
     of [g* S] is a limit of points of the dense image whose [g]-values lie
@@ -908,19 +964,29 @@ Proof. pose proof (ufm_reflection_alt f W) as [Z HZ].
   now rew <-(preimage_thicken_image_le f _ _ _).
 Qed.
 
+(** The same statement transposed through [preimage_universal_image_adj]:
+    a thickening of the closure of an image lies in the universal image of
+    a thickening. *)
+Lemma ufm_reflection_thicken_closure_alt@{u} {X Y:set@{u}} {Φ:Uniformity X} `{@UniformSpace Y Ψ}
+  (f:X ⇾ Y) `{!UniformReflection f} (A:𝒫 X) (W:Φ)
+  : ∐ V:Ψ, V.[cl (f⁎ A)] ⊆ ∀.[f] (W.[A]).
+Proof. pose proof (ufm_reflection_thicken_closure f A W) as [V HV]. exists V.
+  now rew <-(preimage_universal_image_adj f _ _).
+Qed.
+
 (** Along a dense, uniformly reflecting map, thickening the closure of an
-    image stays inside the closure of the image of a thickening:
-    [ufm_reflection_thicken_closure], pushed forward through the density
-    unit [dense_image_preimage_unit]. *)
+    image stays inside the closure of the image of a thickening: reflection
+    puts a thickening in the universal image
+    ([ufm_reflection_thicken_closure_alt]), and density moves it to the
+    closure of the image ([dense_interior_universal_image]). *)
 Lemma dense_ufm_reflection_thicken_closure@{u} {X Y:set@{u}} {Φ:Uniformity X} `{@UniformSpace Y Ψ}
   (f:X ⇾ Y) `{!Dense f} `{!UniformReflection f} (A:𝒫 X) (W:Φ)
   : ∐ V:Ψ, V.[cl (f⁎ A)] ⊆ cl (f⁎ W.[A]).
-Proof. pose proof (ufm_reflection_thicken_closure f A W) as [Z HZ].
+Proof. pose proof (ufm_reflection_thicken_closure_alt f A W) as [Z HZ].
   pose proof (uniform_split_alt Z) as [V HV]. exists V.
-  rew (dense_image_preimage_unit f (V.[cl (f⁎ A)]) V).
-  rew (thicken_compose _ _ _), HV.
-  now rew HZ.
-Qed.
+  rew <-(dense_interior_universal_image f (W.[A])), <-(thicken_sub_interior V _ _).
+  rew (thicken_compose _ _ _), HV. now rew HZ.
+Qed. 
 
 (** For a commuting square [g ∘ ι = h ∘ k] with [ι] dense, [g] uniformly
     continuous and [h] uniformly reflecting, the [g]-preimage of the closure

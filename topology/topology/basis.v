@@ -108,28 +108,27 @@ Lemma refl_by_basis_codom@{u}
   (f:X ⇾ Y) :
   (∀ x U, x ⪽ U ⊸ ∐ j, f x ∊ β j ⊠ f* (β j) ⊆ U) → ContinuouslyReflecting f.
 Proof. intros P. split; try exact _. intros x U.
-  trans (∐ j, f x ∊ β j ⊠ f* (β j) ⊆ U).
-  + exact (P x U).
-  + rew <-aex_adj; intros j. rew <-(aex_ub _ (β j)).
-    now rew (neighborhood_basis_open_iff j (f x)).
+  rew (P x U), <-aex_adj; intros j.
+  rew (neighborhood_basis_open_iff j (f x)), (preimage_universal_image_adj f U (β j)).
+  exact (top_isotony _ _ _).
 Qed.
 
 (** Continuous reflection by neighborhood basis at the domain.
 
     Dual to [refl_by_basis_codom]: with a basis [β] at the domain [X],
-    it suffices to reflect the basic neighborhoods [β i] of [x]. *)
+    it suffices to reflect the basic neighborhoods [β i] of [x].  This is
+    the [cont_reflection] field restricted to basic sets, as
+    [cont_by_basis_codom] restricts the [continuity] field. *)
 
 Lemma refl_by_basis_dom@{u}
   `{@Topology@{u} X NX, @Topology@{u} Y NY}
   {Λ:Type@{u}} {β:Λ → 𝒫 X}
   {NB:NeighborhoodBasis β}
   (f:X ⇾ Y) :
-  (∀ x i, x ∊ β i ⊸ ∐ V, f x ⪽ V ⊠ f* V ⊆ β i) → ContinuouslyReflecting f.
+  (∀ x i, x ∊ β i ⊸ f x ⪽ ∀.[f] (β i)) → ContinuouslyReflecting f.
 Proof. intros P. split; try exact _. intros x U.
-  rew (NB x U). rew <-aex_adj; intros i.
-  rew (P x i), aex_frob_r, <-aex_adj; intros V. rew <-(aex_ub _ V).
-  rew (aprod_assoc _ _ _); apply aprod_proper_aimpl; [ easy |].
-  now apply transitivity.
+  rew (NB x U), <-aex_adj; intros i.
+  rew (P x i), (order_preserving ∀.[f] (β i) U). exact (top_isotony _ _ _).
 Qed.
 
 Lemma refl_by_basis@{u}
@@ -139,8 +138,9 @@ Lemma refl_by_basis@{u}
   (f:X ⇾ Y) :
   (∀ x i, x ∊ α i ⊸ ∐ j, f x ∊ β j ⊠ f* (β j) ⊆ α i) → ContinuouslyReflecting f.
 Proof. intros P. apply refl_by_basis_dom. intros x i.
-  rew (P x i). rew <-aex_adj; intros j. rew <-(aex_ub _ (β j)).
-  now rew (neighborhood_basis_open_iff j (f x)).
+  rew (P x i), <-aex_adj; intros j.
+  rew (neighborhood_basis_open_iff j (f x)), (preimage_universal_image_adj f (α i) (β j)).
+  exact (top_isotony _ _ _).
 Qed.
 
 (** Both criteria together give initiality: the topology on [X] is exactly

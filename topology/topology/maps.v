@@ -127,28 +127,38 @@ Section reflection.
   Universes u.
   Context {X Y:set@{u}}.
 
+  Lemma reflection_universal_image_unit f `{@ContinuouslyReflecting X Y NX NY f} (A:𝒫 X)
+    : interior A ⊆ f* (interior (∀.[f] A)).
+  Proof. intros x. exact (cont_reflection f x A). Qed.
+
+  (** The interior-operator inclusion is the pointwise reading of the
+      [cont_reflection] field, so this converse is the constructor itself. *)
+  Lemma alt_Build_ContinuouslyReflecting_universal_image `{@Topology X XN} `{@Topology Y YN} (f:X ⇾ Y) :
+    (∀ A:𝒫 X, interior A ⊆ f* (interior (∀.[f] A))) → ContinuouslyReflecting f.
+  Proof. intros HA. split; try exact _. intros x A. exact (HA A x). Qed.
+
+  (** The neighborhood-witness form of reflection: [∀.[f] U] is the witness. *)
+  Lemma cont_reflection_ex f `{@ContinuousReflection X Y NX NY f} x U
+    : x ⪽ U ⊸ ∐ V, f x ⪽ V ⊠ f* V ⊆ U.
+  Proof. rew (cont_reflection f x U), <-(aex_ub _ (∀.[f] U)).
+    rew (aiff_is_true (universal_image_counit f U)). now simplify.
+  Qed.
+
+  Lemma alt_Build_ContinuouslyReflecting_ex `{@Topology X XN} `{@Topology Y YN} (f:X ⇾ Y) :
+    (∀ x U, x ⪽ U ⊸ ∐ V, f x ⪽ V ⊠ f* V ⊆ U) → ContinuouslyReflecting f.
+  Proof. intros P. split; try exact _. intros x U.
+    rew (P x U), <-aex_adj; intros V.
+    rew (preimage_universal_image_adj f U V). exact (top_isotony _ _ _).
+  Qed.
+
   Lemma reflection_alt f `{@ContinuouslyReflecting X Y NX NY f} (U:𝒫 X)
     : open U ⊸ ∐ V:𝒫 Y, open V ⊠ U = f* V.
-  Proof. pose (V := { y:Y | ∐ W:𝒫 Y, y ⪽ W ⊠ f* W ⊆ U}).
-    assert (open V).
-    + apply le_antisym_iff; simplify. intros y.
-      change ( (∐ W:𝒫 Y, y ⪽ W ⊠ f* W ⊆ U) ⊸ y ⪽ V ); rew <-aex_adj; intros W.
-      rew <-(top_isotony y (interior W) V).
-      rew <-(top_trans y W).
-      apply aprod_proper_aimpl; [ easy |].
-      change (f* W ⊆ U ⊸ ∏ w, w ⪽ W ⊸ ∐ W', w ⪽ W' ⊠ f* W' ⊆ U).
-      rew <-all_adj; intros w. rew <-(aex_ub _ W). tautological.
-    + rew <-(aex_ub _ V). simplify.
-      rew <-(le_antisym_iff _ _). apply aand_intro.
-      * change (open U ⊸ ∏ x, x ∊ U ⊸ ∐ W:𝒫 Y, f x ⪽ W ⊠ f* W ⊆ U).
-        rew <-all_adj; intros x. rew <-(cont_reflection f x U).
-        rew <-(open_nbrhood x U); tautological.
-      * enough (f* V ⊆ U) by now simplify. intros x.
-        change ((∐ W:𝒫 Y, f x ⪽ W ⊠ f* W ⊆ U) ⊸ x ∊ U).
-        rew <-aex_adj; intros W.
-        rew (top_refl (f x) W).
-        change (x ∊ f* W ⊠ f* W ⊆ U ⊸ x ∊ U).
-        apply subset_apply.
+  Proof.
+    rew <-(aex_ub _ (interior (∀.[f] U))); simplify.
+    rew <-(le_antisym_iff _ _); apply aand_intro.
+    + rew <-(reflection_universal_image_unit f U).
+      change (interior U = U ⊸ U ⊆ interior U). rew <-(le_antisym_iff _ _). exact (aandr _ _).
+    + rew (interior_subset (∀.[f] U)), (aiff_is_true (universal_image_counit f U)). now simplify.
   Qed.
 
   Lemma reflection_interior f `{@ContinuouslyReflecting X Y NX NY f} (U:𝒫 X)
@@ -157,44 +167,10 @@ Section reflection.
 
   Lemma alt_Build_ContinuouslyReflecting `{@Topology X XN} `{@Topology Y YN} (f:X ⇾ Y) :
     (∀ U:𝒫 X, open U ⊸ ∐ V:𝒫 Y, open V ⊠ U = f* V) → ContinuouslyReflecting f.
-  Proof. intros HU. split; try exact _. intros x U.
-    pose proof aimpl_impl_pos (HU (interior U)) _ as [V [HV HEq]].
-    rew <-(aex_ub _ V).
-    change (x ⪽ U) with (x ∊ interior U). rew HEq.
-    change (x ∊ f* V) with (f x ∊ V).
-    rew <-HEq. simplify.
-    rew <-(open_nbrhood _ _). now simplify.
-  Qed.
-
-  (** Reflection, at the universal image: the interior is computed upstairs.
-      With the free converse [continuous_universal_image_counit] (and the
-      hypothesis-free [universal_image_counit]), this single inequality
-      characterizes the class — the operator form of [reflection_alt], with
-      [interior (∀.[f] A)] the named witness. *)
-  Lemma reflection_universal_image_unit f `{@ContinuouslyReflecting X Y NX NY f} (A:𝒫 X)
-    : interior A ⊆ f* (interior (∀.[f] A)).
-  Proof. intros x.
-    change (x ⪽ A ⊸ f x ⪽ ∀.[f] A).
-    rew (cont_reflection f x A).
-    rew <-aex_adj; intros W.
-    rew <-(top_isotony (f x) W (∀.[f] A)).
-    rew <-(preimage_universal_image_adj f A W).
-    easy.
-  Qed.
-
-  Lemma alt_Build_ContinuouslyReflecting_universal_image `{@Topology X XN} `{@Topology Y YN} (f:X ⇾ Y) :
-    (∀ A:𝒫 X, interior A ⊆ f* (interior (∀.[f] A))) → ContinuouslyReflecting f.
-  Proof. intros HA. apply alt_Build_ContinuouslyReflecting. intros U.
-    rew <-(aex_ub _ (interior (∀.[f] U))).
-    rew (aprod_true_l (interior_open _)).
-    rew <-(le_antisym_iff _ _).
-    apply aand_intro.
-    * rew <-(HA U).
-      change ((∏ x, x ∊ interior U ⧟ x ∊ U) ⊸ ∏ x, x ∊ U ⊸ x ∊ interior U).
-      rew <-all_adj; intros x. rew (all_lb _ x). exact (aandr _ _).
-    * rew (interior_subset (∀.[f] U)).
-      rew (aiff_is_true (universal_image_counit f U)).
-      now simplify.
+  Proof. intros HU. apply alt_Build_ContinuouslyReflecting_universal_image. intros A.
+    pose proof aimpl_impl_pos (HU (interior A)) _ as [V [HV HEq]].
+    rew HEq, <-(order_preserving f* _ _), <-HV, <-(order_preserving interior _ _).
+    rew <-(preimage_universal_image_adj f A V), <-HEq. exact (interior_subset A).
   Qed.
 
   Lemma reflection_closed f `{@ContinuouslyReflecting X Y NX NY f} (C:𝒫 X)
@@ -308,21 +284,22 @@ End initiality.
 Lemma cont_refl_factor@{u} {X Y Z:set@{u}}
   {NX:Neighborhood X} {NY:Neighborhood Y} {NZ:Neighborhood Z} (f: X ⇾ Y) (g: Y ⇾ Z)
   : Continuous g → ContinuouslyReflecting (g ∘ f) → ContinuouslyReflecting f.
-Proof. intros Hg Hgf. split; try exact _. intros x U.
-  rew (cont_reflection (g ∘ f) x U).
-  rew <-aex_adj; intros W. rew <-(aex_ub _ (g* W)).
-  now rew (continuity g (f x) W).
+Proof. intros Hg Hgf. apply alt_Build_ContinuouslyReflecting_universal_image. intros A.
+  rew (reflection_universal_image_unit (g ∘ f) A), (universal_image_compose_alt f g A).
+  change ((g ∘ f)* ?W) with (f* (g* W)).
+  rew <-(order_preserving f* _ _), (continuous_preimage_interior g _), <-(order_preserving interior _ _).
+  exact (universal_image_counit g _).
 Qed.
 
 Lemma cont_factor@{u} {X Y Z:set@{u}}
   {NX:Neighborhood X} {NY:Neighborhood Y} {NZ:Neighborhood Z} (f: X ⇾ Y) (g: Y ⇾ Z)
   : ContinuouslyReflecting g → Continuous (g ∘ f) → Continuous f.
-Proof. intros Hg Hgf. split; try exact _. intros x N.
-  rew (cont_reflection g (f x) N).
-  rew <-aex_adj; intros V.
-  rew (continuity (g ∘ f) x V). change ( (g ∘ f)* V ) with (f* (g* V)).
-  rew (order_preserving f* (g* V) _).
-  exact (top_isotony _ _ _).
+Proof. intros Hg Hgf. apply alt_Build_Continuity_preimage_interior. intros N.
+  rew (reflection_universal_image_unit g N).
+  change (f* (g* ?W)) with ((g ∘ f)* W).
+  rew (continuous_preimage_interior (g ∘ f) _), <-(order_preserving interior _ _).
+  change ((g ∘ f)* ?W) with (f* (g* W)).
+  rew <-(order_preserving f* _ _). exact (universal_image_counit g N).
 Qed.
 
 

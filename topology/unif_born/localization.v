@@ -25,6 +25,7 @@ Import thicken_notation.
 
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
 Local Notation "f ♭" := ((func_op ⟨f,f⟩)⁎) (at level 1, left associativity, format "f ♭").
+Local Notation "f ♮" := (∀.[func_op ⟨f,f⟩]) (at level 1, left associativity, format "f ♮").
 
 Local Abbreviation π₁ := (tensor_proj1 _ _).
 
@@ -123,6 +124,13 @@ End filter.
 #[global] Hint Extern 2 (Topology (@localization ?X ?Φ ?𝒜)) => simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
 #[global] Hint Extern 2 (@Topology _ (@UniformNeighborhood _ (@localized_uniformity ?X ?Φ ?𝒜))) =>
   simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
+(** Companions for the coercion targets reached through [UniformSpace]: a
+    hint-derived instance has no hypothesis for the coercion chain to act on,
+    so [Filter]/[UpSet] of the localized uniformity (needed e.g. by the
+    up-set membership rewriting hint) must be supplied directly. *)
+#[global] Hint Extern 2 (@PreUniformSpace _ (@localized_uniformity ?X ?Φ ?𝒜)) => simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
+#[global] Hint Extern 2 (Filter (@localized_uniformity ?X ?Φ ?𝒜)) => simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
+#[global] Hint Extern 2 (UpSet  (@localized_uniformity ?X ?Φ ?𝒜)) => simple notypeclasses refine (@localization_space X Φ 𝒜 _) : typeclass_instances.
 
 (** ** Bounded Cauchy filters are ℒ-Cauchy.
 
@@ -407,88 +415,93 @@ End wcunif_conv.
 Local Abbreviation int := interior.
 Local Abbreviation cl := closure.
 
+(** * Local uniform reflection localizes
+
+    For a locally uniformly reflecting [f : X ⇾ Y] into a WCUnif space, every
+    [R : Φ] has a band [int (f♮ R)] on [Y]: the largest open relation whose
+    preimage under [⟨f,f⟩] lies inside [R].  Local reflection says exactly
+    that each band contains a cylinder [π₁* L ⊓ V] over every bounded [L]
+    ([band_cylinder]; well-containment thickens the cylinder into the
+    interior), that is, the bands lie in the localization filter.  Taking
+    [V] at a point gives the diagonal ([band_fill]); flipping commutes with
+    the universal image and with [int], so the bands are symmetric; and the
+    band of a 2-split [S] of [R] composes into the band of [R]
+    ([band_compose]).  Hence the up-closure [Ξ] of the bands is a
+    pre-uniformity contained in the localization filter, and therefore in
+    the localized uniformity, the greatest such ([localized_ur_witness_sub]).
+    Reflection follows at once: [f♮ U] contains the band of [U], so it is an
+    entourage of [ℒ Y], and its preimage lies in [U] by the counit.
+
+    Density is needed only in [band_compose], through
+    [interior_compose_dense_pos]: the composite of two open relations
+    factors through [cl (f♭ Δ)], the closure of the image of the diagonal,
+    which [dense_diagonal_closure] shows meets every point of the diagonal.
+    Everything else in the section is density-free.  The converse,
+    [localized_ur_conv] above, needs neither density nor well-containment. *)
 Section localized_ur.
   Universes u.
   Context `{@LocallyUniformlyReflecting X Y Φ Ψ ℬ f, !WCUnifSpace Y, !Dense f}.
 
-  Lemma band_fill (R:Φ) : id_rel Y ⊆ int (cl (f♭ (int R))).
+  Lemma band_cylinder (L:ℬ) (R:Φ) : ∐ V:Ψ, π₁* L ⊓ powerset_pt V ⊆ int (f♮ R).
   Proof.
-    intros [x y].
-    pose proof (wcunif_thicken Y (born_pt y)) as [W₀ HW₀].
-    pose proof (local_uniform_reflection f (@to_subset _ ℬ _ HW₀) (@to_subset _ Φ _ (interior_entourage R))) as [W PW];
-      change (apos (f♯ (π₁* W₀.[powerset_pt (born_pt y)] ⊓ powerset_pt W) ⊆ int R)) in PW.
-    pose proof (cylinder_sub_interior (powerset_pt (born_pt y)) W₀ W) as [V P].
-    rew <-PW, <-(dense_interior_closure_unit ⟨f,f⟩ _), (idempotent_alt int _), <-P.
+    pose proof (wcunif_thicken Y L) as [W HW].
+    pose proof (local_uniform_reflection_alt f (@to_subset _ ℬ _ HW) R) as [V PV];
+      change (apos (π₁* W.[powerset_pt L] ⊓ powerset_pt V ⊆ f♮ R)) in PV.
+    pose proof (cylinder_sub_interior (powerset_pt L) W V) as [U P].
+    exists U. now rew P, PV.
+  Qed.
+
+  Lemma band_fill (R:Φ) : id_rel Y ⊆ int (f♮ R).
+  Proof. intros [x y].
+    pose proof (band_cylinder (born_pt y) R) as [V P]. rew <-P.
     change ( x = y ⊸ y = x ∧ near V x y ); apply aand_intro.
     + now apply symmetry.
     + exact (near_refl_alt x y V).
-  Qed.    
+  Qed.
 
-  (** Transitivity of the band filter, ∐-packaged like [band_fill]'s
-      reflexivity: fill the junction with the band ([band_fill] feeding
-      [closure_compose_thicken]), pull the middle through the image,
-      counit it away ([reflection_preimage_closure]), then interior
-      arithmetic on the sym5 split. *)
-  Lemma band_compose (R:Φ) : ∐ S:Φ, cl (f♭ (int S)) ⋄ cl (f♭ (int S)) ⊆ cl (f♭ (int R)).
-  Proof. pose proof (uniform_split_sym5 R) as [S [ES PS]]. exists S.
-    rew (closure_compose_thicken_alt (f♭ (int S)) (cl (f♭ (int S))) (f♭ (int S)) (band_fill S)).
-    rew (image_compose_middle _ _ _ _ _ _ _).
-    rew (reflection_preimage_closure ⟨f,f⟩ (int S)).
-    enough (int S ⋄ cl (int S) ⋄ int S ⊆ int R) as HM by now rew HM.
+  (** [int (f♮ S) ⋄ int (f♮ S) ⊆ int (f♮ S ∙ f♭ Δ ∙ f♮ S) ⊆ int (f♮ (S ∙ S))]:
+      the middle factor is where density enters, and it is absorbed by
+      [universal_image_compose_middle_alt]. *)
+  Lemma band_compose (R:Φ) : ∐ S:Φ, int (f♮ S) ⋄ int (f♮ S) ⊆ int (f♮ R).
+  Proof. pose proof (uniform_split_alt R) as [S PS]. exists S.
+    rew <-(idempotent_alt int (f♮ S)).
+    rew (interior_compose_dense_pos (int (f♮ S)) (f♭ (id_rel X)) (int (f♮ S)) (dense_diagonal_closure f)).
     rew (int_compose_both _ _ _).
     apply (order_preserving int).
-    rew (closure_subset_thicken (int S) S).
-    rew [ES | (interior_subset S)].
-    change (S ∙ (S ∙ S ∙ S) ∙ S ≤ R).
-    now rew !(associativity (∙) _ _ _).
+    rew (universal_image_compose_middle_alt f _ _ _).
+    apply (order_preserving f♮).
+    change (powerset_pt S ∙ mon_unit ∙ powerset_pt S ⊆ powerset_pt R).
+    now rew (right_identity (∙) (powerset_pt S)).
   Qed.
-    
 
-  Definition localized_ur_witness := {V:𝒫 (Y ⊗ Y) | ∐ R:Φ, cl (f♭ (int R)) ⊆ V}.
+  (** The pre-uniformity generated by the bands. *)
+  Definition localized_ur_witness := {V:𝒫 (Y ⊗ Y) | ∐ R:Φ, int (f♮ R) ⊆ V}.
   Local Abbreviation Ξ := localized_ur_witness.
-  
+
   Local Instance localized_ur_witness_pre_uniform : @PreUniformSpace Y Ξ.
   Proof. split; try exact _.
-  + intros V. change ((∐ R:Φ, cl (f♭ (int R)) ⊆ V) ⊸ id_rel Y ⊆ V). rew <-aex_adj; intros R.
-    enough (id_rel Y ⊆ cl (f♭ (int R))) as Hr by now rew Hr.
+  + intros V. change ((∐ R:Φ, int (f♮ R) ⊆ V) ⊸ id_rel Y ⊆ V). rew <-aex_adj; intros R.
     now rew (band_fill R).
-  + intros V. change ((∐ R:Φ, cl (f♭ (int R)) ⊆ V) ⊸ (∐ R:Φ, cl (f♭ (int R)) ⊆ V⁻¹)).
+  + intros V. change ((∐ R:Φ, int (f♮ R) ⊆ V) ⊸ (∐ R:Φ, int (f♮ R) ⊆ V⁻¹)).
     rew <-aex_adj; intros R. rew <-(aex_ub _ (R⁻¹)).
-    rew (interior_inv_alt R), <-(flip_image_tensor_map_alt f f (int R)), (closure_inv_alt (f♭ (int R))).
+    rew <-(flip_universal_image_tensor_map_alt f f R), (interior_inv_alt (f♮ R)).
     exact (order_preserving inv _ _).
-    + intros [U [R HR]]. pose proof (band_compose R) as [S HB]. unshelve eexists.
-    * unshelve esplit; [ exact (cl (f♭ (int S))) | ].
-      change (∐ S':Φ, cl (f♭ (int S')) ⊆ cl (f♭ (int S))). now rew <-(aex_ub _ S).
-    * change (cl (f♭ (int S)) ⋄ cl (f♭ (int S)) ⊆ U). now rew HB.
+  + intros [U [R HR]]. pose proof (band_compose R) as [S HB].
+    enough (∐ V, V ∊ Ξ ⊠ V ⋄ V ⊆ U) as [V [HV PV]] by now exists (to_subset V).
+    exists (int (f♮ S)). split; [ now exists S |]. now rew HB.
   Qed.
 
-  Local Instance pushforward_entourage_aux (R:Φ) : cl (f♭ (int R)) ∊ localization_filter Y.
-  Proof. intros K.
-    pose proof (wcunif_thicken Y K) as [W₀ HW₀].
-    pose proof local_uniform_reflection f (@to_subset _ _ _ HW₀) (@to_subset _ Φ _ (interior_entourage R)) as [W PW];
-      change (apos (f♯ (π₁* W₀.[powerset_pt K] ⊓ powerset_pt W) ⊆ int R)) in PW.
-    pose proof (cylinder_sub_interior (powerset_pt K) W₀ W) as [V P]; exists V; rew P; clear P.
-    rew (dense_interior_closure_unit ⟨f,f⟩ _).
-    now rew PW.
+  Lemma localized_ur_witness_sub : Ξ ⊆ localized_uniformity Y.
+  Proof. refine (uniformity_of_filter_ub_alt _ _ _). intros V.
+    change ((∐ R:Φ, int (f♮ R) ⊆ V) ⊸ V ∊ localization_filter Y).
+    rew <-aex_adj; intros R. apply (up_closed_alt _).
+    intros L. exact (band_cylinder L R).
   Qed.
 
-  Local Instance pushforward_entourage_prop (R:Φ) : cl (f♭ (int R)) ∊ localized_uniformity Y.
-  Proof. unshelve eexists.
-  + unshelve esplit; [ exact Ξ | exact  localized_ur_witness_pre_uniform ].
-  + unfold subset_pt. split.
-    * clear R. intros V. change ((∐ R:Φ, cl (f♭ (int R)) ⊆ V) ⊸ V ∊ localization_filter Y). rew <-aex_adj; intros R.
-      now apply up_closed_alt.
-    * rew <-(aex_ub _ (cl (f♭ (int R)))). split; [ now exists R | easy ].
-  Qed.
-  
-  Definition pushforward_entourage (R:Φ) : localized_uniformity Y := to_subset (cl (f♭ (int R))).
-  
   Lemma localized_ur : UniformlyReflecting (η Y ∘ f).
-  Proof. change (η Y ∘ f) with f. split; try exact _. apply uniform_reflection_alt.
-    intros U. pose proof (uniform_split_sym3 U) as [R [ER PR]].
-    exists (pushforward_entourage R); change (f♯ (cl (f♭ (int R))) ⊆ U).
-    rew (reflection_preimage_closure ⟨f,f⟩ (int R)).
-    now rew (closure_subset_thicken _ R), (interior_subset _), ER.
+  Proof. change (η Y ∘ f) with f.
+    apply uniformly_reflecting_alt. intros U. rew <-localized_ur_witness_sub.
+    exists U. exact (interior_subset _).
   Qed.
 End localized_ur.
 

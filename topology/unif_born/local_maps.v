@@ -35,9 +35,17 @@ Import tensor_map_notation.
 
 Local Notation "f ♯" := (⟨f,f⟩*) (at level 1, left associativity, format "f ♯").
 Local Notation "f ♭" := ((func_op ⟨f,f⟩)⁎) (at level 1, left associativity, format "f ♭").
+Local Notation "f ♮" := (∀.[func_op ⟨f,f⟩]) (at level 1, left associativity, format "f ♮").
 Local Abbreviation π₁ := (tensor_proj1 _ _).
 
 #[local] Hint Extern 0 (Neighborhood _) => exact UniformNeighborhood : typeclass_instances.
+
+Lemma local_uniform_reflection_alt `{@LocalUniformReflection X Y Φ Ψ ℬ f}
+  (L:ℬ) (U:Φ) : ∐ W:Ψ, π₁* L ⊓ powerset_pt W ⊆ f♮ U.
+Proof. pose proof local_uniform_reflection f L U as [W PW].
+  exists W. now rew <-(preimage_universal_image_adj _ _ _).
+Qed.
+Arguments local_uniform_reflection_alt {_ _ _ _ _} f {_} L U.
 
 (** * Morphism classes respect function equality *)
 
@@ -104,15 +112,11 @@ Canonical Structure WCUnifEmbedding_fun {X Y} {Φ:Uniformity X} {Ψ:Uniformity Y
 (** * Global implies local *)
 
 Lemma uc_local_uc@{u} `{@UniformlyContinuous@{u} X Y Φ Ψ f} {𝒜:Bornology X} : LocalUniformContinuity f.
-Proof. intros K W. destruct (ufm_continuity f W) as [U HU]. exists U.
-  intros [x y]. change (x ∊ K ∧ near U x y ⊸ near W (f x) (f y)).
-  rew (aandr _ _). exact (HU x y).
-Qed.
+Proof. intros K W. exists (ufm_preimage f W). exact (meet_lb_r _ _). Qed.
 
 Lemma ur_local_ur@{u} `{@UniformlyReflecting@{u} X Y Φ Ψ f} {ℬ:Bornology Y} : LocalUniformReflection f.
-Proof. intros L U. destruct (ufm_reflection f U) as [W HW]. exists W.
-  intros [x y]. change (f x ∊ L ∧ near W (f x) (f y) ⊸ near U x y).
-  rew (aandr _ _). exact (HW x y).
+Proof. intros L U. destruct (ufm_reflection_alt f U) as [W HW]. exists W.
+  now rew (meet_lb_r _ _).
 Qed.
 
 Lemma uc_locally_uc@{u} `{@UniformlyContinuous@{u} X Y Φ Ψ f, @BornologicalSpace X 𝒜}
@@ -171,13 +175,11 @@ Lemma local_uc_compose@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {
   {𝒜:Bornology X} {ℬ:Bornology Y} (f:X ⇾ Y) (g:Y ⇾ Z) `{!Bornological f}
   : LocalUniformContinuity f → LocalUniformContinuity g → LocalUniformContinuity (g ∘ f).
 Proof. intros Pf Pg K W.
-  pose proof (Pg (born_image f K) W) as [V HV]; change (apos (π₁* (f⁎ K) ⊓ powerset_pt V ⊆ g♯ W)) in HV.
+  pose proof (Pg (born_image f K) W) as [V HV].
   pose proof (Pf K V) as [U HU]. exists U.
-  assert (π₁* K ⊓ powerset_pt U ⊆ π₁* K ⊓ f♯ V) as Hstep1 by
-    (apply meet_glb; split; trivial; exact (meet_lb_l _ _)); rew Hstep1; clear Hstep1.
-  intros [x y]. change (x ∊ K ∧ near V (f x) (f y) ⊸ (f x, f y) ∊ g♯ W).
-  rew <-HV. change (x ∊ K ∧ near V (f x) (f y) ⊸ f x ∊ f⁎ K ∧ near V (f x) (f y)).
-  now rew <-(image_el f x K).
+  rew <-(binary_idempotency (⊓) (π₁* K)), <-(associativity (⊓) _ _ _), HU.
+  rew (preimage_image_unit f K). change (f♯ (π₁* (f⁎ K)) ⊓ f♯ V ⊆ (g ∘ f)♯ W).
+  now rew <-(preserves_meet f♯ _ _), HV.
 Qed.
 
 Lemma local_uc_compose_uc@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z}
@@ -192,11 +194,9 @@ Lemma local_ur_compose@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {
 Proof. intros Pf Pg M U.
   pose proof Pf (born_preimage g M) U as [W HW].
   pose proof Pg M W as [V HV].
-  exists V.
-  enough ((g ∘ f)♯ (π₁* M ⊓ powerset_pt V) ⊆ f♯ (π₁* (born_preimage g M) ⊓ powerset_pt W)) as E by now rew E.
-  intros [x y]. change ( (g (f x) ∊ M ∧ (g (f x), g (f y)) ∊ V) ⊸ (g (f x) ∊ M ∧ (f x, f y) ∊ W) ).
-  apply aand_intro; [ easy |].
-  exact (HV (f x, f y)).
+  exists V. change (f♯ (g♯ (π₁* M ⊓ powerset_pt V)) ⊆ U).
+  rew <-(binary_idempotency (⊓) (π₁* M)), <-(associativity (⊓) _ _ _).
+  now rew (preserves_meet g♯ _ _), HV.
 Qed.
 
 
@@ -233,28 +233,21 @@ Lemma local_ur_factor@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {�
   : LocalUniformReflection (h ∘ g) → LocalUniformReflection g.
 Proof. intros P L U.
   destruct (P (born_image h L) U) as [V HV].
-  exists (ufm_preimage h V).
-  enough (g♯ (π₁* L ⊓ powerset_pt (ufm_preimage h V))
-          ⊆ (h ∘ g)♯ (π₁* (h⁎ L) ⊓ powerset_pt V)) as E by now rew E.
-  intros [x y].
-  change ((g x ∊ L ∧ (h (g x), h (g y)) ∊ V) ⊸ (h (g x) ∊ h⁎ L ∧ (h (g x), h (g y)) ∊ V)).
-  apply aand_intro; [| easy ].
-  rew (aandl _ _). exact (image_el h (g x) L).
+  exists (ufm_preimage h V); change ( g♯ (π₁* L ⊓ h♯ V) ⊆ U ).
+  rew (preimage_image_unit h L). change ( g♯ (h♯ (π₁* (h⁎ L))  ⊓ h♯ V) ⊆ U ).
+  now rew <-(preserves_meet h♯ _ _).
 Qed.
 
 Lemma local_uc_factor_local@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z}
   {𝒜:Bornology X} {𝒞:Bornology Z} (g:X ⇾ Y) (h:Y ⇾ Z) `{!Bornological (h ∘ g)}
   : LocalUniformReflection h → LocalUniformContinuity (h ∘ g) → LocalUniformContinuity g.
 Proof. intros Ph P K W.
-  destruct (Ph (born_image (h ∘ g) K) W) as [V HV].
+  pose (L := born_image (h ∘ g) K). destruct (Ph L W) as [V HV].
   destruct (P K V) as [U HU]. exists U.
-  enough (π₁* K ⊓ powerset_pt U ⊆ g♯ (h♯ (π₁* ((h ∘ g)⁎ K) ⊓ powerset_pt V))) as E
-    by (rew E; now rew HV).
-  intros [x y].
-  change ((x ∊ K ∧ (x, y) ∊ U) ⊸ (h (g x) ∊ (h ∘ g)⁎ K ∧ (h (g x), h (g y)) ∊ V)).
-  apply aand_intro.
-  + rew (aandl _ _). exact (image_el (h ∘ g) x K).
-  + exact (HU (x, y)).
+  rew <-(binary_idempotency (⊓) (π₁* K)), <-(associativity (⊓) _ _ _).
+  rew HU, (preimage_image_unit (h ∘ g) K).
+  change ( (h ∘ g)♯ (π₁* L) ⊓ (h ∘ g)♯ V ⊆ g♯ W ).
+  now rew [<-(preserves_meet (h ∘ g)♯ _ _)|<-HV].
 Qed.
 
 Lemma local_ur_factor_local@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z}
@@ -263,13 +256,9 @@ Lemma local_ur_factor_local@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity
 Proof. intros Ph P L U.
   destruct (P (born_image h L) U) as [V HV].
   destruct (Ph L V) as [W HW]. exists W.
-  enough (g♯ (π₁* L ⊓ powerset_pt W) ⊆ (h ∘ g)♯ (π₁* (h⁎ L) ⊓ powerset_pt V)) as E
-    by now rew E.
-  intros [x y].
-  change ((g x ∊ L ∧ (g x, g y) ∊ W) ⊸ (h (g x) ∊ h⁎ L ∧ (h (g x), h (g y)) ∊ V)).
-  apply aand_intro.
-  + rew (aandl _ _). exact (image_el h (g x) L).
-  + exact (HW (g x, g y)).
+  rew <-(binary_idempotency (⊓) (π₁* L)), <-(associativity (⊓) _ _ _), HW.
+  rew (preimage_image_unit h L). change (g♯ (h♯ (π₁* (h⁎ L)) ⊓ h♯ V) ⊆ U).
+  now rew <-(preserves_meet h♯ _ _).
 Qed.
 
 Lemma locally_unif_born_rfl_factor@{u} {X Y Z:set@{u}} {Φ:Uniformity X} {Ψ:Uniformity Y} {Ξ:Uniformity Z}
@@ -412,20 +401,19 @@ Proof. split; try exact _. intros x N.
   apply aimpl_proper_aimpl; [| easy ].
   change ( near U x x' ⊸ (x, x') ∊ f♯ W ). rew <-HU.
   change ( near U x x' ⊸ x = x ∧ (x, x') ∊ U ).
-  now rew (aand_true_l (ltac:(refl):x = x)).
+  now simplify.
 Qed.
 
 Coercion locally_ur_cont_refl `{@LocallyUniformlyReflecting X Y Φ Ψ ℬ f} : ContinuouslyReflecting f.
 Proof. split; try exact _. intros x N.
-  change ( (∐ U : Φ, near U x ⊆ N) ⊸ ∐ M : 𝒫 Y, (∐ V : Ψ, near V (f x) ⊆ M) ⊠ f* M ⊆ N ).
+  change ( (∐ U : Φ, near U x ⊆ N) ⊸ (∐ V : Ψ, near V (f x) ⊆ ∀.[f] N) ).
   rew <-aex_adj; intros U.
   pose proof local_uniform_reflection f (born_pt (f x)) U as [W HW].
-  rew <-(aex_ub _ (near W (f x))), <-(aex_ub _ W).
-  rew (aprod_true_l (ltac:(refl):near W (f x) ⊆ near W (f x)) ).
+  rew <-(aex_ub _ W). rew <-(preimage_universal_image_adj _ _ _).
   enough (f* (near W (f x)) ⊆ near U x) as E by now rew E.
-  intros x'. change (near W (f x) (f x') ⊸ (x, x') ∊ U). rew <-HW.
-  change (near W (f x) (f x') ⊸ f x = f x ∧ near W (f x) (f x')).
-  now rew (aand_true_l (ltac:(refl):f x = f x)).
+  intros x'. change ((f x, f x') ∊ W ⊸ (x, x') ∊ U). rew <-HW.
+  change ((f x, f x') ∊ W ⊸ f x = f x ∧ (f x, f x') ∊ W).
+  now simplify.
 Qed.
 
 Coercion locally_ub_initial_cont_initial `{@LocallyUnifBornInitial X Y Φ Ψ 𝒜 ℬ f} : ContinuouslyInitial f.

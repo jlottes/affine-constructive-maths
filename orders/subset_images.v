@@ -224,6 +224,14 @@ Proof. intros [a b].
 + rew <-aex_adj2; intros x y. rew <-(aex_ub _ (x, y)). full_tautological.
 Qed.
 
+(** Only an inclusion: off the range of [f] the left factor holds vacuously,
+    but the right factor still constrains the second coordinate. *)
+Lemma universal_image_tensor_map@{u} {X Y Z W:set@{u}} (f:X⇾Y) (g:Z⇾W) A B : ∀.[f] A ⊗ ∀.[g] B ⊆ ∀.[⟨f, g⟩] (A ⊗ B).
+Proof. rew <-(preimage_universal_image_adj _ _ _).
+  change (f* (∀.[f] A) ⊗ g* (∀.[g] B) ⊆ A ⊗ B).
+  now rew [(universal_image_counit f A)|(universal_image_counit g B)].
+Qed.
+
 Lemma image_prod_map_ub@{u} {X Y Z W:set@{u}} (f:X⇾Y) (g:Z⇾W) A B : (prod_map (f, g))⁎ (A × B) ⊆ f⁎ A × g⁎ B.
 Proof. intros [a b].
   change ((∐ p:(X × Z)%set, (f (π₁ p), g (π₂ p)) = (a, b) :> (Y × W)%set ⊠ p ∊ A × B) ⊸ (∐ x, f x = a ⊠ x ∊ A) ∧ (∐ z, g z = b ⊠ z ∊ B)).
@@ -253,6 +261,16 @@ Qed.
 Definition flip_image_tensor_map_alt@{u} {X Y Z W:set@{u}} (f:X ⇾ Y) (g:Z ⇾ W) A
   : flip (⟨f, g⟩⁎ A) = ⟨g, f⟩⁎ (flip A)
   := flip_image_tensor_map _ _ _.
+
+Lemma flip_universal_image_tensor_map@{u} {X Y Z W:set@{u}} (f:X ⇾ Y) (g:Z ⇾ W)
+  : flip ∘ ∀.[⟨f, g⟩] = ∀.[⟨g, f⟩] ∘ flip.
+Proof. intros U.
+  change (complement (flip (⟨f, g⟩⁎ (complement U))) = complement (⟨g, f⟩⁎ (complement (flip U)))).
+  now rew (flip_image_tensor_map_alt f g (complement U)).
+Qed.
+Definition flip_universal_image_tensor_map_alt@{u} {X Y Z W:set@{u}} (f:X ⇾ Y) (g:Z ⇾ W) A
+  : flip (∀.[⟨f, g⟩] A) = ∀.[⟨g, f⟩] (flip A)
+  := flip_universal_image_tensor_map _ _ _.
 
 Lemma image_preimage_pair_commute@{u} {X Y Z W:set@{u}} (f:X ⇾ Y) (g:Z ⇾ W)
   : ⟨id, g⟩⁎ ∘ ⟨f, id⟩* = ⟨f, id⟩* ∘ ⟨id, g⟩⁎.
@@ -325,6 +343,50 @@ Proof. intros [y w].
   rew (symmetry_iff (=) z z'). tautological.
 Qed.
 
+Lemma preimage_id_compose_distr_r@{u} {X Y Z W:set@{u}} (f:Z ⇾ W) (A:𝒫(X ⊗ Y)) (B:𝒫(Y ⊗ W))
+  : ⟨id, f⟩* (A ⋄ B) = A ⋄ ⟨id, f⟩* B.
+Proof. refl. Qed.
+
+Lemma image_id_compose_distr_r@{u} {X Y Z W:set@{u}} (f:Z ⇾ W) (A:𝒫(X ⊗ Y)) (B:𝒫(Y ⊗ Z))
+  : ⟨id, f⟩⁎ (A ⋄ B) = A ⋄ ⟨id, f⟩⁎ B.
+Proof. apply (injective flip).
+  rew (flip_image_tensor_map_alt id f (A ⋄ B)), (flip_compose_rel_distr A B).
+  rew (flip_compose_rel_distr A _), (flip_image_tensor_map_alt id f B).
+  exact (image_id_compose_distr_l f (flip B) (flip A)).
+Qed.
+
+(** Moving a map across [⋄]: an image on the inner boundary of a composite
+    is a preimage on the other factor. *)
+Lemma image_compose_pin_l@{u} {X Y Z W:set@{u}} (f:Y ⇾ Z) (A:𝒫(X ⊗ Y)) (B:𝒫(Z ⊗ W))
+  : ⟨id, f⟩⁎ A ⋄ B = A ⋄ ⟨f, id⟩* B.
+Proof. intros [x w].
+  change ( (∐ z, (∐ p, ⟨id, f⟩ p = (x, z) ⊠ p ∊ A) ⊠ (z, w) ∊ B)
+         ⧟ (∐ y, (x, y) ∊ A ⊠ (f y, w) ∊ B) ).
+  split.
++ rew <-aex_adj; intros z. rew aex_frob_r, <-aex_adj; intros [x' y].
+  rew <-(aex_ub _ y).
+  change (⟨ id, f ⟩ (?a, ?b)) with ( (a, f b) ). unfold_pair_eq.
+  change ((x', f y) = (x, z)) with (x' = x ⊠ f y = z).
+  rew <-(equal_element A (x', y) (x, y)), <-(equal_element B (z, w) (f y, w)). unfold_pair_eq.
+  let t := constr:(ltac:(refl):y = y) in rew (aprod_true_r t).
+  let t := constr:(ltac:(refl):w = w) in rew (aprod_true_r t).
+  rew (symmetry_iff (=) z (f y)). tautological.
++ rew <-aex_adj; intros y. rew <-(aex_ub _ (f y)), <-(aex_ub _ (x, y)).
+  change (⟨ id, f ⟩ (?a, ?b)) with ( (a, f b) ).
+  change ((x, f y) = (x, f y)) with (x = x ⊠ f y = f y).
+  let t := constr:(ltac:(refl):x = x) in rew (aprod_true_l t).
+  let t := constr:(ltac:(refl):f y = f y) in rew (aprod_true_l t).
+  tautological.
+Qed.
+
+Lemma image_compose_pin_r@{u} {X Y Z W:set@{u}} (f:Y ⇾ Z) (A:𝒫(X ⊗ Z)) (B:𝒫(Y ⊗ W))
+  : A ⋄ ⟨f, id⟩⁎ B = ⟨id, f⟩* A ⋄ B.
+Proof. apply (injective flip).
+  rew [(flip_compose_rel_distr A _) | (flip_compose_rel_distr _ B)].
+  rew (flip_image_tensor_map_alt f id B).
+  exact (image_compose_pin_l f (flip B) (flip A)).
+Qed.
+
 Lemma preimage_compose_rel_lax@{u} {X Y Z W U V:set@{u}}
   (f:X ⇾ Y) (g:Z ⇾ W) (h:U ⇾ V) (R:𝒫 (Y ⊗ W)) (S:𝒫 (W ⊗ V))
   : ⟨f, g⟩* R ⋄ ⟨g, h⟩* S ⊆ ⟨f, h⟩* (R ⋄ S).
@@ -351,45 +413,37 @@ Lemma image_compose_middle@{u} {X₀ X₁ X₂ X₃ Y₀ Y₁ Y₂ Y₃:set@{u}}
   (f₀:X₀ ⇾ Y₀) (f₁:X₁ ⇾ Y₁) (f₂:X₂ ⇾ Y₂) (f₃:X₃ ⇾ Y₃)
   (A:𝒫 (X₀ ⊗ X₁)) (Z:𝒫 (Y₁ ⊗ Y₂)) (C:𝒫 (X₂ ⊗ X₃))
   : ⟨f₀,f₁⟩⁎ A ⋄ Z ⋄ ⟨f₂,f₃⟩⁎ C = ⟨f₀,f₃⟩⁎ (A ⋄ ⟨f₁,f₂⟩* Z ⋄ C).
-Proof. intros [p s].
-  change ( (∐ r, (p, r) ∊ ⟨f₀,f₁⟩⁎ A ⋄ Z ⊠ (r, s) ∊ ⟨f₂,f₃⟩⁎ C)
-         ⧟ (∐ x:(X₀⊗X₃)%set, ⟨f₀,f₃⟩ x = (p,s) ⊠ x ∊ (A ⋄ ⟨f₁,f₂⟩* Z ⋄ C)) ).
-  split.
-+ rew <-aex_adj; intros r.
-  change ((p, r) ∊ ⟨f₀,f₁⟩⁎ A ⋄ Z) with (∐ q, (p, q) ∊ ⟨f₀,f₁⟩⁎ A ⊠ (q, r) ∊ Z).
-  rew aex_frob_r, <-aex_adj; intros q.
-  change ((p, q) ∊ ⟨f₀,f₁⟩⁎ A) with (∐ x:(X₀⊗X₁)%set, ⟨f₀,f₁⟩ x = (p,q) ⊠ x ∊ A).
-  change ((r, s) ∊ ⟨f₂,f₃⟩⁎ C) with (∐ x:(X₂⊗X₃)%set, ⟨f₂,f₃⟩ x = (r,s) ⊠ x ∊ C).
-  rew aex_frob_r, <-aex_adj2; intros [x₁ x₂] [x₃ x₄].
-  change (⟨f₀,f₁⟩ (x₁,x₂) = (p,q)) with (f₀ x₁ = p ⊠ f₁ x₂ = q).
-  change (⟨f₂,f₃⟩ (x₃,x₄) = (r,s)) with (f₂ x₃ = r ⊠ f₃ x₄ = s).
-  rew <-(aex_ub _ (x₁,x₄)).
-  change ((x₁, x₄) ∊ (A ⋄ ⟨f₁,f₂⟩* Z ⋄ C)) with (∐ m, (x₁, m) ∊ A ⋄ ⟨f₁,f₂⟩* Z ⊠ (m, x₄) ∊ C).
-  rew <-(aex_ub _ x₃).
-  change ((x₁, x₃) ∊ A ⋄ ⟨f₁,f₂⟩* Z) with (∐ n, (x₁, n) ∊ A ⊠ (n, x₃) ∊ ⟨f₁,f₂⟩* Z).
-  rew <-(aex_ub _ x₂).
-  change ((x₂, x₃) ∊ ⟨f₁,f₂⟩* Z) with ((f₁ x₂, f₂ x₃) ∊ Z).
-  change (⟨f₀,f₃⟩ (x₁,x₄) = (p,s)) with (f₀ x₁ = p ⊠ f₃ x₄ = s).
-  let t := constr:( is_fun set:(λ w, (w, f₂ x₃) ∊ Z) (f₁ x₂) q : f₁ x₂ = q ⊸ ((f₁ x₂, f₂ x₃) ∊ Z ⧟ (q, f₂ x₃) ∊ Z) ) in rew t.
-  let t := constr:( is_fun set:(λ w, (q, w) ∊ Z) (f₂ x₃) r : f₂ x₃ = r ⊸ ((q, f₂ x₃) ∊ Z ⧟ (q, r) ∊ Z) ) in rew t.
-  tautological.
-+ rew <-aex_adj; intros [x₁ x₄].
-  change ((x₁, x₄) ∊ (A ⋄ ⟨f₁,f₂⟩* Z ⋄ C)) with (∐ m, (x₁, m) ∊ A ⋄ ⟨f₁,f₂⟩* Z ⊠ (m, x₄) ∊ C).
-  rew aex_frob_l, <-aex_adj; intros x₃.
-  change ((x₁, x₃) ∊ A ⋄ ⟨f₁,f₂⟩* Z) with (∐ n, (x₁, n) ∊ A ⊠ (n, x₃) ∊ ⟨f₁,f₂⟩* Z).
-  rew aex_frob_r, aex_frob_l, <-aex_adj; intros x₂.
-  change ((x₂, x₃) ∊ ⟨f₁,f₂⟩* Z) with ((f₁ x₂, f₂ x₃) ∊ Z).
-  change (⟨f₀,f₃⟩ (x₁,x₄) = (p,s)) with (f₀ x₁ = p ⊠ f₃ x₄ = s).
-  rew <-(aex_ub _ (f₂ x₃)).
-  change ((p, f₂ x₃) ∊ ⟨f₀,f₁⟩⁎ A ⋄ Z) with (∐ q, (p, q) ∊ ⟨f₀,f₁⟩⁎ A ⊠ (q, f₂ x₃) ∊ Z).
-  rew <-(aex_ub _ (f₁ x₂)).
-  change ((p, f₁ x₂) ∊ ⟨f₀,f₁⟩⁎ A) with (∐ x:(X₀⊗X₁)%set, ⟨f₀,f₁⟩ x = (p, f₁ x₂) ⊠ x ∊ A).
-  change ((f₂ x₃, s) ∊ ⟨f₂,f₃⟩⁎ C) with (∐ x:(X₂⊗X₃)%set, ⟨f₂,f₃⟩ x = (f₂ x₃, s) ⊠ x ∊ C).
-  rew [<-(aex_ub _ (x₁, x₂)) | <-(aex_ub _ (x₃, x₄))].
-  change (⟨f₀,f₁⟩ (x₁,x₂) = (p, f₁ x₂)) with (f₀ x₁ = p ⊠ f₁ x₂ = f₁ x₂).
-  change (⟨f₂,f₃⟩ (x₃,x₄) = (f₂ x₃, s)) with (f₂ x₃ = f₂ x₃ ⊠ f₃ x₄ = s).
-  rew [ (aprod_true_r (ltac:(refl) : f₁ x₂ = f₁ x₂)) | (aprod_true_l (ltac:(refl) : f₂ x₃ = f₂ x₃)) ].
-  tautological.
+Proof. change ((⟨f₀,id⟩ ∘ ⟨id,f₁⟩)⁎ A ⋄ Z ⋄ (⟨id,f₃⟩ ∘ ⟨f₂,id⟩)⁎ C
+        = (⟨id,f₃⟩ ∘ ⟨f₀,id⟩)⁎ (A ⋄ ⟨id,f₂⟩* (⟨f₁,id⟩* Z) ⋄ C)).
+  rew [(image_compose_alt ⟨id,f₁⟩ ⟨f₀,id⟩ A) | (image_compose_alt ⟨f₂,id⟩ ⟨id,f₃⟩ C) | (image_compose_alt ⟨f₀,id⟩ ⟨id,f₃⟩ _)].
+  rew <-(image_id_compose_distr_l f₀ _ Z).
+  rew <-(image_id_compose_distr_r f₃ _ _).
+  rew <-(image_id_compose_distr_l f₀ _ _).
+  rew (image_compose_pin_l f₁ A Z).
+  rew (image_compose_pin_r f₂ _ C).
+  refl. 
+Qed.
+
+(** The right-adjoint companion of the projection formula, inclusion only:
+    universal images pin nothing by themselves (a point outside the range
+    belongs to every universal image), so the inner factor must be an image,
+    which supplies preimages of the middle points for the universal ends to
+    consume.  Without the middle image, [∀.[⟨f,f⟩]] has no law for [⋄]. *)
+Lemma universal_image_compose_middle@{u} {X₀ X₁ X₂ X₃ Y₀ Y₁ Y₂ Y₃:set@{u}}
+  (f₀:X₀ ⇾ Y₀) (f₁:X₁ ⇾ Y₁) (f₂:X₂ ⇾ Y₂) (f₃:X₃ ⇾ Y₃)
+  (A:𝒫 (X₀ ⊗ X₁)) (W:𝒫 (X₁ ⊗ X₂)) (C:𝒫 (X₂ ⊗ X₃))
+  : ∀.[⟨f₀,f₁⟩] A ⋄ ⟨f₁,f₂⟩⁎ W ⋄ ∀.[⟨f₂,f₃⟩] C ⊆ ∀.[⟨f₀,f₃⟩] (A ⋄ W ⋄ C).
+Proof. rew <-(preimage_universal_image_adj _ _ _).
+  change (⟨f₀,id⟩* (∀.[⟨f₀,f₁⟩] A) ⋄ (⟨f₁,id⟩ ∘ ⟨id,f₂⟩)⁎ W ⋄ ⟨id,f₃⟩* (∀.[⟨f₂,f₃⟩] C) ⊆ A ⋄ W ⋄ C).
+  rew (image_compose_alt ⟨id,f₂⟩ ⟨f₁,id⟩ W).
+  rew (image_compose_pin_r f₁ _ _).
+  change (⟨id,f₁⟩* (⟨f₀,id⟩* (∀.[⟨f₀,f₁⟩] A))) with (⟨f₀,f₁⟩* (∀.[⟨f₀,f₁⟩] A)).
+  rew (universal_image_counit ⟨f₀,f₁⟩ A).
+  rew <-(compose_rel_assoc A _ _).
+  rew (image_compose_pin_l f₂ W _).
+  change (⟨f₂,id⟩* (⟨id,f₃⟩* (∀.[⟨f₂,f₃⟩] C))) with (⟨f₂,f₃⟩* (∀.[⟨f₂,f₃⟩] C)).
+  rew (universal_image_counit ⟨f₂,f₃⟩ C).
+  now rew (compose_rel_assoc A W C).
 Qed.
 
 Local Open Scope sg_op_scope.
@@ -401,6 +455,14 @@ Lemma image_compose_rel_lax_alt@{u} {X Y:set@{u}}
   (f:X ⇾ Y) (R:𝒫 (X ⊗ X)) (S:𝒫 (X ⊗ X))
   : ⟨f, f⟩⁎ (R ∙ S) ⊆ ⟨f, f⟩⁎ R ∙ ⟨f, f⟩⁎ S.
 Proof. exact (image_compose_rel_lax _ _ _ _ _). Qed.
+
+Lemma image_compose_middle_alt@{u} {X Y:set@{u}} (f:X ⇾ Y) (A:𝒫 (X ⊗ X)) (Z:𝒫 (Y ⊗ Y)) (C:𝒫 (X ⊗ X))
+  : ⟨f, f⟩⁎ A ∙ Z ∙ ⟨f, f⟩⁎ C = ⟨f, f⟩⁎ (A ∙ ⟨f, f⟩* Z ∙ C).
+Proof. exact (image_compose_middle _ _ _ _ _ _ _). Qed.
+
+Lemma universal_image_compose_middle_alt@{u} {X Y:set@{u}} (f:X ⇾ Y) (A W C:𝒫 (X ⊗ X))
+  : ∀.[⟨f, f⟩] A ∙ ⟨f, f⟩⁎ W ∙ ∀.[⟨f, f⟩] C ⊆ ∀.[⟨f, f⟩] (A ∙ W ∙ C).
+Proof. exact (universal_image_compose_middle _ _ _ _ _ _ _). Qed.
 
 Local Abbreviation m := (tensor_medial _ _ _ _).
 

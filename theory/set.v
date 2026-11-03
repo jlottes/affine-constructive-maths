@@ -724,6 +724,10 @@ Global Hint Extern 2 (The (set_T (?X ⇾ 𝟏))) => eapply to_Unit : typeclass_i
 Lemma empty_initial `(f:𝟎 ⇾ X) : f = the.  Proof. intros []. Qed.
 Lemma unit_terminal `(f:X ⇾ 𝟏) : f = the.  Proof. easy. Qed.
 
+Lemma unit_injective `(f:𝟏 ⇾ X) : Injective f.
+Proof. intros x y. exact (aimpl_true _). Qed.
+#[global] Hint Extern 2 (Injective (X:=𝟏) _) => simple notypeclasses refine (unit_injective _) : typeclass_instances.
+
 Section swap.
   Universes u.
   Local Abbreviation swap := (λ '(a,b), (b, a)).

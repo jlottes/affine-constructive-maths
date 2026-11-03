@@ -4,7 +4,7 @@ Require Export simplify.base.
 
 Lemma simplify_impl (P Q : SProp) {P' Q': SProp} : ∀ `{!SimplifiesTo P P', !SimplifiesTo Q Q'}, SimplifiesTo (P → Q) (P' → Q').
 Proof. intros [E1][E2]; split; revert E1 E2; lazy; tautological. Qed.
-Global Hint Extern 104 (SimplifiesTo (?P → ?Q) _) => simplify_progress constr:(simplify_impl P Q) : typeclass_instances.
+Global Hint Extern 104 (SimplifiesTo (?P → ?Q) _) => simplify_congruence_start; notypeclasses refine (simplify_descended_intro (simplify_impl P Q)) : typeclass_instances.
 
 Definition simplify_thm {P P':Ω} (H:P) {E:SimplifiesTo P P'} : P' := aimpl_impl_pos (sprop.andl E.(simplify _)) H.
 Definition full_simplify_thm {P P':Ω} (H:P) {E:FullSimplifiesTo P P'} : P' := simplify_thm _ (E:=E).
@@ -160,31 +160,36 @@ Global Hint Extern 4 (SimplifiesTo (? (? _)) _) => notypeclasses refine simplify
 
 
 Definition simplify_true_prop {P:Ω} (H:P) : SimplifiesTo P atrue := ltac:(solve_simplify (aiff_is_true H)).
-Global Hint Extern 8 (@SimplifiesTo AProp_set _ _) => refine (simplify_true_prop _) : typeclass_instances.
+(** [simple notypeclasses refine]: the [apos P] hole is left to the surrounding
+    resolution, which searches it once; [refine] would run its own search on it
+    first and, on failure, hand the same goal to the engine a second time. *)
+Global Hint Extern 8 (@SimplifiesTo AProp_set _ _) => simple notypeclasses refine (simplify_true_prop _) : typeclass_instances.
 
 
 (** Quantifiers. *)
-Global Hint Extern 2 (SimplifiesTo (all ?P) ?out) => 
+Global Hint Extern 2 (SimplifiesTo (all ?P) ?out) =>
+      simplify_congruence_start;
       let t := constr:(ltac:(
-        split; refine (aimpl_impl_pos (all_aiff _ _) _);
+        split; notypeclasses refine (aimpl_impl_pos (all_aiff _ _) _);
         let x := fresh "x" in intro x;
         let P := match goal with |- apos (?P ⧟ _) => P end in
         let t := constr:(simplify P) in
         refine t
       ) : SimplifiesTo (all P) _) in
       let t := lazymatch t with ?tm => tm end in
-      simplify_progress t : typeclass_instances.
+      notypeclasses refine (simplify_descended_intro t) : typeclass_instances.
 
-Global Hint Extern 2 (SimplifiesTo (aex ?P) ?out) => 
+Global Hint Extern 2 (SimplifiesTo (aex ?P) ?out) =>
+      simplify_congruence_start;
       let t := constr:(ltac:(
-        split; refine (aimpl_impl_pos (aex_aiff _ _) _);
+        split; notypeclasses refine (aimpl_impl_pos (aex_aiff _ _) _);
         let x := fresh "x" in intro x;
         let P := match goal with |- apos (?P ⧟ _) => P end in
         let t := constr:(simplify P) in
         refine t
       ) : SimplifiesTo (aex P) _) in
       let t := lazymatch t with ?tm => tm end in
-      simplify_progress t : typeclass_instances.
+      notypeclasses refine (simplify_descended_intro t) : typeclass_instances.
 
 Lemma simplify_all_true {X} : SimplifiesTo (∏ _ : X, atrue) atrue.
 Proof. split; full_tautological. Qed.

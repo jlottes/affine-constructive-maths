@@ -5,13 +5,63 @@ Require Import interfaces.orders interfaces.subset.
 Require Import interfaces.topology.
 Require Import theory.set orders.orders orders.maps orders.subset theory.lattices orders.lattices.
 Require Import orders.subset_images.
-Require Import easy rewrite simplify.
+Require Import tactics.misc easy rewrite simplify.
 
 Import image_notation.
 Local Open Scope topology_scope.
 
 
 #[global] Hint Extern 2 (apos (_ ⪽ full_subset _)) => simple notypeclasses refine (top_nullary_additivity _) : typeclass_instances.
+
+Lemma nbrhood_proper_le_aimpl `{@Topology X XN} {x y:X} {U V : 𝒫 X} :
+  x = y → U ⊆ V → (x ⪽ U ⊸ y ⪽ V).
+Proof. intros E HUV. trans (x ⪽ V).
++ rew <-(top_isotony x U V), (aprod_true_r HUV). easy.
++ apply (is_fun nbrhood (x,V) (y,V)). now split.
+Qed.
+
+(** Order rewriting in the subset position of [⪽] (isotony): fires only when
+    a tag carrying an order relation is syntactically present in the subset
+    terms, so equality rewrites never spawn the [Topology] search. *)
+Ltac nbrhood_le_proper U V :=
+  lazymatch constr:((U, V)) with
+  | context [ @arewrite_tag_l _ (@le _ _) _ _ _ ] => idtac
+  | context [ @arewrite_tag_r _ (@le _ _) _ _ _ ] => idtac
+  end;
+  sapply_2 nbrhood_proper_le_aimpl.
+
+#[global] Hint Extern 1 (apos (aimpl (_ ⪽ ?U, _ ⪽ ?V))) => nbrhood_le_proper U V : proper.
+
+(*
+Section test_nbrhood_le_rewrite.
+  Context `{@Topology X XN} (x y : X) (A B : 𝒫 X) (HAB : A ⊆ B).
+
+  Example test_goal (m : x ⪽ A) : x ⪽ B.
+  Proof. rew <-HAB. exact m. Qed.
+
+  Example test_hyp (m : x ⪽ A) : x ⪽ B.
+  Proof. rew HAB in m. exact m. Qed.
+
+  Example test_aimpl : x ⪽ A ⊸ x ⪽ B.
+  Proof. now rew HAB. Qed.
+
+  Example test_aimpl_rev : x ⪽ A ⊸ x ⪽ B.
+  Proof. now rew <-HAB. Qed.
+
+  Example test_eq_regression (E : x = y) (m : x ⪽ A) : y ⪽ A.
+  Proof. rew <-E. exact m. Qed.
+End test_nbrhood_le_rewrite.
+
+Section test_nbrhood_le_rewrite_nested.
+  Context `{@Topology Y YN} {X:set} (f : X ⇾ Y) (y : Y) (A B : 𝒫 X) (HAB : A ⊆ B).
+
+  Example test_nested (m : y ⪽ ∀.[f] A) : y ⪽ ∀.[f] B.
+  Proof. rew <-HAB. exact m. Qed.
+
+  Example test_counit (m : y ⪽ ∀.[f] (f* (∀.[f] A))) : y ⪽ ∀.[f] A.
+  Proof. rew (universal_image_counit f A) in m. exact m. Qed.
+End test_nbrhood_le_rewrite_nested.
+*)
 
 
 Import of_course_set_notation.
@@ -51,7 +101,7 @@ Canonical Structure Dense_fun {A Y} {NY:Neighborhood Y} : !(A → Y) ⇾ SProp
 Lemma id_emb `{@Topology X XN} : ContinuouslyEmbedding (id_fun X).
 Proof. do 3 (split; try exact _).
 + intros x N. now change (x ⪽ N ⊸ x ⪽ N).
-+ intros x N. rew <-(aex_ub _ N). change (x ⪽ N ⊸ x ⪽ N ⊠ N ⊆ N). now simplify.
++ intros x N. now rew (universal_image_id_alt _).
 Qed.
 #[global] Hint Extern 2 (ContinuouslyEmbedding (id_fun _)) => simple notypeclasses refine id_emb : typeclass_instances.
 #[global] Hint Extern 2 (ContinuouslyInitial (id_fun _)) => simple notypeclasses refine id_emb : typeclass_instances.
@@ -69,16 +119,9 @@ Qed.
 Lemma compose_cont_reflect@{u} {X Y Z:set@{u}}
   `{@ContinuousReflection X Y NX NY f} `{@ContinuousReflection Y Z NY NZ g}
   : ContinuousReflection (g ∘ f).
-Proof. intros x U.
-  rew (cont_reflection f x U).
-  rew <-aex_adj; intros V.
-  rew (cont_reflection g (f x) V).
-  rew aex_frob_r, <-aex_adj; intros W.
-  rew <-(aex_ub _ W). rew (aprod_assoc _ _ _).
-  refine (aprod_proper_aimpl _ _); [ easy |].
-  change ((g ∘ f)* W) with (f* (g* W)).
-  rew (order_preserving f* (g* W) V).
-  now apply transitivity.
+Proof. intros x U. rew (universal_image_compose_alt _ _ _).
+  change ((g ∘ f) x) with (g (f x)). rew <-(cont_reflection g _ _).
+  exact (cont_reflection f _ _).
 Qed.
 #[global] Hint Extern 2 (ContinuousReflection (_ ∘ _)) => simple notypeclasses refine compose_cont_reflect : typeclass_instances.
 
@@ -125,21 +168,25 @@ Proof. split.
 Qed.
 
 
-Lemma cont_initial_embedding `{@ContinuouslyInitial X Y NX NY f}
-  `{!Separation_T₀ X} : ContinuouslyEmbedding f.
-Proof. split; trivial. intros x y.
-  rew <-(separation_T₀ x y).
+Lemma cont_refl_injective `{@ContinuouslyReflecting X Y NX NY f}
+  `{!Separation_T₀ X} : Injective f.
+Proof. intros x y. rew <-(separation_T₀ x y).
   enough (∀ x y (U : 𝒫 X), f x = f y ⊸ x ⪽ U ⊸ y ⪽ U) as P.
   + rew <-all_adj; intros U. apply aand_intro; [ apply P |].
     rew (symmetry_iff (=) _ _). apply P.
   + clear x y; intros x y U.
-    rew (cont_reflection f x U).
-    rew <-(aprod_adj _ _ _), aex_frob_l, <-aex_adj; intros V.
-    rew <-(top_isotony y (preimage f V) U).
-    rew <-(continuity f y V).
-    rew (aprod_adj _ _ _), (is_fun (set:(λ a:Y, a ⪽ V)) (f x) (f y)).
-    full_tautological.
+    rew (top_trans x U), (cont_reflection f x _).
+    rew (is_fun (set:(λ a:Y, a ⪽ ∀.[f] { z | z ⪽ U })) (f x) (f y)).
+    change ((f x ⪽ ∀.[f] { z | z ⪽ U } ⧟ f y ⪽ ∀.[f] { z | z ⪽ U }) ⊸ f x ⪽ ∀.[f] { z | z ⪽ U } ⊸ y ⪽ U).
+    enough (f y ⪽ ∀.[f] { z | z ⪽ U } ⊸ y ⪽ U) as E by (rew <-E; tautological).
+    rew (top_refl (f y) _).
+    change (y ∊ f* (∀.[f] { z | z ⪽ U }) ⊸ y ∊ { z | z ⪽ U }).
+    exact (universal_image_counit f _ y).
 Qed.
+
+Lemma cont_initial_embedding `{@ContinuouslyInitial X Y NX NY f}
+  `{!Separation_T₀ X} : ContinuouslyEmbedding f.
+Proof. split; trivial. exact cont_refl_injective. Qed.
 
 
 (** A continuous map into a Hausdorff space identifies points whose
